@@ -10,6 +10,9 @@
     },
     "mocha/mocha.d.ts": {
       "commit": "71abea754c81fd0677ecaaad3601da446280035c"
+    },
+    "chai/chai.d.ts": {
+      "commit": "71abea754c81fd0677ecaaad3601da446280035c"
     }
   }
 }
