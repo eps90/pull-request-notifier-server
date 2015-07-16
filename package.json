@@ -14,6 +14,8 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/eps90/bitbucket-notifier#readme",
   "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-typescript": "^0.6.2",
     "tsd": "^0.6.3",
     "typescript": "^1.4.1"
   }
