@@ -4,13 +4,13 @@
   "description": "Bitbucket Notifier",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt test"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@bitbucket.org/eps90/bitbucket-notifier.git"
   },
-  "author": "",
+  "author": "Jakub Turek <jakub.turek@edpauto.com>",
   "license": "ISC",
   "homepage": "https://bitbucket.org/eps90/bitbucket-notifier#readme",
   "dependencies": {
