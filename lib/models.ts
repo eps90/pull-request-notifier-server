@@ -29,3 +29,18 @@ export class User {
         }
     }
 }
+
+export class Reviewer {
+    approved:boolean;
+    user: User;
+
+    constructor(reviewerObject?: any) {
+        if (reviewerObject.hasOwnProperty('approved')) {
+            this.approved = reviewerObject.approved;
+        }
+
+        if (reviewerObject.hasOwnProperty('user')) {
+            this.user = new User(reviewerObject.user);
+        }
+    }
+}

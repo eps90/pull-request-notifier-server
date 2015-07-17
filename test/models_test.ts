@@ -29,5 +29,23 @@ describe('Models', () => {
             expect(user.username).to.equal('john.kowalsky');
             expect(user.displayName).to.equal('John Kowalsky')
         });
-    })
+    });
+
+    describe("Reviewer", () => {
+        it('should be create from object', () => {
+            var config:any = {
+                role: 'REVIEWER',
+                user: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                approved: false
+            };
+
+            var reviewer = new models.Reviewer(config);
+            expect(reviewer.approved).to.eq(false);
+            expect(reviewer.user.displayName).to.eq('John Smith');
+            expect(reviewer.user.username).to.eq('john.smith');
+        });
+    });
 });
