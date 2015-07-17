@@ -44,3 +44,64 @@ export class Reviewer {
         }
     }
 }
+
+export enum PullRequestState {Open, Merged, Declined}
+
+export class PullRequest {
+    title:string;
+    description:string;
+    author:User;
+    targetRepository:Repository;
+    targetBranch:string;
+    reviewers:Array<Reviewer> = [];
+    state:PullRequestState;
+
+    constructor(prObject?: any) {
+        if (prObject.hasOwnProperty('title')) {
+            this.title = prObject.title;
+        }
+
+        if (prObject.hasOwnProperty('description')) {
+            this.description = prObject.description;
+        }
+
+        if (prObject.hasOwnProperty('author')) {
+            this.author = new User(prObject.author);
+        }
+
+        if (prObject.hasOwnProperty('destination')) {
+            var destinationObj = prObject.destination;
+            if (destinationObj.hasOwnProperty('repository')) {
+                this.targetRepository = new Repository(destinationObj.repository);
+            }
+
+            if (destinationObj.hasOwnProperty('branch')) {
+                this.targetBranch = destinationObj.branch.name;
+            }
+        }
+
+        if (prObject.hasOwnProperty('state')) {
+            this.state = PullRequest.getPullRequestState(prObject.state);
+        }
+    }
+
+    private static getPullRequestState(prState:string):PullRequestState {
+        var state:PullRequestState;
+        switch (prState.toUpperCase()) {
+            case 'OPEN':
+                state = PullRequestState.Open;
+                break;
+            case 'MERGED':
+                state = PullRequestState.Merged;
+                break;
+            case 'DECLINED':
+                state = PullRequestState.Declined;
+                break;
+            default:
+                throw new Error('Invalid pull request state');
+                break;
+        }
+
+        return state;
+    }
+}

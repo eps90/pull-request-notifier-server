@@ -32,7 +32,7 @@ describe('Models', () => {
     });
 
     describe("Reviewer", () => {
-        it('should be create from object', () => {
+        it('should be created from object', () => {
             var config:any = {
                 role: 'REVIEWER',
                 user: {
@@ -46,6 +46,60 @@ describe('Models', () => {
             expect(reviewer.approved).to.eq(false);
             expect(reviewer.user.displayName).to.eq('John Smith');
             expect(reviewer.user.username).to.eq('john.smith');
+        });
+    });
+
+    describe("PullRequest", () => {
+        it('should be created from object', () => {
+            var config:any = {
+                author: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                source: {
+                    branch: {
+                        name: 'next'
+                    }
+                },
+                destination: {
+                    repository: {
+                        full_name: 'bitbucket/bitbucket',
+                        name: 'bitbucket'
+                    },
+                    branch: {
+                        name: 'master'
+                    }
+                },
+                title: 'Fixed bugs',
+                description: 'This is a special pull request',
+                participants: [
+                    {
+                        role: 'PARTICIPANT',
+                        user: {
+                            username: 'anna.kowalsky',
+                            display_name: 'Anna Kowalsky'
+                        }
+                    },
+                    {
+                        role: 'REVIEWER',
+                        user: {
+                            username: 'jon.snow',
+                            display_name: 'John Snow'
+                        }
+                    }
+                ],
+                state: 'OPEN'
+            };
+
+            var pullRequest = new models.PullRequest(config);
+            expect(pullRequest.title).to.equal('Fixed bugs');
+            expect(pullRequest.description).to.eq('This is a special pull request');
+            expect(pullRequest.targetRepository.fullName).to.eq('bitbucket/bitbucket');
+            expect(pullRequest.targetRepository.name).to.eq('bitbucket');
+            expect(pullRequest.targetBranch).to.eq('master');
+            expect(pullRequest.state).to.eq(models.PullRequestState.Open);
+            expect(pullRequest.author.displayName).to.eq('John Smith');
+            expect(pullRequest.author.username).to.eq('john.smith');
         });
     });
 });
