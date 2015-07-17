@@ -83,6 +83,15 @@ export class PullRequest {
         if (prObject.hasOwnProperty('state')) {
             this.state = PullRequest.getPullRequestState(prObject.state);
         }
+
+        if (prObject.hasOwnProperty('participants')) {
+            for (var participantIndex:number = 0; participantIndex < prObject.participants.length; participantIndex++) {
+                var participant:any = prObject.participants[participantIndex];
+                if (participant.role == 'REVIEWER') {
+                    this.reviewers.push(new Reviewer(participant));
+                }
+            }
+        }
     }
 
     private static getPullRequestState(prState:string):PullRequestState {

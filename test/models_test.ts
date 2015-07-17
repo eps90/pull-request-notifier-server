@@ -78,14 +78,16 @@ describe('Models', () => {
                         user: {
                             username: 'anna.kowalsky',
                             display_name: 'Anna Kowalsky'
-                        }
+                        },
+                        approved: false
                     },
                     {
                         role: 'REVIEWER',
                         user: {
                             username: 'jon.snow',
-                            display_name: 'John Snow'
-                        }
+                            display_name: 'Jon Snow'
+                        },
+                        approved: true
                     }
                 ],
                 state: 'OPEN'
@@ -100,6 +102,11 @@ describe('Models', () => {
             expect(pullRequest.state).to.eq(models.PullRequestState.Open);
             expect(pullRequest.author.displayName).to.eq('John Smith');
             expect(pullRequest.author.username).to.eq('john.smith');
+
+            expect(pullRequest.reviewers).to.be.lengthOf(1);
+            expect(pullRequest.reviewers[0].user.username).to.eq('jon.snow');
+            expect(pullRequest.reviewers[0].user.displayName).to.eq('Jon Snow');
+            expect(pullRequest.reviewers[0].approved).to.eq(true);
         });
     });
 });
