@@ -17,4 +17,17 @@ describe('Models', () => {
             expect(repository.fullName).to.equal('org/my_repo');
         });
     });
+
+    describe("User", () => {
+        it('should be created from object', () => {
+            var config:any = {
+                username: 'john.kowalsky',
+                display_name: 'John Kowalsky'
+            };
+
+            var user = new models.User(config);
+            expect(user.username).to.equal('john.kowalsky');
+            expect(user.displayName).to.equal('John Kowalsky')
+        });
+    })
 });
