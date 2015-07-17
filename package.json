@@ -4,7 +4,8 @@
   "description": "Bitbucket Notifier",
   "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "tsd": "tsd"
   },
   "repository": {
     "type": "git",
