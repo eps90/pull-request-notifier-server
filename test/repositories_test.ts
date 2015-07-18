@@ -75,4 +75,117 @@ describe("Repositories", () => {
             });
         });
     });
+
+    describe("PullRequestRepository", () => {
+        it('should create list of pull requests by requesting them', (done) => {
+            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
+            var projectConfig = {
+                links: {
+                    pullrequests: {
+                        href: pullRequestsUrl
+                    }
+                }
+            };
+            var project = new models.Repository(projectConfig);
+
+            var pullRequests:any = {
+                size: 19,
+                pagelen: 10,
+                next: 'http://example.com/bitbucket/bitbucket/pullrequests?page=2',
+                values: [
+                    {
+                        author: {
+                            username: 'john.smith',
+                            display_name: 'John Smith'
+                        },
+                        source: {
+                            branch: {
+                                name: 'next'
+                            }
+                        },
+                        destination: {
+                            repository: {
+                                full_name: 'bitbucket/bitbucket',
+                                name: 'bitbucket'
+                            },
+                            branch: {
+                                name: 'master'
+                            }
+                        },
+                        title: 'Fixed bugs',
+                        description: 'This is a special pull request',
+                        participants: [
+                            {
+                                role: 'REVIEWER',
+                                user: {
+                                    username: 'jon.snow',
+                                    display_name: 'Jon Snow'
+                                },
+                                approved: true
+                            }
+                        ],
+                        state: 'OPEN'
+                    }
+                ]
+            };
+
+            var secondPrs:any = {
+                values: [
+                    {
+                        author: {
+                            username: 'john.smith',
+                            display_name: 'John Smith'
+                        },
+                        source: {
+                            branch: {
+                                name: 'next'
+                            }
+                        },
+                        destination: {
+                            repository: {
+                                full_name: 'bitbucket/bitbucket',
+                                name: 'bitbucket'
+                            },
+                            branch: {
+                                name: 'master'
+                            }
+                        },
+                        title: 'Fixed bugs',
+                        description: 'This is a special pull request',
+                        participants: [
+                            {
+                                role: 'REVIEWER',
+                                user: {
+                                    username: 'jon.snow',
+                                    display_name: 'Jon Snow'
+                                },
+                                approved: true
+                            }
+                        ],
+                        state: 'OPEN'
+                    }
+                ]
+            };
+
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests')
+                .reply(200, JSON.stringify(pullRequests));
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests')
+                .query({page: '2'})
+                .reply(200, JSON.stringify(secondPrs));
+
+            var pullRequestRepository = new repositories.PullRequestRepository();
+            pullRequestRepository.findByRepository(project, (prs: Array<models.PullRequest>) => {
+                expect(prs).to.have.length(2);
+                var pullRequest = prs[0];
+                expect(pullRequest).to.be.instanceOf(models.PullRequest);
+                expect(pullRequest.author).to.be.instanceOf(models.User);
+                expect(pullRequest.state).to.eq(models.PullRequestState.Open);
+                expect(pullRequest.reviewers).to.be.lengthOf(1);
+
+                done();
+            });
+        });
+    });
 });

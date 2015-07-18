@@ -90,3 +90,24 @@ export class ProjectRepository extends AbstractRepository {
         });
     }
 }
+
+export class PullRequestRepository extends AbstractRepository {
+    findByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
+        var pullRequestsUrl = repository.pullRequestsUrl;
+        request(pullRequestsUrl, (error, res, body) => {
+            var response:any = JSON.parse(body);
+            var pullRequests:any = response.values;
+            var result:Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);
+
+            var rest = this.getRequestPromises(this.getPagesList(response));
+            q.all(rest).done((results:Array<any>) => {
+                for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                    var resultPrs:any = results[resultIndex];
+                    result = result.concat(this.getCollection(models.PullRequest, resultPrs));
+                }
+
+                callback(result);
+            });
+        });
+    }
+}
