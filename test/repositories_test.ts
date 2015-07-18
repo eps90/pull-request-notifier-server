@@ -116,6 +116,10 @@ describe("Repositories", () => {
     });
 
     describe("PullRequestRepository", () => {
+        beforeEach(() => {
+            repositories.PullRequestRepository.pullRequests = [];
+        });
+
         it('should create list of pull requests by requesting them', (done) => {
             var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
             var projectConfig = {
@@ -225,6 +229,64 @@ describe("Repositories", () => {
 
                 expect(repositories.PullRequestRepository.pullRequests).to.eq(prs);
 
+                done();
+            });
+        });
+
+        it('should find all known pull requests', (done) => {
+            repositories.PullRequestRepository.pullRequests = [
+                new models.PullRequest({title: 'Some title'}),
+                new models.PullRequest({title: 'another title'})
+            ];
+            var pullRequestRepository = new repositories.PullRequestRepository();
+            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
+            var projectConfig = {
+                links: {
+                    pullrequests: {
+                        href: pullRequestsUrl
+                    }
+                }
+            };
+            var project = new models.Repository(projectConfig);
+
+
+            pullRequestRepository.findAll(project, (pullRequests:Array<models.PullRequest>) => {
+                expect(pullRequests).to.have.length(2);
+                expect(pullRequests[0].title).to.eq('Some title');
+                done();
+            });
+        });
+
+        it('should fetch all pull requests if they are not fetched yet', (done) => {
+            var pullRequests = {
+                values: [
+                    {
+                        title: 'Some title',
+                    },
+                    {
+                        'title': 'Another title'
+                    }
+                ]
+            };
+
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests')
+                .reply(200, JSON.stringify(pullRequests));
+
+            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
+            var projectConfig = {
+                links: {
+                    pullrequests: {
+                        href: pullRequestsUrl
+                    }
+                }
+            };
+            var project = new models.Repository(projectConfig);
+
+            var pullRequestRepository = new repositories.PullRequestRepository();
+            pullRequestRepository.findAll(project, (foundPullRequests: Array<models.PullRequest>) => {
+                expect(foundPullRequests).to.have.length(2);
+                expect(foundPullRequests[0].title).to.eq('Some title');
                 done();
             });
         });

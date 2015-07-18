@@ -127,4 +127,14 @@ export class PullRequestRepository extends AbstractRepository {
             });
         });
     }
+
+    findAll(repository:models.Repository, callback:(foundPullRequests:Array<models.PullRequest>) => void) {
+        if (!PullRequestRepository.pullRequests.length) {
+            this.fetchByRepository(repository, (foundPullRequests:Array<models.PullRequest>) => {
+                callback(foundPullRequests);
+            });
+        } else {
+            callback(PullRequestRepository.pullRequests);
+        }
+    }
 }
