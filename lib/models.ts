@@ -1,6 +1,8 @@
 /// <reference path="../typings/tsd.d.ts" />
 
-export class Repository {
+export interface ModelInterface {}
+
+export class Repository implements ModelInterface {
     name:string = '';
     fullName:string = '';
 
@@ -15,7 +17,7 @@ export class Repository {
     }
 }
 
-export class User {
+export class User implements ModelInterface{
     username:string;
     displayName:string;
 
@@ -30,7 +32,7 @@ export class User {
     }
 }
 
-export class Reviewer {
+export class Reviewer implements ModelInterface {
     approved:boolean;
     user: User;
 
@@ -47,7 +49,7 @@ export class Reviewer {
 
 export enum PullRequestState {Open, Merged, Declined}
 
-export class PullRequest {
+export class PullRequest implements ModelInterface {
     title:string;
     description:string;
     author:User;

@@ -5,65 +5,68 @@ import request = require('request');
 import url = require('url');
 import q = require('q');
 
-function getPagesList(response:any):Array<string> {
-    if (!response.hasOwnProperty('next')) {
-        return [];
+class AbstractRepository {
+    getPagesList(response:any):Array<string> {
+        if (!response.hasOwnProperty('next')) {
+            return [];
+        }
+
+        var urlList:Array<string> = [];
+
+        var nextPageUrlParams:url.Url = url.parse(response.next, true);
+        delete nextPageUrlParams.search;
+
+        var pageNum:number = Math.ceil(response.size / response.pagelen);
+
+        var nextPageNum:number = nextPageUrlParams.query.page;
+        for (var pageIndex = nextPageNum; pageIndex <= pageNum; pageIndex++) {
+            nextPageUrlParams.query.page = pageIndex;
+            var newUrl = url.format(nextPageUrlParams);
+            urlList.push(newUrl);
+        }
+
+        return urlList;
     }
 
-    var urlList:Array<string> = [];
+    getRequestPromises(urls:Array<string>) {
+        var promises = [];
 
-    var nextPageUrlParams:url.Url = url.parse(response.next, true);
-    delete nextPageUrlParams.search;
+        for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
+            var promise = function () {
+                var resourceUrl:string = urls[urlIndex];
+                var deferred = q.defer();
+                request(resourceUrl, (error, res, body) => {
+                    var response:any = JSON.parse(body);
+                    deferred.resolve(response.values);
+                });
 
-    var pageNum:number = Math.ceil(response.size / response.pagelen);
+                return deferred.promise;
+            };
 
-    var nextPageNum:number = nextPageUrlParams.query.page;
-    for (var pageIndex = nextPageNum; pageIndex <= pageNum; pageIndex++) {
-        nextPageUrlParams.query.page = pageIndex;
-        var newUrl = url.format(nextPageUrlParams);
-        urlList.push(newUrl);
+            promises.push(promise());
+        }
+
+        return promises;
     }
 
-    return urlList;
+    getCollection<T extends models.ModelInterface>(type: {new(...args):T}, repoObjects:Array<any>):Array<T> {
+        var result:Array<T> = [];
+
+        for (var repoIndex:number = 0; repoIndex < repoObjects.length; repoIndex++) {
+            var repo = new type(repoObjects[repoIndex]);
+            result.push(repo);
+        }
+
+        return result;
+    }
 }
 
-function getRequestPromises(urls:Array<string>) {
-    var promises = [];
-
-    for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-        var promise = function () {
-            var resourceUrl:string = urls[urlIndex];
-            var deferred = q.defer();
-            request(resourceUrl, (error, res, body) => {
-                var response:any = JSON.parse(body);
-                deferred.resolve(response.values);
-            });
-
-            return deferred.promise;
-        };
-
-        promises.push(promise());
-    }
-
-    return promises;
-}
-
-function getCollection<T>(type: {new(...args):T}, repoObjects:Array<any>):Array<T> {
-    var result:Array<T> = [];
-
-    for (var repoIndex:number = 0; repoIndex < repoObjects.length; repoIndex++) {
-        var repo = new type(repoObjects[repoIndex]);
-        result.push(repo);
-    }
-
-    return result;
-}
-
-export class ProjectRepository {
+export class ProjectRepository extends AbstractRepository {
     private baseUrl;
     private path = '/repositories/bitbucket';
 
     constructor(baseUrl: string) {
+        super();
         this.baseUrl = baseUrl;
     }
 
@@ -73,13 +76,13 @@ export class ProjectRepository {
         request(resourceUrl, (error, res, body) => {
             var response:any = JSON.parse(body);
             var repos:any = response.values;
-            var result:Array<models.Repository> = getCollection(models.Repository, repos);
+            var result:Array<models.Repository> = this.getCollection(models.Repository, repos);
 
-            var rest = getRequestPromises(getPagesList(response));
+            var rest = this.getRequestPromises(this.getPagesList(response));
             q.all(rest).done((results:Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultRepos:any = results[resultIndex];
-                    result = result.concat(getCollection(models.Repository, resultRepos));
+                    result = result.concat(this.getCollection(models.Repository, resultRepos));
                 }
 
                 callback(result);
