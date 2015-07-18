@@ -63,11 +63,12 @@ class AbstractRepository {
 
 export class ProjectRepository extends AbstractRepository {
     private baseUrl;
-    private path = '/repositories/bitbucket';
+    private path;
 
-    constructor(baseUrl: string) {
+    constructor(baseUrl: string, path: string) {
         super();
         this.baseUrl = baseUrl;
+        this.path = path;
     }
 
     fetchAll(callback:(repositories: Array<models.Repository>) => void) {
