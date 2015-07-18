@@ -63,16 +63,16 @@ class AbstractRepository {
 
 export class ProjectRepository extends AbstractRepository {
     private baseUrl;
-    private path;
+    private teamName;
 
-    constructor(baseUrl: string, path: string) {
+    constructor(baseUrl: string, teamName: string) {
         super();
         this.baseUrl = baseUrl;
-        this.path = path;
+        this.teamName = teamName;
     }
 
     fetchAll(callback:(repositories: Array<models.Repository>) => void) {
-        var resourceUrl:string = this.baseUrl + this.path;
+        var resourceUrl:string = this.baseUrl + '/repositories/' + this.teamName;
 
         request(resourceUrl, (error, res, body) => {
             var response:any = JSON.parse(body);

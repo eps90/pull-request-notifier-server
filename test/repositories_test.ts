@@ -53,7 +53,7 @@ describe("Repositories", () => {
                 .query({page: '3'})
                 .reply(200, JSON.stringify(thirdPage));
 
-            var projectRepository = new repositories.ProjectRepository('http://example.com', '/repositories/bitbucket');
+            var projectRepository = new repositories.ProjectRepository('http://example.com', 'bitbucket');
             projectRepository.fetchAll((repos: Array<models.Repository>) => {
                 expect(repos).to.have.length(3);
                 var repository:models.Repository = repos[0];
