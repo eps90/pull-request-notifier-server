@@ -70,7 +70,7 @@ export class ProjectRepository extends AbstractRepository {
         this.baseUrl = baseUrl;
     }
 
-    findAll(callback:(repositories: Array<models.Repository>) => void) {
+    fetchAll(callback:(repositories: Array<models.Repository>) => void) {
         var resourceUrl:string = this.baseUrl + this.path;
 
         request(resourceUrl, (error, res, body) => {
@@ -92,7 +92,7 @@ export class ProjectRepository extends AbstractRepository {
 }
 
 export class PullRequestRepository extends AbstractRepository {
-    findByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
+    fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
         var pullRequestsUrl = repository.pullRequestsUrl;
         request(pullRequestsUrl, (error, res, body) => {
             var response:any = JSON.parse(body);

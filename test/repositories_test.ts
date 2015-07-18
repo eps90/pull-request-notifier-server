@@ -54,7 +54,7 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(thirdPage));
 
             var projectRepository = new repositories.ProjectRepository('http://example.com');
-            projectRepository.findAll((repos: Array<models.Repository>) => {
+            projectRepository.fetchAll((repos: Array<models.Repository>) => {
                 expect(repos).to.have.length(3);
                 var repository:models.Repository = repos[0];
                 expect(repository).to.be.instanceOf(models.Repository);
@@ -176,7 +176,7 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository();
-            pullRequestRepository.findByRepository(project, (prs: Array<models.PullRequest>) => {
+            pullRequestRepository.fetchByRepository(project, (prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
                 expect(pullRequest).to.be.instanceOf(models.PullRequest);
