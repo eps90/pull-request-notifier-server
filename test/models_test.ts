@@ -8,13 +8,19 @@ describe('Models', () => {
     describe('Repository', () => {
         it('should be created from object', () => {
             var config:any = {
-                'name': 'my_repo',
-                'full_name': 'org/my_repo'
+                name: 'my_repo',
+                full_name: 'org/my_repo',
+                links: {
+                    pullrequests: {
+                        href: 'http://example.com'
+                    }
+                }
             };
 
             var repository = new models.Repository(config);
             expect(repository.name).to.equal('my_repo');
             expect(repository.fullName).to.equal('org/my_repo');
+            expect(repository.pullRequestsUrl).to.eq('http://example.com');
         });
     });
 

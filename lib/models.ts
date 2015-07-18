@@ -5,6 +5,7 @@ export interface ModelInterface {}
 export class Repository implements ModelInterface {
     name:string = '';
     fullName:string = '';
+    pullRequestsUrl:string = '';
 
     constructor(repoObject?: any) {
         if (repoObject.hasOwnProperty('name')) {
@@ -13,6 +14,10 @@ export class Repository implements ModelInterface {
 
         if (repoObject.hasOwnProperty('full_name')) {
             this.fullName = repoObject.full_name;
+        }
+
+        if (repoObject.hasOwnProperty('links')) {
+            this.pullRequestsUrl = repoObject.links.pullrequests.href;
         }
     }
 }
