@@ -48,6 +48,17 @@ function getRequestPromises(urls:Array<string>) {
     return promises;
 }
 
+function getCollection<T>(type: {new(...args):T}, repoObjects:Array<any>):Array<T> {
+    var result:Array<T> = [];
+
+    for (var repoIndex:number = 0; repoIndex < repoObjects.length; repoIndex++) {
+        var repo = new type(repoObjects[repoIndex]);
+        result.push(repo);
+    }
+
+    return result;
+}
+
 export class ProjectRepository {
     private baseUrl;
     private path = '/repositories/bitbucket';
@@ -56,28 +67,19 @@ export class ProjectRepository {
         this.baseUrl = baseUrl;
     }
 
-    findAll(callback:(repositories: Array<models.Repository>) => any) {
+    findAll(callback:(repositories: Array<models.Repository>) => void) {
         var resourceUrl:string = this.baseUrl + this.path;
 
         request(resourceUrl, (error, res, body) => {
             var response:any = JSON.parse(body);
             var repos:any = response.values;
-            var result:Array<models.Repository> = [];
-
-            for (var repoIndex:number = 0; repoIndex < repos.length; repoIndex++) {
-                var repo = new models.Repository(repos[repoIndex]);
-                result.push(repo);
-            }
+            var result:Array<models.Repository> = getCollection(models.Repository, repos);
 
             var rest = getRequestPromises(getPagesList(response));
             q.all(rest).done((results:Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultRepos:any = results[resultIndex];
-
-                    for (var repoIndex:number = 0; repoIndex < resultRepos.length; repoIndex++) {
-                        var repo = new models.Repository(resultRepos[repoIndex]);
-                        result.push(repo);
-                    }
+                    result = result.concat(getCollection(models.Repository, resultRepos));
                 }
 
                 callback(result);
