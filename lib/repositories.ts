@@ -65,6 +65,8 @@ export class ProjectRepository extends AbstractRepository {
     private baseUrl;
     private teamName;
 
+    static repositories:Array<models.Repository> = [];
+
     constructor(baseUrl: string, teamName: string) {
         super();
         this.baseUrl = baseUrl;
@@ -86,6 +88,7 @@ export class ProjectRepository extends AbstractRepository {
                     result = result.concat(this.getCollection(models.Repository, resultRepos));
                 }
 
+                ProjectRepository.repositories = result;
                 callback(result);
             });
         });
@@ -93,6 +96,8 @@ export class ProjectRepository extends AbstractRepository {
 }
 
 export class PullRequestRepository extends AbstractRepository {
+    static pullRequests:Array<models.PullRequest> = [];
+
     fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
         var pullRequestsUrl = repository.pullRequestsUrl;
         request(pullRequestsUrl, (error, res, body) => {
@@ -107,6 +112,7 @@ export class PullRequestRepository extends AbstractRepository {
                     result = result.concat(this.getCollection(models.PullRequest, resultPrs));
                 }
 
+                PullRequestRepository.pullRequests = result;
                 callback(result);
             });
         });

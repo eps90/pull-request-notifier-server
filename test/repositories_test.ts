@@ -71,6 +71,8 @@ describe("Repositories", () => {
                 expect(thirdRepository.name).to.eq('aaaa');
                 expect(thirdRepository.fullName).to.eq('bbbb');
 
+                expect(repositories.ProjectRepository.repositories).to.eq(repos);
+
                 done();
             });
         });
@@ -183,6 +185,8 @@ describe("Repositories", () => {
                 expect(pullRequest.author).to.be.instanceOf(models.User);
                 expect(pullRequest.state).to.eq(models.PullRequestState.Open);
                 expect(pullRequest.reviewers).to.be.lengthOf(1);
+
+                expect(repositories.PullRequestRepository.pullRequests).to.eq(prs);
 
                 done();
             });
