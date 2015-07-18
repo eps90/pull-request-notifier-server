@@ -8,6 +8,10 @@ var expect = chai.expect;
 
 describe("Repositories", () => {
     describe("ProjectRepository", () => {
+        beforeEach(() => {
+            repositories.ProjectRepository.repositories = [];
+        });
+
         it('should create list of projects by requesting them', (done) => {
             var config:any = {
                 size: 29,
@@ -73,6 +77,39 @@ describe("Repositories", () => {
 
                 expect(repositories.ProjectRepository.repositories).to.eq(repos);
 
+                done();
+            });
+        });
+
+        it('should find all known repositories', (done) => {
+            var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
+            repositories.ProjectRepository.repositories = projects;
+            var projectRepos = new repositories.ProjectRepository('http://example.com', 'bitbucket');
+            projectRepos.findAll((foundRepos) => {
+                expect(foundRepos).to.equal(projects);
+                done();
+            });
+
+        });
+
+        it('should fetch all repos if they are not fetched yet', (done) => {
+            var response:any = {
+                values: [
+                    {
+                        'name': 'my_repo',
+                        'full_name': 'org/my_repo'
+                    }
+                ]
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .reply(200, JSON.stringify(response));
+
+            var projectRepos = new repositories.ProjectRepository('http://example.com', 'bitbucket');
+            projectRepos.findAll((foundRepos) => {
+                expect(foundRepos).to.have.length(1);
+                expect(foundRepos[0].fullName).to.eq('org/my_repo');
                 done();
             });
         });

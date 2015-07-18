@@ -93,6 +93,16 @@ export class ProjectRepository extends AbstractRepository {
             });
         });
     }
+
+    findAll(callback:(repositories: Array<models.Repository>) => void):void {
+        if (!ProjectRepository.repositories.length) {
+            this.fetchAll((repos:Array<models.Repository>) => {
+                callback(repos);
+            });
+        } else {
+            callback(ProjectRepository.repositories);
+        }
+    }
 }
 
 export class PullRequestRepository extends AbstractRepository {
