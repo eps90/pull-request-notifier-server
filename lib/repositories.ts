@@ -105,8 +105,12 @@ export class ProjectRepository extends AbstractRepository {
     }
 }
 
+export interface PullRequestSet {
+    [repositoryName:string]: Array<models.PullRequest>;
+}
+
 export class PullRequestRepository extends AbstractRepository {
-    static pullRequests:Array<models.PullRequest> = [];
+    static pullRequests:PullRequestSet = {};
 
     fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
         var pullRequestsUrl = repository.pullRequestsUrl;
@@ -122,42 +126,56 @@ export class PullRequestRepository extends AbstractRepository {
                     result = result.concat(this.getCollection(models.PullRequest, resultPrs));
                 }
 
-                PullRequestRepository.pullRequests = result;
+                PullRequestRepository.pullRequests[repository.fullName] = result;
                 callback(result);
             });
         });
     }
 
-    findAll(repository:models.Repository, callback:(foundPullRequests:Array<models.PullRequest>) => void) {
-        if (!PullRequestRepository.pullRequests.length) {
-            this.fetchByRepository(repository, (foundPullRequests:Array<models.PullRequest>) => {
-                callback(foundPullRequests);
-            });
-        } else {
-            callback(PullRequestRepository.pullRequests);
+    findAll(callback:(foundPullRequests:Array<models.PullRequest>) => void) {
+        var pullRequests:Array<models.PullRequest> = [];
+        for (var repositoryName in PullRequestRepository.pullRequests) {
+            if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
+                pullRequests = pullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
+            }
         }
+
+        callback(pullRequests);
     }
 
     findByReviewer(username:string, callback:(pullRequests:Array<models.PullRequest>) => void):void {
-        var pullRequests = PullRequestRepository.pullRequests.filter((pr: models.PullRequest) => {
-            var reviewers = pr.reviewers;
-            for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
-                var reviewer = reviewers[reviewerIndex];
-                if (reviewer.user.username == username) {
-                    return true;
-                }
-            }
+        var pullRequests:Array<models.PullRequest> = [];
+        for (var repositoryName in PullRequestRepository.pullRequests) {
+            if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr:models.PullRequest) => {
+                    var reviewers = pr.reviewers;
+                    for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
+                        var reviewer = reviewers[reviewerIndex];
+                        if (reviewer.user.username == username) {
+                            return true;
+                        }
+                    }
 
-            return false;
-        });
+                    return false;
+                });
+
+                pullRequests = pullRequests.concat(prs);
+            }
+        }
 
         callback(pullRequests);
     }
 
     findByAuthor(username:string, callback:(pullRequests:Array<models.PullRequest>) => any):void {
-        var pullRequests = PullRequestRepository.pullRequests.filter((pr: models.PullRequest) => {
-            return pr.author.username === username;
-        });
+        var pullRequests:Array<models.PullRequest> = [];
+        for (var repositoryName in PullRequestRepository.pullRequests) {
+            if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr:models.PullRequest) => {
+                    return pr.author.username === username;
+                });
+                pullRequests = pullRequests.concat(prs);
+            }
+        }
 
         callback(pullRequests);
     }

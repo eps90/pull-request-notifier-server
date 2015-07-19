@@ -117,7 +117,7 @@ describe("Repositories", () => {
 
     describe("PullRequestRepository", () => {
         beforeEach(() => {
-            repositories.PullRequestRepository.pullRequests = [];
+            repositories.PullRequestRepository.pullRequests = {};
         });
 
         it('should create list of pull requests by requesting them', (done) => {
@@ -127,7 +127,8 @@ describe("Repositories", () => {
                     pullrequests: {
                         href: pullRequestsUrl
                     }
-                }
+                },
+                full_name: 'bitbucket/bitbucket'
             };
             var project = new models.Repository(projectConfig);
 
@@ -227,14 +228,14 @@ describe("Repositories", () => {
                 expect(pullRequest.state).to.eq(models.PullRequestState.Open);
                 expect(pullRequest.reviewers).to.be.lengthOf(1);
 
-                expect(repositories.PullRequestRepository.pullRequests).to.eq(prs);
+                expect(repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket']).to.eq(prs);
 
                 done();
             });
         });
 
         it('should find all known pull requests', (done) => {
-            repositories.PullRequestRepository.pullRequests = [
+            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest({title: 'Some title'}),
                 new models.PullRequest({title: 'another title'})
             ];
@@ -249,44 +250,9 @@ describe("Repositories", () => {
             };
             var project = new models.Repository(projectConfig);
 
-
-            pullRequestRepository.findAll(project, (pullRequests:Array<models.PullRequest>) => {
+            pullRequestRepository.findAll((pullRequests:Array<models.PullRequest>) => {
                 expect(pullRequests).to.have.length(2);
                 expect(pullRequests[0].title).to.eq('Some title');
-                done();
-            });
-        });
-
-        it('should fetch all pull requests if they are not fetched yet', (done) => {
-            var pullRequests = {
-                values: [
-                    {
-                        title: 'Some title',
-                    },
-                    {
-                        'title': 'Another title'
-                    }
-                ]
-            };
-
-            nock('http://example.com')
-                .get('/bitbucket/bitbucket/pullrequests')
-                .reply(200, JSON.stringify(pullRequests));
-
-            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
-            var projectConfig = {
-                links: {
-                    pullrequests: {
-                        href: pullRequestsUrl
-                    }
-                }
-            };
-            var project = new models.Repository(projectConfig);
-
-            var pullRequestRepository = new repositories.PullRequestRepository();
-            pullRequestRepository.findAll(project, (foundPullRequests: Array<models.PullRequest>) => {
-                expect(foundPullRequests).to.have.length(2);
-                expect(foundPullRequests[0].title).to.eq('Some title');
                 done();
             });
         });
@@ -308,12 +274,10 @@ describe("Repositories", () => {
                 }
             };
 
-            var prs = [
+            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest({participants: [wantedReviewer]}),
                 new models.PullRequest({participants: [anotherReviewer]})
             ];
-
-            repositories.PullRequestRepository.pullRequests = prs;
             var prRepo = new repositories.PullRequestRepository();
 
 
@@ -337,12 +301,10 @@ describe("Repositories", () => {
                 }
             };
 
-            var prs = [
+            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest(wantedAuthor),
                 new models.PullRequest(unwantedAuthor)
             ];
-
-            repositories.PullRequestRepository.pullRequests = prs;
             var prRepo = new repositories.PullRequestRepository();
 
             prRepo.findByAuthor('john.smith', (pullRequests:Array<models.PullRequest>) => {
