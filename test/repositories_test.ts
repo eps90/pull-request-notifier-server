@@ -290,5 +290,38 @@ describe("Repositories", () => {
                 done();
             });
         });
+
+        it('should find pull requests assigned to user by its username', (done) => {
+            var wantedReviewer = {
+                role: 'REVIEWER',
+                user: {
+                    username: 'john.smith'
+                },
+                approved: true
+            };
+
+            var anotherReviewer = {
+                role: 'REVIEWER',
+                user: {
+                    username: 'anna.kowalsky',
+                    approved: false
+                }
+            };
+
+            var prs = [
+                new models.PullRequest({participants: [wantedReviewer]}),
+                new models.PullRequest({participants: [anotherReviewer]})
+            ];
+
+            repositories.PullRequestRepository.pullRequests = prs;
+            var prRepo = new repositories.PullRequestRepository();
+
+
+            prRepo.findByReviewer('john.smith', (pullRequests: Array<models.PullRequest>) => {
+                expect(pullRequests).to.have.length(1);
+                expect(pullRequests[0].reviewers[0].user.username).to.eq('john.smith');
+                done();
+            });
+        });
     });
 });

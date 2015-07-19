@@ -137,4 +137,20 @@ export class PullRequestRepository extends AbstractRepository {
             callback(PullRequestRepository.pullRequests);
         }
     }
+
+    findByReviewer(username:string, callback:(pullRequests:Array<models.PullRequest>) => void):void {
+        var pullRequests = PullRequestRepository.pullRequests.filter((pr: models.PullRequest) => {
+            var reviewers = pr.reviewers;
+            for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
+                var reviewer = reviewers[reviewerIndex];
+                if (reviewer.user.username == username) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        callback(pullRequests);
+    }
 }
