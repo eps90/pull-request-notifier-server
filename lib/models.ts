@@ -1,5 +1,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 
+// @todo Should entities be created with factories?
+
 export interface ModelInterface {}
 
 export class Repository implements ModelInterface {
