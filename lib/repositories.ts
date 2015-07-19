@@ -116,7 +116,7 @@ export class ProjectRepository extends AbstractRepository {
     }
 }
 
-export interface PullRequestSet {
+interface PullRequestSet {
     [repositoryName:string]: Array<models.PullRequest>;
 }
 
@@ -133,13 +133,19 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
-        var pullRequestsUrl = repository.pullRequestsUrl;
+        var parsedUrl = url.parse(repository.pullRequestsUrl);
         var requestConfig = {
             auth: {
                 username: this.user,
                 password: this.password
             }
         };
+
+        delete parsedUrl.search;
+        parsedUrl.query = {
+            state: 'OPEN'
+        };
+        var pullRequestsUrl = url.format(parsedUrl);
 
         request(pullRequestsUrl, requestConfig, (error, res, body) => {
             var response:any = JSON.parse(body);

@@ -105,7 +105,7 @@ describe("Repositories", () => {
             repositories.PullRequestRepository.pullRequests = {};
         });
 
-        it('should create list of pull requests by requesting them', (done) => {
+        it('should fetch open pull requests by requesting for them', (done) => {
             var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
             var projectConfig = {
                 links: {
@@ -198,10 +198,11 @@ describe("Repositories", () => {
 
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
+                .query({state: 'OPEN'})
                 .reply(200, JSON.stringify(pullRequests));
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
-                .query({page: '2'})
+                .query({page: '2', state: 'OPEN'})
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
