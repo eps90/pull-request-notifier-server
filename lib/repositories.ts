@@ -71,6 +71,8 @@ interface ConfigInterface {
 export class ProjectRepository extends AbstractRepository {
     private baseUrl;
     private teamName;
+    private user;
+    private password;
 
     static repositories:Array<models.Repository> = [];
 
@@ -78,12 +80,20 @@ export class ProjectRepository extends AbstractRepository {
         super();
         this.baseUrl = config.baseUrl;
         this.teamName = config.teamName;
+        this.user = config.user;
+        this.password = config.password;
     }
 
     fetchAll(callback:(repositories: Array<models.Repository>) => void) {
         var resourceUrl:string = this.baseUrl + '/repositories/' + this.teamName;
+        var requestConfig = {
+            auth: {
+                username: this.user,
+                password: this.password
+            }
+        };
 
-        request(resourceUrl, (error, res, body) => {
+        request(resourceUrl, requestConfig, (error, res, body) => {
             var response:any = JSON.parse(body);
             var repos:any = response.values;
             var result:Array<models.Repository> = this.getCollection(models.Repository, repos);
@@ -111,11 +121,27 @@ export interface PullRequestSet {
 }
 
 export class PullRequestRepository extends AbstractRepository {
+    private user;
+    private password;
+
     static pullRequests:PullRequestSet = {};
+
+    constructor(config:ConfigInterface) {
+        super();
+        this.user = config.user;
+        this.password = config.password;
+    }
 
     fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
         var pullRequestsUrl = repository.pullRequestsUrl;
-        request(pullRequestsUrl, (error, res, body) => {
+        var requestConfig = {
+            auth: {
+                username: this.user,
+                password: this.password
+            }
+        };
+
+        request(pullRequestsUrl, requestConfig, (error, res, body) => {
             var response:any = JSON.parse(body);
             var pullRequests:any = response.values;
             var result:Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);

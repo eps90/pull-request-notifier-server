@@ -204,7 +204,7 @@ describe("Repositories", () => {
                 .query({page: '2'})
                 .reply(200, JSON.stringify(secondPrs));
 
-            var pullRequestRepository = new repositories.PullRequestRepository();
+            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
             pullRequestRepository.fetchByRepository(project, (prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
@@ -224,7 +224,7 @@ describe("Repositories", () => {
                 new models.PullRequest({title: 'Some title'}),
                 new models.PullRequest({title: 'another title'})
             ];
-            var pullRequestRepository = new repositories.PullRequestRepository();
+            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
             var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
             var projectConfig = {
                 links: {
@@ -253,7 +253,7 @@ describe("Repositories", () => {
                 new models.PullRequest({title: 'Still diffferent repository'})
             ];
 
-            var prRepository = new repositories.PullRequestRepository();
+            var prRepository = new repositories.PullRequestRepository(appConfig);
             prRepository.findAll((prs:Array<models.PullRequest>) => {
                 expect(prs).to.have.length(4);
                 done();
@@ -281,7 +281,7 @@ describe("Repositories", () => {
                 new models.PullRequest({participants: [wantedReviewer]}),
                 new models.PullRequest({participants: [anotherReviewer]})
             ];
-            var prRepo = new repositories.PullRequestRepository();
+            var prRepo = new repositories.PullRequestRepository(appConfig);
 
 
             prRepo.findByReviewer('john.smith', (pullRequests: Array<models.PullRequest>) => {
@@ -308,7 +308,7 @@ describe("Repositories", () => {
                 new models.PullRequest(wantedAuthor),
                 new models.PullRequest(unwantedAuthor)
             ];
-            var prRepo = new repositories.PullRequestRepository();
+            var prRepo = new repositories.PullRequestRepository(appConfig);
 
             prRepo.findByAuthor('john.smith', (pullRequests:Array<models.PullRequest>) => {
                 expect(pullRequests).to.have.length(1);
