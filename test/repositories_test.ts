@@ -91,28 +91,6 @@ describe("Repositories", () => {
             });
 
         });
-
-        it('should fetch all repos if they are not fetched yet', (done) => {
-            var response:any = {
-                values: [
-                    {
-                        'name': 'my_repo',
-                        'full_name': 'org/my_repo'
-                    }
-                ]
-            };
-
-            nock('http://example.com')
-                .get('/repositories/bitbucket')
-                .reply(200, JSON.stringify(response));
-
-            var projectRepos = new repositories.ProjectRepository('http://example.com', 'bitbucket');
-            projectRepos.findAll((foundRepos) => {
-                expect(foundRepos).to.have.length(1);
-                expect(foundRepos[0].fullName).to.eq('org/my_repo');
-                done();
-            });
-        });
     });
 
     describe("PullRequestRepository", () => {
