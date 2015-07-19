@@ -257,6 +257,24 @@ describe("Repositories", () => {
             });
         });
 
+        it('should find all known pull requests even if they are from different repositories', (done) => {
+            repositories.PullRequestRepository.pullRequests['aaa/bbb'] = [
+                new models.PullRequest({title: 'Some title'}),
+                new models.PullRequest({title: 'Another title'})
+            ];
+
+            repositories.PullRequestRepository.pullRequests['ccc/ddd'] = [
+                new models.PullRequest({title: 'Different repository'}),
+                new models.PullRequest({title: 'Still diffferent repository'})
+            ];
+
+            var prRepository = new repositories.PullRequestRepository();
+            prRepository.findAll((prs:Array<models.PullRequest>) => {
+                expect(prs).to.have.length(4);
+                done();
+            });
+        });
+
         it('should find pull requests assigned to user by its username', (done) => {
             var wantedReviewer = {
                 role: 'REVIEWER',
