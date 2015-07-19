@@ -323,5 +323,33 @@ describe("Repositories", () => {
                 done();
             });
         });
+
+        it('should find pull requests by their author', (done) => {
+            var wantedAuthor = {
+                author: {
+                    username: 'john.smith'
+                }
+            };
+
+            var unwantedAuthor = {
+                author: {
+                    username: 'anna.kowalsky'
+                }
+            };
+
+            var prs = [
+                new models.PullRequest(wantedAuthor),
+                new models.PullRequest(unwantedAuthor)
+            ];
+
+            repositories.PullRequestRepository.pullRequests = prs;
+            var prRepo = new repositories.PullRequestRepository();
+
+            prRepo.findByAuthor('john.smith', (pullRequests:Array<models.PullRequest>) => {
+                expect(pullRequests).to.have.length(1);
+                expect(pullRequests[0].author.username).to.eq('john.smith');
+                done();
+            });
+        });
     });
 });

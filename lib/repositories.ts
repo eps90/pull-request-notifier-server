@@ -153,4 +153,12 @@ export class PullRequestRepository extends AbstractRepository {
 
         callback(pullRequests);
     }
+
+    findByAuthor(username:string, callback:(pullRequests:Array<models.PullRequest>) => any):void {
+        var pullRequests = PullRequestRepository.pullRequests.filter((pr: models.PullRequest) => {
+            return pr.author.username === username;
+        });
+
+        callback(pullRequests);
+    }
 }
