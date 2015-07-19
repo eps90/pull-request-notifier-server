@@ -61,16 +61,23 @@ class AbstractRepository {
     }
 }
 
+interface ConfigInterface {
+    baseUrl:string;
+    teamName:string;
+    user:string;
+    password:string;
+}
+
 export class ProjectRepository extends AbstractRepository {
     private baseUrl;
     private teamName;
 
     static repositories:Array<models.Repository> = [];
 
-    constructor(baseUrl: string, teamName: string) {
+    constructor(config:ConfigInterface) {
         super();
-        this.baseUrl = baseUrl;
-        this.teamName = teamName;
+        this.baseUrl = config.baseUrl;
+        this.teamName = config.teamName;
     }
 
     fetchAll(callback:(repositories: Array<models.Repository>) => void) {

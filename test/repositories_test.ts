@@ -7,6 +7,13 @@ import chai = require('chai');
 var expect = chai.expect;
 
 describe("Repositories", () => {
+    var appConfig = {
+        baseUrl: 'http://example.com',
+        teamName: 'bitbucket',
+        user: 'my.user',
+        password: 'topsecret'
+    };
+
     describe("ProjectRepository", () => {
         beforeEach(() => {
             repositories.ProjectRepository.repositories = [];
@@ -57,7 +64,7 @@ describe("Repositories", () => {
                 .query({page: '3'})
                 .reply(200, JSON.stringify(thirdPage));
 
-            var projectRepository = new repositories.ProjectRepository('http://example.com', 'bitbucket');
+            var projectRepository = new repositories.ProjectRepository(appConfig);
             projectRepository.fetchAll((repos: Array<models.Repository>) => {
                 expect(repos).to.have.length(3);
                 var repository:models.Repository = repos[0];
@@ -84,7 +91,7 @@ describe("Repositories", () => {
         it('should find all known repositories', (done) => {
             var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
             repositories.ProjectRepository.repositories = projects;
-            var projectRepos = new repositories.ProjectRepository('http://example.com', 'bitbucket');
+            var projectRepos = new repositories.ProjectRepository(appConfig);
             projectRepos.findAll((foundRepos) => {
                 expect(foundRepos).to.equal(projects);
                 done();
