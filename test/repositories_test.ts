@@ -124,7 +124,6 @@ describe("Repositories", () => {
                 expect(foundRepos).to.equal(projects);
                 done();
             });
-
         });
     });
 
@@ -252,9 +251,43 @@ describe("Repositories", () => {
             });
         });
 
-        xit('it should throw an error when request has failed');
+        it('should throw an error when request has failed', () => {
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests')
+                .replyWithError('something wrong happened');
 
-        xit('it should throw an error when authorization data is incorrect');
+            var projectConfig = {
+                links: {
+                    pullrequests: {
+                        href: 'http://example.com/bitbucket/bitbucket/pullrequests'
+                    }
+                },
+                full_name: 'bitbucket/bitbucket'
+            };
+            var project = new models.Repository(projectConfig);
+
+            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
+            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
+        });
+
+        it('should throw an error when authorization data is incorrect', () => {
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests')
+                .reply(403, 'Forbidden');
+
+            var projectConfig = {
+                links: {
+                    pullrequests: {
+                        href: 'http://example.com/bitbucket/bitbucket/pullrequests'
+                    }
+                },
+                full_name: 'bitbucket/bitbucket'
+            };
+            var project = new models.Repository(projectConfig);
+
+            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
+            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
+        });
 
         it('should find all known pull requests', (done) => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [

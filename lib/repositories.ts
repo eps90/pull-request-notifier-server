@@ -158,7 +158,11 @@ export class PullRequestRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.PullRequest>>();
 
-        request(pullRequestsUrl, requestConfig, (error, res, body) => {
+        request(pullRequestsUrl, requestConfig, (error, res:http.IncomingMessage, body) => {
+            if (error || res.statusCode !== 200) {
+                return defer.reject('Http request failed');
+            }
+
             var response:any = JSON.parse(body);
             var pullRequests:any = response.values;
             var result:Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);
