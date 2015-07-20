@@ -14,9 +14,6 @@
     "chai/chai.d.ts": {
       "commit": "71abea754c81fd0677ecaaad3601da446280035c"
     },
-    "nock/nock.d.ts": {
-      "commit": "76e1dedf0bada455c0b75abeec3206d3aa5bd892"
-    },
     "request/request.d.ts": {
       "commit": "76e1dedf0bada455c0b75abeec3206d3aa5bd892"
     },
