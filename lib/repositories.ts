@@ -6,6 +6,7 @@ import url = require('url');
 import q = require('q');
 import http = require('http');
 
+// @todo Get rid of AbstractRepository and make its methods simple functions
 class AbstractRepository {
     getPagesList(response: any): Array<string> {
         if (!response.hasOwnProperty('next')) {
@@ -120,6 +121,7 @@ export class ProjectRepository extends AbstractRepository {
         return defer.promise;
     }
 
+    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
     findAll(callback: (repositories: Array<models.Repository>) => void): void {
         callback(ProjectRepository.repositories);
     }
@@ -182,6 +184,7 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
+    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
     findAll(callback: (pullRequests: Array<models.PullRequest>) => void): void {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
@@ -193,6 +196,7 @@ export class PullRequestRepository extends AbstractRepository {
         callback(foundPullRequests);
     }
 
+    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
     findByReviewer(username: string, callback: (pullRequests: Array<models.PullRequest>) => void): void {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
@@ -216,6 +220,7 @@ export class PullRequestRepository extends AbstractRepository {
         callback(foundPullRequests);
     }
 
+    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
     findByAuthor(username: string, callback: (pullRequests: Array<models.PullRequest>) => any): void {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
