@@ -24,6 +24,7 @@
     "mock-fs": "^3.0.0",
     "nock": "^2.7.0",
     "tsd": "^0.6.3",
+    "tslint": "^2.4.0",
     "typescript": "^1.4.1"
   },
   "dependencies": {
