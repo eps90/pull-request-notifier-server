@@ -4,6 +4,7 @@ import models = require('./models');
 import request = require('request');
 import url = require('url');
 import q = require('q');
+import http = require('http');
 
 class AbstractRepository {
     getPagesList(response:any):Array<string> {
@@ -95,7 +96,10 @@ export class ProjectRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.Repository>>();
 
-        request(resourceUrl, requestConfig, (error, res, body) => {
+        request(resourceUrl, requestConfig, (error, res:http.IncomingMessage, body) => {
+            if (error || res.statusCode !== 200) {
+                return defer.reject('Http request failed');
+            }
             var response:any = JSON.parse(body);
             var repos:any = response.values;
             var result:Array<models.Repository> = this.getCollection(models.Repository, repos);

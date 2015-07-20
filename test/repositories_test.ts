@@ -1,9 +1,14 @@
 ///<reference path="../typings/tsd.d.ts"/>
+///<reference path="../custom_typings/nock.d.ts"/>
 
 import models = require('./../lib/models');
 import repositories = require('./../lib/repositories');
 import nock = require('nock');
 import chai = require('chai');
+import chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
+
 var expect = chai.expect;
 
 describe("Repositories", () => {
@@ -93,9 +98,23 @@ describe("Repositories", () => {
             });
         });
 
-        xit('it should throw an error when request has failed');
+        it('should throw an error when request has failed', () => {
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .replyWithError('something wrong happened');
 
-        xit('it should throw an error when authorization data is incorrect');
+            var projectRepository = new repositories.ProjectRepository(appConfig);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error);
+        });
+
+        it('should throw an error when request has returned non-successful response code', () => {
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .reply(403, 'Forbidden');
+
+            var projectRepository = new repositories.ProjectRepository(appConfig);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error);
+        });
 
         it('should find all known repositories', (done) => {
             var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
