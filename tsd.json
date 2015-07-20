@@ -31,6 +31,9 @@
     },
     "mock-fs/mock-fs.d.ts": {
       "commit": "99942cab1446292c79c4328218abd37621505112"
+    },
+    "chai-as-promised/chai-as-promised.d.ts": {
+      "commit": "99942cab1446292c79c4328218abd37621505112"
     }
   }
 }
