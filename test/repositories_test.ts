@@ -219,7 +219,7 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            pullRequestRepository.fetchByRepository(project, (prs: Array<models.PullRequest>) => {
+            pullRequestRepository.fetchByRepository(project).then((prs:Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
                 expect(pullRequest).to.be.instanceOf(models.PullRequest);

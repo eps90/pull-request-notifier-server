@@ -137,7 +137,7 @@ export class PullRequestRepository extends AbstractRepository {
         this.password = config.password;
     }
 
-    fetchByRepository(repository:models.Repository, callback:(pullRequests:Array<models.PullRequest>) => void) {
+    fetchByRepository(repository:models.Repository):q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(repository.pullRequestsUrl);
         var requestConfig = {
             auth: {
@@ -152,6 +152,8 @@ export class PullRequestRepository extends AbstractRepository {
         };
         var pullRequestsUrl = url.format(parsedUrl);
 
+        var defer = q.defer<Array<models.PullRequest>>();
+
         request(pullRequestsUrl, requestConfig, (error, res, body) => {
             var response:any = JSON.parse(body);
             var pullRequests:any = response.values;
@@ -165,9 +167,11 @@ export class PullRequestRepository extends AbstractRepository {
                 }
 
                 PullRequestRepository.pullRequests[repository.fullName] = result;
-                callback(result);
+                defer.resolve(result);
             });
         });
+
+        return defer.promise;
     }
 
     findAll(callback:(foundPullRequests:Array<models.PullRequest>) => void) {
