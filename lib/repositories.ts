@@ -84,7 +84,7 @@ export class ProjectRepository extends AbstractRepository {
         this.password = config.password;
     }
 
-    fetchAll(callback:(repositories: Array<models.Repository>) => void) {
+    fetchAll():q.Promise<Array<models.Repository>> {
         var resourceUrl:string = this.baseUrl + '/repositories/' + this.teamName;
         var requestConfig = {
             auth: {
@@ -92,6 +92,8 @@ export class ProjectRepository extends AbstractRepository {
                 password: this.password
             }
         };
+
+        var defer = q.defer<Array<models.Repository>>();
 
         request(resourceUrl, requestConfig, (error, res, body) => {
             var response:any = JSON.parse(body);
@@ -106,9 +108,12 @@ export class ProjectRepository extends AbstractRepository {
                 }
 
                 ProjectRepository.repositories = result;
-                callback(result);
+
+                defer.resolve(result);
             });
         });
+
+        return defer.promise;
     }
 
     findAll(callback:(repositories: Array<models.Repository>) => void):void {

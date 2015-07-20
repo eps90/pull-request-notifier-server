@@ -69,7 +69,8 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(thirdPage));
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
-            projectRepository.fetchAll((repos: Array<models.Repository>) => {
+
+            projectRepository.fetchAll().then((repos:Array<models.Repository>) => {
                 expect(repos).to.have.length(3);
                 var repository:models.Repository = repos[0];
                 expect(repository).to.be.instanceOf(models.Repository);
