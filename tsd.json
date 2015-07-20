@@ -25,6 +25,9 @@
     },
     "q/Q.d.ts": {
       "commit": "c0fdc8f774149840e99e45656be3013143f31309"
+    },
+    "js-yaml/js-yaml.d.ts": {
+      "commit": "f7d47e35f7f29c151889286e8b8bf2bd31317490"
     }
   }
 }
