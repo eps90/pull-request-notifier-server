@@ -121,9 +121,8 @@ export class ProjectRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
-    findAll(callback: (repositories: Array<models.Repository>) => void): void {
-        callback(ProjectRepository.repositories);
+    findAll(): Array<models.Repository> {
+        return ProjectRepository.repositories;
     }
 }
 
@@ -184,8 +183,7 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
-    findAll(callback: (pullRequests: Array<models.PullRequest>) => void): void {
+    findAll(): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -193,11 +191,10 @@ export class PullRequestRepository extends AbstractRepository {
             }
         }
 
-        callback(foundPullRequests);
+        return foundPullRequests;
     }
 
-    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
-    findByReviewer(username: string, callback: (pullRequests: Array<models.PullRequest>) => void): void {
+    findByReviewer(username: string): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -217,11 +214,10 @@ export class PullRequestRepository extends AbstractRepository {
             }
         }
 
-        callback(foundPullRequests);
+        return foundPullRequests;
     }
 
-    // @todo Let this method return Array<models.PullRequest> instead of putting it into callback
-    findByAuthor(username: string, callback: (pullRequests: Array<models.PullRequest>) => any): void {
+    findByAuthor(username: string): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -232,6 +228,6 @@ export class PullRequestRepository extends AbstractRepository {
             }
         }
 
-        callback(foundPullRequests);
+        return foundPullRequests;
     }
 }

@@ -116,14 +116,12 @@ describe("Repositories", () => {
             expect(projectRepository.fetchAll()).to.be.rejectedWith(Error);
         });
 
-        it('should find all known repositories', (done) => {
+        it('should find all known repositories', () => {
             var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
             repositories.ProjectRepository.repositories = projects;
             var projectRepos = new repositories.ProjectRepository(appConfig);
-            projectRepos.findAll((foundRepos) => {
-                expect(foundRepos).to.equal(projects);
-                done();
-            });
+            var foundRepos = projectRepos.findAll();
+            expect(foundRepos).to.equal(projects);
         });
     });
 
@@ -289,21 +287,19 @@ describe("Repositories", () => {
             expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
         });
 
-        it('should find all known pull requests', (done) => {
+        it('should find all known pull requests', () => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest({title: 'Some title'}),
                 new models.PullRequest({title: 'another title'})
             ];
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
 
-            pullRequestRepository.findAll((pullRequests: Array<models.PullRequest>) => {
-                expect(pullRequests).to.have.length(2);
-                expect(pullRequests[0].title).to.eq('Some title');
-                done();
-            });
+            var pullRequests = pullRequestRepository.findAll();
+            expect(pullRequests).to.have.length(2);
+            expect(pullRequests[0].title).to.eq('Some title');
         });
 
-        it('should find all known pull requests even if they are from different repositories', (done) => {
+        it('should find all known pull requests even if they are from different repositories', () => {
             repositories.PullRequestRepository.pullRequests['aaa/bbb'] = [
                 new models.PullRequest({title: 'Some title'}),
                 new models.PullRequest({title: 'Another title'})
@@ -315,13 +311,11 @@ describe("Repositories", () => {
             ];
 
             var prRepository = new repositories.PullRequestRepository(appConfig);
-            prRepository.findAll((prs: Array<models.PullRequest>) => {
-                expect(prs).to.have.length(4);
-                done();
-            });
+            var prs = prRepository.findAll();
+            expect(prs).to.have.length(4);
         });
 
-        it('should find pull requests assigned to user by its username', (done) => {
+        it('should find pull requests assigned to user by its username', () => {
             var wantedReviewer = {
                 role: 'REVIEWER',
                 user: {
@@ -345,14 +339,12 @@ describe("Repositories", () => {
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
 
-            prRepo.findByReviewer('john.smith', (pullRequests: Array<models.PullRequest>) => {
-                expect(pullRequests).to.have.length(1);
-                expect(pullRequests[0].reviewers[0].user.username).to.eq('john.smith');
-                done();
-            });
+            var pullRequests = prRepo.findByReviewer('john.smith');
+            expect(pullRequests).to.have.length(1);
+            expect(pullRequests[0].reviewers[0].user.username).to.eq('john.smith');
         });
 
-        it('should find pull requests by their author', (done) => {
+        it('should find pull requests by their author', () => {
             var wantedAuthor = {
                 author: {
                     username: 'john.smith'
@@ -371,11 +363,9 @@ describe("Repositories", () => {
             ];
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
-            prRepo.findByAuthor('john.smith', (pullRequests: Array<models.PullRequest>) => {
-                expect(pullRequests).to.have.length(1);
-                expect(pullRequests[0].author.username).to.eq('john.smith');
-                done();
-            });
+            var pullRequests = prRepo.findByAuthor('john.smith');
+            expect(pullRequests).to.have.length(1);
+            expect(pullRequests[0].author.username).to.eq('john.smith');
         });
     });
 });
