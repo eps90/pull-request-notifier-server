@@ -19,6 +19,10 @@ describe("Repositories", () => {
             repositories.ProjectRepository.repositories = [];
         });
 
+        afterEach(() => {
+            nock.cleanAll();
+        });
+
         it('should create list of projects by requesting them', (done) => {
             var config:any = {
                 size: 29,
@@ -103,6 +107,10 @@ describe("Repositories", () => {
     describe("PullRequestRepository", () => {
         beforeEach(() => {
             repositories.PullRequestRepository.pullRequests = {};
+        });
+
+        afterEach(() => {
+            nock.cleanAll();
         });
 
         it('should fetch open pull requests by requesting for them', (done) => {
