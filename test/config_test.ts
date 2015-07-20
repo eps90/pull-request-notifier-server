@@ -1,6 +1,6 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
-import config = require('./../lib/config');
+import configModule = require('./../lib/config');
 import mockFs = require('mock-fs');
 import chai = require('chai');
 var expect = chai.expect;
@@ -20,7 +20,7 @@ describe('Config', () => {
             }
         });
 
-        var configInstance = new config.Config();
+        var configInstance = new configModule.Config();
         var expectedConfig = {
             a: 'b',
             c: 'd'
