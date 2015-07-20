@@ -1,6 +1,7 @@
 module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-typescript');
     grunt.loadNpmTasks('grunt-mocha-test');
+    grunt.loadNpmTasks('grunt-tslint');
 
     grunt.initConfig({
         typescript: {
@@ -29,6 +30,14 @@ module.exports = function(grunt) {
                     reporter: 'spec'
                 },
                 src: ['build/test/*.js']
+            }
+        },
+        tslint: {
+            options: {
+                configuration: grunt.file.readJSON("tslint.json")
+            },
+            files: {
+                src: ['lib/**/*.ts', 'test/**/*.ts']
             }
         }
     });
