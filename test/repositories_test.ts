@@ -92,6 +92,10 @@ describe("Repositories", () => {
             });
         });
 
+        xit('it should throw an error when request has failed');
+
+        xit('it should throw an error when authorization data is incorrect');
+
         it('should find all known repositories', (done) => {
             var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
             repositories.ProjectRepository.repositories = projects;
@@ -227,6 +231,10 @@ describe("Repositories", () => {
                 done();
             });
         });
+
+        xit('it should throw an error when request has failed');
+
+        xit('it should throw an error when authorization data is incorrect');
 
         it('should find all known pull requests', (done) => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
