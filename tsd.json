@@ -28,6 +28,9 @@
     },
     "js-yaml/js-yaml.d.ts": {
       "commit": "f7d47e35f7f29c151889286e8b8bf2bd31317490"
+    },
+    "mock-fs/mock-fs.d.ts": {
+      "commit": "99942cab1446292c79c4328218abd37621505112"
     }
   }
 }
