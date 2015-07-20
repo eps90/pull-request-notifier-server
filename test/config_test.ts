@@ -21,10 +21,6 @@ describe('Config', () => {
         });
 
         var configInstance = new configModule.Config();
-        var expectedConfig = {
-            a: 'b',
-            c: 'd'
-        };
 
         expect(configInstance.config).to.have.property('a', 'b');
         expect(configInstance.config).to.have.property('c', 'd');

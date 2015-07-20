@@ -7,19 +7,19 @@ import q = require('q');
 import http = require('http');
 
 class AbstractRepository {
-    getPagesList(response:any):Array<string> {
+    getPagesList(response: any): Array<string> {
         if (!response.hasOwnProperty('next')) {
             return [];
         }
 
-        var urlList:Array<string> = [];
+        var urlList: Array<string> = [];
 
-        var nextPageUrlParams:url.Url = url.parse(response.next, true);
+        var nextPageUrlParams: url.Url = url.parse(response.next, true);
         delete nextPageUrlParams.search;
 
-        var pageNum:number = Math.ceil(response.size / response.pagelen);
+        var pageNum: number = Math.ceil(response.size / response.pagelen);
 
-        var nextPageNum:number = nextPageUrlParams.query.page;
+        var nextPageNum: number = nextPageUrlParams.query.page;
         for (var pageIndex = nextPageNum; pageIndex <= pageNum; pageIndex++) {
             nextPageUrlParams.query.page = pageIndex;
             var newUrl = url.format(nextPageUrlParams);
@@ -29,15 +29,15 @@ class AbstractRepository {
         return urlList;
     }
 
-    getRequestPromises(urls:Array<string>) {
-        var promises = [];
+    getRequestPromises(urls: Array<string>): Array<q.Promise<any>> {
+        var promises: Array<q.Promise<any>> = [];
 
         for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-            var promise = function () {
-                var resourceUrl:string = urls[urlIndex];
+            var promise: () => q.Promise<any> = () => {
+                var resourceUrl: string = urls[urlIndex];
                 var deferred = q.defer();
                 request(resourceUrl, (error, res, body) => {
-                    var response:any = JSON.parse(body);
+                    var response: any = JSON.parse(body);
                     deferred.resolve(response.values);
                 });
 
@@ -50,10 +50,10 @@ class AbstractRepository {
         return promises;
     }
 
-    getCollection<T extends models.ModelInterface>(type: {new(...args):T}, repoObjects:Array<any>):Array<T> {
-        var result:Array<T> = [];
+    getCollection<T extends models.ModelInterface>(type: {new(...args): T}, repoObjects: Array<any>): Array<T> {
+        var result: Array<T> = [];
 
-        for (var repoIndex:number = 0; repoIndex < repoObjects.length; repoIndex++) {
+        for (var repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
             var repo = new type(repoObjects[repoIndex]);
             result.push(repo);
         }
@@ -63,21 +63,21 @@ class AbstractRepository {
 }
 
 interface ConfigInterface {
-    baseUrl:string;
-    teamName:string;
-    user:string;
-    password:string;
+    baseUrl: string;
+    teamName: string;
+    user: string;
+    password: string;
 }
 
 export class ProjectRepository extends AbstractRepository {
-    private baseUrl;
-    private teamName;
-    private user;
-    private password;
+    static repositories: Array<models.Repository> = [];
 
-    static repositories:Array<models.Repository> = [];
+    private baseUrl: string;
+    private teamName: string;
+    private user: string;
+    private password: string;
 
-    constructor(config:ConfigInterface) {
+    constructor(config: ConfigInterface) {
         super();
         this.baseUrl = config.baseUrl;
         this.teamName = config.teamName;
@@ -85,8 +85,8 @@ export class ProjectRepository extends AbstractRepository {
         this.password = config.password;
     }
 
-    fetchAll():q.Promise<Array<models.Repository>> {
-        var resourceUrl:string = this.baseUrl + '/repositories/' + this.teamName;
+    fetchAll(): q.Promise<Array<models.Repository>> {
+        var resourceUrl: string = this.baseUrl + '/repositories/' + this.teamName;
         var requestConfig = {
             auth: {
                 username: this.user,
@@ -96,18 +96,18 @@ export class ProjectRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.Repository>>();
 
-        request(resourceUrl, requestConfig, (error, res:http.IncomingMessage, body) => {
+        request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
                 return defer.reject('Http request failed');
             }
-            var response:any = JSON.parse(body);
-            var repos:any = response.values;
-            var result:Array<models.Repository> = this.getCollection(models.Repository, repos);
+            var response: any = JSON.parse(body);
+            var repos: any = response.values;
+            var result: Array<models.Repository> = this.getCollection(models.Repository, repos);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
-            q.all(rest).done((results:Array<any>) => {
+            q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                    var resultRepos:any = results[resultIndex];
+                    var resultRepos: any = results[resultIndex];
                     result = result.concat(this.getCollection(models.Repository, resultRepos));
                 }
 
@@ -120,28 +120,28 @@ export class ProjectRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    findAll(callback:(repositories: Array<models.Repository>) => void):void {
+    findAll(callback: (repositories: Array<models.Repository>) => void): void {
         callback(ProjectRepository.repositories);
     }
 }
 
 interface PullRequestSet {
-    [repositoryName:string]: Array<models.PullRequest>;
+    [repositoryName: string]: Array<models.PullRequest>;
 }
 
 export class PullRequestRepository extends AbstractRepository {
-    private user;
-    private password;
+    static pullRequests: PullRequestSet = {};
 
-    static pullRequests:PullRequestSet = {};
+    private user: string;
+    private password: string;
 
-    constructor(config:ConfigInterface) {
+    constructor(config: ConfigInterface) {
         super();
         this.user = config.user;
         this.password = config.password;
     }
 
-    fetchByRepository(repository:models.Repository):q.Promise<Array<models.PullRequest>> {
+    fetchByRepository(repository: models.Repository): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(repository.pullRequestsUrl);
         var requestConfig = {
             auth: {
@@ -158,19 +158,19 @@ export class PullRequestRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.PullRequest>>();
 
-        request(pullRequestsUrl, requestConfig, (error, res:http.IncomingMessage, body) => {
+        request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
                 return defer.reject('Http request failed');
             }
 
-            var response:any = JSON.parse(body);
-            var pullRequests:any = response.values;
-            var result:Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);
+            var response: any = JSON.parse(body);
+            var pullRequests: any = response.values;
+            var result: Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
-            q.all(rest).done((results:Array<any>) => {
+            q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                    var resultPrs:any = results[resultIndex];
+                    var resultPrs: any = results[resultIndex];
                     result = result.concat(this.getCollection(models.PullRequest, resultPrs));
                 }
 
@@ -182,26 +182,26 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    findAll(callback:(foundPullRequests:Array<models.PullRequest>) => void) {
-        var pullRequests:Array<models.PullRequest> = [];
+    findAll(callback: (pullRequests: Array<models.PullRequest>) => void): void {
+        var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                pullRequests = pullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
+                foundPullRequests = foundPullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
             }
         }
 
-        callback(pullRequests);
+        callback(foundPullRequests);
     }
 
-    findByReviewer(username:string, callback:(pullRequests:Array<models.PullRequest>) => void):void {
-        var pullRequests:Array<models.PullRequest> = [];
+    findByReviewer(username: string, callback: (pullRequests: Array<models.PullRequest>) => void): void {
+        var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr:models.PullRequest) => {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: models.PullRequest) => {
                     var reviewers = pr.reviewers;
                     for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
                         var reviewer = reviewers[reviewerIndex];
-                        if (reviewer.user.username == username) {
+                        if (reviewer.user.username === username) {
                             return true;
                         }
                     }
@@ -209,24 +209,24 @@ export class PullRequestRepository extends AbstractRepository {
                     return false;
                 });
 
-                pullRequests = pullRequests.concat(prs);
+                foundPullRequests = foundPullRequests.concat(prs);
             }
         }
 
-        callback(pullRequests);
+        callback(foundPullRequests);
     }
 
-    findByAuthor(username:string, callback:(pullRequests:Array<models.PullRequest>) => any):void {
-        var pullRequests:Array<models.PullRequest> = [];
+    findByAuthor(username: string, callback: (pullRequests: Array<models.PullRequest>) => any): void {
+        var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr:models.PullRequest) => {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: models.PullRequest) => {
                     return pr.author.username === username;
                 });
-                pullRequests = pullRequests.concat(prs);
+                foundPullRequests = foundPullRequests.concat(prs);
             }
         }
 
-        callback(pullRequests);
+        callback(foundPullRequests);
     }
 }

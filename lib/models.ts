@@ -5,9 +5,9 @@
 export interface ModelInterface {}
 
 export class Repository implements ModelInterface {
-    name:string = '';
-    fullName:string = '';
-    pullRequestsUrl:string = '';
+    name: string = '';
+    fullName: string = '';
+    pullRequestsUrl: string = '';
 
     constructor(repoObject?: any) {
         if (repoObject.hasOwnProperty('name')) {
@@ -25,8 +25,8 @@ export class Repository implements ModelInterface {
 }
 
 export class User implements ModelInterface{
-    username:string;
-    displayName:string;
+    username: string;
+    displayName: string;
 
     constructor(userObject?: any) {
         if (userObject.hasOwnProperty('username')) {
@@ -40,7 +40,7 @@ export class User implements ModelInterface{
 }
 
 export class Reviewer implements ModelInterface {
-    approved:boolean;
+    approved: boolean;
     user: User;
 
     constructor(reviewerObject?: any) {
@@ -57,13 +57,13 @@ export class Reviewer implements ModelInterface {
 export enum PullRequestState {Open, Merged, Declined}
 
 export class PullRequest implements ModelInterface {
-    title:string;
-    description:string;
-    author:User;
-    targetRepository:Repository;
-    targetBranch:string;
-    reviewers:Array<Reviewer> = [];
-    state:PullRequestState;
+    title: string;
+    description: string;
+    author: User;
+    targetRepository: Repository;
+    targetBranch: string;
+    reviewers: Array<Reviewer> = [];
+    state: PullRequestState;
 
     constructor(prObject?: any) {
         if (prObject.hasOwnProperty('title')) {
@@ -94,17 +94,17 @@ export class PullRequest implements ModelInterface {
         }
 
         if (prObject.hasOwnProperty('participants')) {
-            for (var participantIndex:number = 0; participantIndex < prObject.participants.length; participantIndex++) {
-                var participant:any = prObject.participants[participantIndex];
-                if (participant.role == 'REVIEWER') {
+            for (var participantIndex: number = 0; participantIndex < prObject.participants.length; participantIndex++) {
+                var participant: any = prObject.participants[participantIndex];
+                if (participant.role === 'REVIEWER') {
                     this.reviewers.push(new Reviewer(participant));
                 }
             }
         }
     }
 
-    private static getPullRequestState(prState:string):PullRequestState {
-        var state:PullRequestState;
+    private static getPullRequestState(prState: string): PullRequestState {
+        var state: PullRequestState;
         switch (prState.toUpperCase()) {
             case 'OPEN':
                 state = PullRequestState.Open;
@@ -117,7 +117,6 @@ export class PullRequest implements ModelInterface {
                 break;
             default:
                 throw new Error('Invalid pull request state');
-                break;
         }
 
         return state;

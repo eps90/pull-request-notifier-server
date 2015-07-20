@@ -29,7 +29,7 @@ describe("Repositories", () => {
         });
 
         it('should create list of projects by requesting them', (done) => {
-            var config:any = {
+            var config: any = {
                 size: 29,
                 pagelen: 10,
                 next: 'http://example.com/repositories/bitbucket?page=2',
@@ -41,7 +41,7 @@ describe("Repositories", () => {
                 ]
             };
 
-            var configNextPage:any = {
+            var configNextPage: any = {
                 values: [
                     {
                         'name': 'another_repo',
@@ -50,7 +50,7 @@ describe("Repositories", () => {
                 ]
             };
 
-            var thirdPage:any = {
+            var thirdPage: any = {
                 values: [
                     {
                         'name': 'aaaa',
@@ -75,19 +75,19 @@ describe("Repositories", () => {
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
 
-            projectRepository.fetchAll().then((repos:Array<models.Repository>) => {
+            projectRepository.fetchAll().then((repos: Array<models.Repository>) => {
                 expect(repos).to.have.length(3);
-                var repository:models.Repository = repos[0];
+                var repository: models.Repository = repos[0];
                 expect(repository).to.be.instanceOf(models.Repository);
                 expect(repository.name).to.eq('my_repo');
                 expect(repository.fullName).to.eq('org/my_repo');
 
-                var anotherRepository:models.Repository = repos[1];
+                var anotherRepository: models.Repository = repos[1];
                 expect(anotherRepository).to.be.instanceOf(models.Repository);
                 expect(anotherRepository.name).to.eq('another_repo');
                 expect(anotherRepository.fullName).to.eq('org/another_repo');
 
-                var thirdRepository:models.Repository = repos[2];
+                var thirdRepository: models.Repository = repos[2];
                 expect(thirdRepository).to.be.instanceOf(models.Repository);
                 expect(thirdRepository.name).to.eq('aaaa');
                 expect(thirdRepository.fullName).to.eq('bbbb');
@@ -148,7 +148,7 @@ describe("Repositories", () => {
             };
             var project = new models.Repository(projectConfig);
 
-            var pullRequests:any = {
+            var pullRequests: any = {
                 size: 19,
                 pagelen: 10,
                 next: 'http://example.com/bitbucket/bitbucket/pullrequests?page=2',
@@ -189,7 +189,7 @@ describe("Repositories", () => {
                 ]
             };
 
-            var secondPrs:any = {
+            var secondPrs: any = {
                 values: [
                     {
                         author: {
@@ -237,7 +237,7 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            pullRequestRepository.fetchByRepository(project).then((prs:Array<models.PullRequest>) => {
+            pullRequestRepository.fetchByRepository(project).then((prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
                 expect(pullRequest).to.be.instanceOf(models.PullRequest);
@@ -295,17 +295,8 @@ describe("Repositories", () => {
                 new models.PullRequest({title: 'another title'})
             ];
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
-            var projectConfig = {
-                links: {
-                    pullrequests: {
-                        href: pullRequestsUrl
-                    }
-                }
-            };
-            var project = new models.Repository(projectConfig);
 
-            pullRequestRepository.findAll((pullRequests:Array<models.PullRequest>) => {
+            pullRequestRepository.findAll((pullRequests: Array<models.PullRequest>) => {
                 expect(pullRequests).to.have.length(2);
                 expect(pullRequests[0].title).to.eq('Some title');
                 done();
@@ -324,7 +315,7 @@ describe("Repositories", () => {
             ];
 
             var prRepository = new repositories.PullRequestRepository(appConfig);
-            prRepository.findAll((prs:Array<models.PullRequest>) => {
+            prRepository.findAll((prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(4);
                 done();
             });
@@ -380,7 +371,7 @@ describe("Repositories", () => {
             ];
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
-            prRepo.findByAuthor('john.smith', (pullRequests:Array<models.PullRequest>) => {
+            prRepo.findByAuthor('john.smith', (pullRequests: Array<models.PullRequest>) => {
                 expect(pullRequests).to.have.length(1);
                 expect(pullRequests[0].author.username).to.eq('john.smith');
                 done();

@@ -7,7 +7,7 @@ var expect = chai.expect;
 describe('Models', () => {
     describe('Repository', () => {
         it('should be created from object', () => {
-            var config:any = {
+            var config: any = {
                 name: 'my_repo',
                 full_name: 'org/my_repo',
                 links: {
@@ -26,20 +26,20 @@ describe('Models', () => {
 
     describe("User", () => {
         it('should be created from object', () => {
-            var config:any = {
+            var config: any = {
                 username: 'john.kowalsky',
                 display_name: 'John Kowalsky'
             };
 
             var user = new models.User(config);
             expect(user.username).to.equal('john.kowalsky');
-            expect(user.displayName).to.equal('John Kowalsky')
+            expect(user.displayName).to.equal('John Kowalsky');
         });
     });
 
     describe("Reviewer", () => {
         it('should be created from object', () => {
-            var config:any = {
+            var config: any = {
                 role: 'REVIEWER',
                 user: {
                     username: 'john.smith',
@@ -57,7 +57,7 @@ describe('Models', () => {
 
     describe("PullRequest", () => {
         it('should be created from object', () => {
-            var config:any = {
+            var config: any = {
                 author: {
                     username: 'john.smith',
                     display_name: 'John Smith'
