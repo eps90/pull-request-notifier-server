@@ -43,5 +43,5 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('default', ['typescript:dist']);
-    grunt.registerTask('test', ['typescript:test', 'mochaTest:unit']);
+    grunt.registerTask('test', ['tslint', 'typescript:test', 'mochaTest:unit']);
 };
