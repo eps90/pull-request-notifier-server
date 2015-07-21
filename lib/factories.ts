@@ -95,7 +95,7 @@ export class PullRequestFactory implements FactoryInterface {
                 }
             }
         }
-        
+
         return pullRequest;
     }
 
