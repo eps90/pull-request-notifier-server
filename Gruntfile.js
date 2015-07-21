@@ -2,6 +2,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-typescript');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-tslint');
+    grunt.loadNpmTasks('grunt-contrib-clean');
 
     grunt.initConfig({
         typescript: {
@@ -39,9 +40,12 @@ module.exports = function(grunt) {
             files: {
                 src: ['lib/**/*.ts', 'test/**/*.ts']
             }
+        },
+        clean: {
+            build: ['build']
         }
     });
 
-    grunt.registerTask('default', ['typescript:dist']);
-    grunt.registerTask('test', ['typescript:test', 'mochaTest:unit']);
+    grunt.registerTask('default', ['clean:build', 'typescript:dist']);
+    grunt.registerTask('test', ['clean:build', 'typescript:test', 'mochaTest:unit']);
 };
