@@ -18,8 +18,7 @@ describe('Factories', () => {
                 }
             };
 
-            var projectFactory = new factories.ProjectFactory();
-            var project = projectFactory.create(rawObject);
+            var project = factories.ProjectFactory.create(rawObject);
 
             expect(project.fullName).to.eq('org/my_repo');
             expect(project.name).to.eq('my_repo');
@@ -34,8 +33,7 @@ describe('Factories', () => {
                 display_name: 'John Kowalsky'
             };
 
-            var userFactory = new factories.UserFactory();
-            var user = userFactory.create(rawObject);
+            var user = factories.UserFactory.create(rawObject);
 
             expect(user.username).to.equal('john.kowalsky');
             expect(user.displayName).to.equal('John Kowalsky');
@@ -53,8 +51,7 @@ describe('Factories', () => {
                 approved: false
             };
 
-            var reviewerFactory = new factories.ReviewerFactory();
-            var reviewer = reviewerFactory.create(rawObject);
+            var reviewer = factories.ReviewerFactory.create(rawObject);
 
             expect(reviewer.approved).to.eq(false);
             expect(reviewer.user.displayName).to.eq('John Smith');
@@ -106,8 +103,7 @@ describe('Factories', () => {
                 state: 'OPEN'
             };
 
-            var prFactory = new factories.PullRequestFactory();
-            var pullRequest = prFactory.create(rawObject);
+            var pullRequest = factories.PullRequestFactory.create(rawObject);
 
             expect(pullRequest.title).to.equal('Fixed bugs');
             expect(pullRequest.description).to.eq('This is a special pull request');

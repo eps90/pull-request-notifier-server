@@ -2,13 +2,8 @@
 
 import models = require('./../lib/models');
 
-// @todo Make ::create method static
-export interface FactoryInterface {
-    create(rawObject: any): models.ModelInterface;
-}
-
-export class ProjectFactory implements FactoryInterface {
-    create(rawObject: any): models.Repository {
+export class ProjectFactory {
+    static create(rawObject: any): models.Repository {
         var project = new models.Repository();
 
         if (rawObject.hasOwnProperty('name')) {
@@ -27,8 +22,8 @@ export class ProjectFactory implements FactoryInterface {
     }
 }
 
-export class UserFactory implements FactoryInterface {
-    create(rawObject: any): models.User {
+export class UserFactory {
+    static create(rawObject: any): models.User {
         var user = new models.User();
 
         if (rawObject.hasOwnProperty('username')) {
@@ -43,8 +38,8 @@ export class UserFactory implements FactoryInterface {
     }
 }
 
-export class ReviewerFactory implements FactoryInterface {
-    create(rawObject: any): models.Reviewer {
+export class ReviewerFactory {
+    static create(rawObject: any): models.Reviewer {
         var reviewer = new models.Reviewer();
 
         if (rawObject.hasOwnProperty('approved')) {
@@ -52,16 +47,15 @@ export class ReviewerFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('user')) {
-            var userFactory = new UserFactory();
-            reviewer.user = userFactory.create(rawObject.user);
+            reviewer.user = UserFactory.create(rawObject.user);
         }
 
         return reviewer;
     }
 }
 
-export class PullRequestFactory implements FactoryInterface {
-    create(rawObject: any): models.PullRequest {
+export class PullRequestFactory {
+    static create(rawObject: any): models.PullRequest {
         var pullRequest = new models.PullRequest();
 
         if (rawObject.hasOwnProperty('title')) {
@@ -73,15 +67,13 @@ export class PullRequestFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('author')) {
-            var userFactory = new UserFactory();
-            pullRequest.author = userFactory.create(rawObject.author);
+            pullRequest.author = UserFactory.create(rawObject.author);
         }
 
         if (rawObject.hasOwnProperty('destination')) {
             var destinationObj = rawObject.destination;
             if (destinationObj.hasOwnProperty('repository')) {
-                var projectFactory = new ProjectFactory();
-                pullRequest.targetRepository = projectFactory.create(destinationObj.repository);
+                pullRequest.targetRepository = ProjectFactory.create(destinationObj.repository);
             }
 
             if (destinationObj.hasOwnProperty('branch')) {
@@ -97,8 +89,7 @@ export class PullRequestFactory implements FactoryInterface {
             for (var participantIndex: number = 0; participantIndex < rawObject.participants.length; participantIndex++) {
                 var participant: any = rawObject.participants[participantIndex];
                 if (participant.role === 'REVIEWER') {
-                    var reviewerFactory = new ReviewerFactory();
-                    pullRequest.reviewers.push(reviewerFactory.create(participant));
+                    pullRequest.reviewers.push(ReviewerFactory.create(participant));
                 }
             }
         }
