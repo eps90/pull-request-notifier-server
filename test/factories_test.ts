@@ -25,4 +25,19 @@ describe('Factories', () => {
             expect(project.pullRequestsUrl).to.eq('http://example.com');
         });
     });
+
+    describe('UserFactory', () => {
+        it('should create User model from given config', () => {
+            var rawObject: any = {
+                username: 'john.kowalsky',
+                display_name: 'John Kowalsky'
+            };
+
+            var userFactory = new factories.UserFactory();
+            var user = userFactory.create(rawObject);
+
+            expect(user.username).to.equal('john.kowalsky');
+            expect(user.displayName).to.equal('John Kowalsky');
+        });
+    });
 });

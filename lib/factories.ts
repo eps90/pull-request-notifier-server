@@ -6,7 +6,7 @@ export interface FactoryInterface {
     create(rawObject: any): models.ModelInterface;
 }
 
-export class ProjectFactory implements FactoryInterface{
+export class ProjectFactory implements FactoryInterface {
     create(rawObject: any): models.Repository {
         var project = new models.Repository();
 
@@ -23,5 +23,21 @@ export class ProjectFactory implements FactoryInterface{
         }
 
         return project;
+    }
+}
+
+export class UserFactory implements FactoryInterface {
+    create(rawObject: any): models.User {
+        var user = new models.User();
+
+        if (rawObject.hasOwnProperty('username')) {
+            user.username = rawObject.username;
+        }
+
+        if (rawObject.hasOwnProperty('display_name')) {
+            user.displayName = rawObject.display_name;
+        }
+
+        return user;
     }
 }
