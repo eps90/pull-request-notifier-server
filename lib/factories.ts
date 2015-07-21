@@ -59,3 +59,70 @@ export class ReviewerFactory implements FactoryInterface {
         return reviewer;
     }
 }
+
+export class PullRequestFactory implements FactoryInterface {
+    create(rawObject: any): models.PullRequest {
+        var pullRequest = new models.PullRequest();
+
+        if (rawObject.hasOwnProperty('title')) {
+            pullRequest.title = rawObject.title;
+        }
+
+        if (rawObject.hasOwnProperty('description')) {
+            pullRequest.description = rawObject.description;
+        }
+
+        if (rawObject.hasOwnProperty('author')) {
+            var userFactory = new UserFactory();
+            pullRequest.author = userFactory.create(rawObject.author);
+        }
+
+        if (rawObject.hasOwnProperty('destination')) {
+            var destinationObj = rawObject.destination;
+            if (destinationObj.hasOwnProperty('repository')) {
+                var projectFactory = new ProjectFactory();
+                pullRequest.targetRepository = projectFactory.create(destinationObj.repository);
+            }
+
+            if (destinationObj.hasOwnProperty('branch')) {
+                pullRequest.targetBranch = destinationObj.branch.name;
+            }
+        }
+
+        if (rawObject.hasOwnProperty('state')) {
+            pullRequest.state = PullRequestFactory.getPullRequestState(rawObject.state);
+        }
+
+        if (rawObject.hasOwnProperty('participants')) {
+            for (var participantIndex: number = 0; participantIndex < rawObject.participants.length; participantIndex++) {
+                var participant: any = rawObject.participants[participantIndex];
+                if (participant.role === 'REVIEWER') {
+                    var reviewerFactory = new ReviewerFactory();
+                    pullRequest.reviewers.push(reviewerFactory.create(participant));
+                }
+            }
+        }
+        
+        return pullRequest;
+    }
+
+    private static getPullRequestState(prState: string): models.PullRequestState {
+        var state: models.PullRequestState;
+        switch (prState.toUpperCase()) {
+            case 'OPEN':
+                state = models.PullRequestState.Open;
+                break;
+            case 'MERGED':
+                state = models.PullRequestState.Merged;
+                break;
+            case 'DECLINED':
+                state = models.PullRequestState.Declined;
+                break;
+            default:
+                throw new Error('Invalid pull request state');
+        }
+
+        return state;
+    }
+
+}
