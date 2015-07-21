@@ -2,6 +2,7 @@
 
 export interface ModelInterface {}
 
+// @todo Rename to Project
 export class Repository implements ModelInterface {
     name: string;
     fullName: string;

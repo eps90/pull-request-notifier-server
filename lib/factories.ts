@@ -2,7 +2,9 @@
 
 import models = require('./../lib/models');
 
-export class ProjectFactory {
+export interface FactoryInterface {}
+
+export class ProjectFactory implements FactoryInterface {
     static create(rawObject: any): models.Repository {
         var project = new models.Repository();
 
@@ -22,7 +24,7 @@ export class ProjectFactory {
     }
 }
 
-export class UserFactory {
+export class UserFactory implements FactoryInterface {
     static create(rawObject: any): models.User {
         var user = new models.User();
 
@@ -38,7 +40,7 @@ export class UserFactory {
     }
 }
 
-export class ReviewerFactory {
+export class ReviewerFactory implements FactoryInterface {
     static create(rawObject: any): models.Reviewer {
         var reviewer = new models.Reviewer();
 
@@ -54,7 +56,7 @@ export class ReviewerFactory {
     }
 }
 
-export class PullRequestFactory {
+export class PullRequestFactory implements FactoryInterface {
     static create(rawObject: any): models.PullRequest {
         var pullRequest = new models.PullRequest();
 

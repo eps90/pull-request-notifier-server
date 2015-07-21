@@ -1,9 +1,12 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
 import models = require('./models');
+import factories = require('./factories');
+
 import request = require('request');
-import url = require('url');
 import q = require('q');
+
+import url = require('url');
 import http = require('http');
 
 // @todo Get rid of AbstractRepository and make its methods simple functions
@@ -30,6 +33,7 @@ class AbstractRepository {
         return urlList;
     }
 
+    // @todo Check for errors
     getRequestPromises(urls: Array<string>): Array<q.Promise<any>> {
         var promises: Array<q.Promise<any>> = [];
 
@@ -51,11 +55,11 @@ class AbstractRepository {
         return promises;
     }
 
-    getCollection<T extends models.ModelInterface>(type: {new(...args): T}, repoObjects: Array<any>): Array<T> {
+    getCollection<T extends models.ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
         var result: Array<T> = [];
 
         for (var repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
-            var repo = new type(repoObjects[repoIndex]);
+            var repo = type.create(repoObjects[repoIndex]);
             result.push(repo);
         }
 
@@ -103,13 +107,13 @@ export class ProjectRepository extends AbstractRepository {
             }
             var response: any = JSON.parse(body);
             var repos: any = response.values;
-            var result: Array<models.Repository> = this.getCollection(models.Repository, repos);
+            var result: Array<models.Repository> = this.getCollection<models.Repository>(factories.ProjectFactory, repos);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
             q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultRepos: any = results[resultIndex];
-                    result = result.concat(this.getCollection(models.Repository, resultRepos));
+                    result = result.concat(this.getCollection<models.Repository>(factories.ProjectFactory, resultRepos));
                 }
 
                 ProjectRepository.repositories = result;
@@ -166,13 +170,13 @@ export class PullRequestRepository extends AbstractRepository {
 
             var response: any = JSON.parse(body);
             var pullRequests: any = response.values;
-            var result: Array<models.PullRequest> = this.getCollection(models.PullRequest, pullRequests);
+            var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
             q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultPrs: any = results[resultIndex];
-                    result = result.concat(this.getCollection(models.PullRequest, resultPrs));
+                    result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
                 }
 
                 PullRequestRepository.pullRequests[repository.fullName] = result;

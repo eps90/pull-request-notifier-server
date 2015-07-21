@@ -117,7 +117,7 @@ describe("Repositories", () => {
         });
 
         it('should find all known repositories', () => {
-            var projects = [new models.Repository({name: 'a'}), new models.Repository({name: 'b'})];
+            var projects = [new models.Repository(), new models.Repository()];
             repositories.ProjectRepository.repositories = projects;
             var projectRepos = new repositories.ProjectRepository(appConfig);
             var foundRepos = projectRepos.findAll();
@@ -135,16 +135,9 @@ describe("Repositories", () => {
         });
 
         it('should fetch open pull requests by requesting for them', (done) => {
-            var pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
-            var projectConfig = {
-                links: {
-                    pullrequests: {
-                        href: pullRequestsUrl
-                    }
-                },
-                full_name: 'bitbucket/bitbucket'
-            };
-            var project = new models.Repository(projectConfig);
+            var project = new models.Repository();
+            project.fullName = 'bitbucket/bitbucket';
+            project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequests: any = {
                 size: 19,
@@ -254,15 +247,9 @@ describe("Repositories", () => {
                 .get('/bitbucket/bitbucket/pullrequests')
                 .replyWithError('something wrong happened');
 
-            var projectConfig = {
-                links: {
-                    pullrequests: {
-                        href: 'http://example.com/bitbucket/bitbucket/pullrequests'
-                    }
-                },
-                full_name: 'bitbucket/bitbucket'
-            };
-            var project = new models.Repository(projectConfig);
+            var project = new models.Repository();
+            project.fullName = 'bitbucket/bitbucket';
+            project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
             expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
@@ -273,15 +260,9 @@ describe("Repositories", () => {
                 .get('/bitbucket/bitbucket/pullrequests')
                 .reply(403, 'Forbidden');
 
-            var projectConfig = {
-                links: {
-                    pullrequests: {
-                        href: 'http://example.com/bitbucket/bitbucket/pullrequests'
-                    }
-                },
-                full_name: 'bitbucket/bitbucket'
-            };
-            var project = new models.Repository(projectConfig);
+            var project = new models.Repository();
+            project.fullName = 'bitbucket/bitbucket';
+            project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
             expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
@@ -289,25 +270,24 @@ describe("Repositories", () => {
 
         it('should find all known pull requests', () => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
-                new models.PullRequest({title: 'Some title'}),
-                new models.PullRequest({title: 'another title'})
+                new models.PullRequest(),
+                new models.PullRequest()
             ];
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
 
             var pullRequests = pullRequestRepository.findAll();
             expect(pullRequests).to.have.length(2);
-            expect(pullRequests[0].title).to.eq('Some title');
         });
 
         it('should find all known pull requests even if they are from different repositories', () => {
             repositories.PullRequestRepository.pullRequests['aaa/bbb'] = [
-                new models.PullRequest({title: 'Some title'}),
-                new models.PullRequest({title: 'Another title'})
+                new models.PullRequest(),
+                new models.PullRequest()
             ];
 
             repositories.PullRequestRepository.pullRequests['ccc/ddd'] = [
-                new models.PullRequest({title: 'Different repository'}),
-                new models.PullRequest({title: 'Still diffferent repository'})
+                new models.PullRequest(),
+                new models.PullRequest()
             ];
 
             var prRepository = new repositories.PullRequestRepository(appConfig);
@@ -316,73 +296,77 @@ describe("Repositories", () => {
         });
 
         it('should find pull requests assigned to user by its username', () => {
-            var wantedReviewer = {
-                role: 'REVIEWER',
-                user: {
-                    username: 'john.smith'
-                },
-                approved: true
-            };
+            var userOne = new models.User();
+            userOne.username = 'john.smith';
 
-            var anotherReviewer = {
-                role: 'REVIEWER',
-                user: {
-                    username: 'anna.kowalsky',
-                    approved: false
-                }
-            };
+            var userTwo = new models.User();
+            userTwo.username = 'anna.kowalsky';
+
+            var reviewerOne = new models.Reviewer();
+            reviewerOne.user = userOne;
+
+            var reviewerTwo = new models.Reviewer();
+            reviewerTwo.user = userTwo;
+
+            var prOne = new models.PullRequest();
+            prOne.reviewers.push(reviewerOne);
+
+            var prTwo = new models.PullRequest();
+            prTwo.reviewers.push(reviewerTwo);
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
-                new models.PullRequest({participants: [wantedReviewer]}),
-                new models.PullRequest({participants: [anotherReviewer]})
+                prOne,
+                prTwo
             ];
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
 
             var pullRequests = prRepo.findByReviewer('john.smith');
             expect(pullRequests).to.have.length(1);
+            // @todo To equal?
             expect(pullRequests[0].reviewers[0].user.username).to.eq('john.smith');
         });
 
         it('should find pull requests by their author', () => {
-            var wantedAuthor = {
-                author: {
-                    username: 'john.smith'
-                }
-            };
+            var authorOne = new models.User();
+            authorOne.username = 'john.smith';
 
-            var unwantedAuthor = {
-                author: {
-                    username: 'anna.kowalsky'
-                }
-            };
+            var authorTwo = new models.User();
+            authorTwo.username = 'anna.kowalsky';
+
+            var prOne = new models.PullRequest();
+            prOne.author = authorOne;
+
+            var prTwo = new models.PullRequest();
+            prTwo.author = authorTwo;
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
-                new models.PullRequest(wantedAuthor),
-                new models.PullRequest(unwantedAuthor)
+                prOne,
+                prTwo
             ];
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
             var pullRequests = prRepo.findByAuthor('john.smith');
             expect(pullRequests).to.have.length(1);
+            // @todo To equal?
             expect(pullRequests[0].author.username).to.eq('john.smith');
         });
 
         it('should allow to add new pull request', () => {
-            var pullRequest = new models.PullRequest(
-                {
-                    title: 'This is some title',
-                    destination: {
-                        repository: {
-                            full_name: 'aaa/bbb'
-                        }
-                    }
-                }
-            );
+            var project = new models.Repository();
+            project.fullName = 'aaa/bbb';
+
+            var pullRequest = new models.PullRequest();
+            pullRequest.title = 'This is some title';
+            pullRequest.targetRepository = project;
+
             var prRepository = new repositories.PullRequestRepository(appConfig);
             prRepository.add(pullRequest);
+
             var actualPullRequests: Array<models.PullRequest> = prRepository.findAll();
             expect(actualPullRequests).to.have.length(1);
+
+            // @todo to equal?
             expect(actualPullRequests[0].title).to.eq('This is some title');
             expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0].title)
                 .to.eq('This is some title');
