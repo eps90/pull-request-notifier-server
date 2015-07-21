@@ -323,8 +323,7 @@ describe("Repositories", () => {
 
             var pullRequests = prRepo.findByReviewer('john.smith');
             expect(pullRequests).to.have.length(1);
-            // @todo To equal?
-            expect(pullRequests[0].reviewers[0].user.username).to.eq('john.smith');
+            expect(pullRequests[0].reviewers[0].user).to.eq(userOne);
         });
 
         it('should find pull requests by their author', () => {
@@ -348,8 +347,7 @@ describe("Repositories", () => {
 
             var pullRequests = prRepo.findByAuthor('john.smith');
             expect(pullRequests).to.have.length(1);
-            // @todo To equal?
-            expect(pullRequests[0].author.username).to.eq('john.smith');
+            expect(pullRequests[0].author).to.eq(authorOne);
         });
 
         it('should allow to add new pull request', () => {
@@ -366,10 +364,8 @@ describe("Repositories", () => {
             var actualPullRequests: Array<models.PullRequest> = prRepository.findAll();
             expect(actualPullRequests).to.have.length(1);
 
-            // @todo to equal?
-            expect(actualPullRequests[0].title).to.eq('This is some title');
-            expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0].title)
-                .to.eq('This is some title');
+            expect(actualPullRequests[0]).to.eq(pullRequest);
+            expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0]).to.eq(pullRequest);
         });
     });
 });
