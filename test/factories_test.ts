@@ -40,4 +40,24 @@ describe('Factories', () => {
             expect(user.displayName).to.equal('John Kowalsky');
         });
     });
+
+    describe('ReviewerFactory', () => {
+        it('should create Reviewer model from given config', () => {
+            var rawObject: any = {
+                role: 'REVIEWER',
+                user: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                approved: false
+            };
+
+            var reviewerFactory = new factories.ReviewerFactory();
+            var reviewer = reviewerFactory.create(rawObject);
+
+            expect(reviewer.approved).to.eq(false);
+            expect(reviewer.user.displayName).to.eq('John Smith');
+            expect(reviewer.user.username).to.eq('john.smith');
+        });
+    });
 });

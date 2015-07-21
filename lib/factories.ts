@@ -2,6 +2,7 @@
 
 import models = require('./../lib/models');
 
+// @todo Make ::create method static
 export interface FactoryInterface {
     create(rawObject: any): models.ModelInterface;
 }
@@ -39,5 +40,22 @@ export class UserFactory implements FactoryInterface {
         }
 
         return user;
+    }
+}
+
+export class ReviewerFactory implements FactoryInterface {
+    create(rawObject: any): models.Reviewer {
+        var reviewer = new models.Reviewer();
+
+        if (rawObject.hasOwnProperty('approved')) {
+            reviewer.approved = rawObject.approved;
+        }
+
+        if (rawObject.hasOwnProperty('user')) {
+            var userFactory = new UserFactory();
+            reviewer.user = userFactory.create(rawObject.user);
+        }
+
+        return reviewer;
     }
 }
