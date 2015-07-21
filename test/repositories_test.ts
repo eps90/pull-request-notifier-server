@@ -367,5 +367,25 @@ describe("Repositories", () => {
             expect(pullRequests).to.have.length(1);
             expect(pullRequests[0].author.username).to.eq('john.smith');
         });
+
+        it('should allow to add new pull request', () => {
+            var pullRequest = new models.PullRequest(
+                {
+                    title: 'This is some title',
+                    destination: {
+                        repository: {
+                            full_name: 'aaa/bbb'
+                        }
+                    }
+                }
+            );
+            var prRepository = new repositories.PullRequestRepository(appConfig);
+            prRepository.add(pullRequest);
+            var actualPullRequests: Array<models.PullRequest> = prRepository.findAll();
+            expect(actualPullRequests).to.have.length(1);
+            expect(actualPullRequests[0].title).to.eq('This is some title');
+            expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0].title)
+                .to.eq('This is some title');
+        });
     });
 });

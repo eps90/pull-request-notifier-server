@@ -230,4 +230,12 @@ export class PullRequestRepository extends AbstractRepository {
 
         return foundPullRequests;
     }
+
+    add(pullRequest: models.PullRequest): void {
+        var repositoryName = pullRequest.targetRepository.fullName;
+        if (!PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
+            PullRequestRepository.pullRequests[repositoryName] = [];
+        }
+        PullRequestRepository.pullRequests[repositoryName].push(pullRequest);
+    }
 }
