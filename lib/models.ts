@@ -2,8 +2,7 @@
 
 export interface ModelInterface {}
 
-// @todo Rename to Project
-export class Repository implements ModelInterface {
+export class Project implements ModelInterface {
     name: string;
     fullName: string;
     pullRequestsUrl: string;
@@ -25,7 +24,7 @@ export class PullRequest implements ModelInterface {
     title: string;
     description: string;
     author: User;
-    targetRepository: Repository;
+    targetRepository: Project;
     targetBranch: string;
     reviewers: Array<Reviewer> = [];
     state: PullRequestState;

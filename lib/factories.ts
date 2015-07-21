@@ -5,8 +5,8 @@ import models = require('./../lib/models');
 export interface FactoryInterface {}
 
 export class ProjectFactory implements FactoryInterface {
-    static create(rawObject: any): models.Repository {
-        var project = new models.Repository();
+    static create(rawObject: any): models.Project {
+        var project = new models.Project();
 
         if (rawObject.hasOwnProperty('name')) {
             project.name = rawObject.name;

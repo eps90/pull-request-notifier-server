@@ -75,7 +75,7 @@ interface ConfigInterface {
 }
 
 export class ProjectRepository extends AbstractRepository {
-    static repositories: Array<models.Repository> = [];
+    static repositories: Array<models.Project> = [];
 
     private baseUrl: string;
     private teamName: string;
@@ -90,7 +90,7 @@ export class ProjectRepository extends AbstractRepository {
         this.password = config.password;
     }
 
-    fetchAll(): q.Promise<Array<models.Repository>> {
+    fetchAll(): q.Promise<Array<models.Project>> {
         var resourceUrl: string = this.baseUrl + '/repositories/' + this.teamName;
         var requestConfig = {
             auth: {
@@ -99,7 +99,7 @@ export class ProjectRepository extends AbstractRepository {
             }
         };
 
-        var defer = q.defer<Array<models.Repository>>();
+        var defer = q.defer<Array<models.Project>>();
 
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
@@ -107,13 +107,13 @@ export class ProjectRepository extends AbstractRepository {
             }
             var response: any = JSON.parse(body);
             var repos: any = response.values;
-            var result: Array<models.Repository> = this.getCollection<models.Repository>(factories.ProjectFactory, repos);
+            var result: Array<models.Project> = this.getCollection<models.Project>(factories.ProjectFactory, repos);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
             q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultRepos: any = results[resultIndex];
-                    result = result.concat(this.getCollection<models.Repository>(factories.ProjectFactory, resultRepos));
+                    result = result.concat(this.getCollection<models.Project>(factories.ProjectFactory, resultRepos));
                 }
 
                 ProjectRepository.repositories = result;
@@ -125,7 +125,7 @@ export class ProjectRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    findAll(): Array<models.Repository> {
+    findAll(): Array<models.Project> {
         return ProjectRepository.repositories;
     }
 }
@@ -146,7 +146,7 @@ export class PullRequestRepository extends AbstractRepository {
         this.password = config.password;
     }
 
-    fetchByRepository(repository: models.Repository): q.Promise<Array<models.PullRequest>> {
+    fetchByRepository(repository: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(repository.pullRequestsUrl);
         var requestConfig = {
             auth: {

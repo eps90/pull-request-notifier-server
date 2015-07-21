@@ -75,20 +75,20 @@ describe("Repositories", () => {
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
 
-            projectRepository.fetchAll().then((repos: Array<models.Repository>) => {
+            projectRepository.fetchAll().then((repos: Array<models.Project>) => {
                 expect(repos).to.have.length(3);
-                var repository: models.Repository = repos[0];
-                expect(repository).to.be.instanceOf(models.Repository);
+                var repository: models.Project = repos[0];
+                expect(repository).to.be.instanceOf(models.Project);
                 expect(repository.name).to.eq('my_repo');
                 expect(repository.fullName).to.eq('org/my_repo');
 
-                var anotherRepository: models.Repository = repos[1];
-                expect(anotherRepository).to.be.instanceOf(models.Repository);
+                var anotherRepository: models.Project = repos[1];
+                expect(anotherRepository).to.be.instanceOf(models.Project);
                 expect(anotherRepository.name).to.eq('another_repo');
                 expect(anotherRepository.fullName).to.eq('org/another_repo');
 
-                var thirdRepository: models.Repository = repos[2];
-                expect(thirdRepository).to.be.instanceOf(models.Repository);
+                var thirdRepository: models.Project = repos[2];
+                expect(thirdRepository).to.be.instanceOf(models.Project);
                 expect(thirdRepository.name).to.eq('aaaa');
                 expect(thirdRepository.fullName).to.eq('bbbb');
 
@@ -117,7 +117,7 @@ describe("Repositories", () => {
         });
 
         it('should find all known repositories', () => {
-            var projects = [new models.Repository(), new models.Repository()];
+            var projects = [new models.Project(), new models.Project()];
             repositories.ProjectRepository.repositories = projects;
             var projectRepos = new repositories.ProjectRepository(appConfig);
             var foundRepos = projectRepos.findAll();
@@ -135,7 +135,7 @@ describe("Repositories", () => {
         });
 
         it('should fetch open pull requests by requesting for them', (done) => {
-            var project = new models.Repository();
+            var project = new models.Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
@@ -247,7 +247,7 @@ describe("Repositories", () => {
                 .get('/bitbucket/bitbucket/pullrequests')
                 .replyWithError('something wrong happened');
 
-            var project = new models.Repository();
+            var project = new models.Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
@@ -260,7 +260,7 @@ describe("Repositories", () => {
                 .get('/bitbucket/bitbucket/pullrequests')
                 .reply(403, 'Forbidden');
 
-            var project = new models.Repository();
+            var project = new models.Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
@@ -353,7 +353,7 @@ describe("Repositories", () => {
         });
 
         it('should allow to add new pull request', () => {
-            var project = new models.Repository();
+            var project = new models.Project();
             project.fullName = 'aaa/bbb';
 
             var pullRequest = new models.PullRequest();
