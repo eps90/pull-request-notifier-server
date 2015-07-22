@@ -2,6 +2,7 @@
 
 import models = require('./models');
 import factories = require('./factories');
+import configModule = require('./config');
 
 import request = require('request');
 import q = require('q');
@@ -69,13 +70,6 @@ class AbstractRepository {
     }
 }
 
-interface ConfigInterface {
-    baseUrl: string;
-    teamName: string;
-    user: string;
-    password: string;
-}
-
 export class ProjectRepository extends AbstractRepository {
     static repositories: Array<models.Project> = [];
 
@@ -84,7 +78,7 @@ export class ProjectRepository extends AbstractRepository {
     private user: string;
     private password: string;
 
-    constructor(config: ConfigInterface) {
+    constructor(config: configModule.ConfigInterface) {
         super();
         this.baseUrl = config.baseUrl;
         this.teamName = config.teamName;
@@ -147,13 +141,12 @@ export class PullRequestRepository extends AbstractRepository {
     private user: string;
     private password: string;
 
-    constructor(config: ConfigInterface) {
+    constructor(config: configModule.ConfigInterface) {
         super();
         this.user = config.user;
         this.password = config.password;
     }
 
-    // @todo Rename to ::fetchByProject
     fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);
         var requestConfig = {

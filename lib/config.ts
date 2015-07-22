@@ -3,6 +3,13 @@
 import yaml = require('js-yaml');
 import fs = require('fs');
 
+export interface ConfigInterface {
+    baseUrl: string;
+    teamName: string;
+    user: string;
+    password: string;
+}
+
 export class Config {
     config: any;
     private configMapping = [
