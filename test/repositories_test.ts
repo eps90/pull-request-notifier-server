@@ -300,7 +300,7 @@ describe("Repositories", () => {
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            pullRequestRepository.fetchByRepository(project).then((prs: Array<models.PullRequest>) => {
+            pullRequestRepository.fetchByProject(project).then((prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
                 expect(pullRequest).to.be.instanceOf(models.PullRequest);
@@ -327,7 +327,7 @@ describe("Repositories", () => {
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith('Http request failed').and.notify(done);
+            expect(pullRequestRepository.fetchByProject(project)).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
         it('should throw an error when authorization data is incorrect', (done) => {
@@ -341,7 +341,7 @@ describe("Repositories", () => {
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith('Http request failed').and.notify(done);
+            expect(pullRequestRepository.fetchByProject(project)).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
         it('should find all known pull requests', () => {

@@ -33,7 +33,6 @@ class AbstractRepository {
         return urlList;
     }
 
-    // @todo Check for errors
     getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
         var promises: Array<q.Promise<any>> = [];
 
@@ -155,8 +154,8 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     // @todo Rename to ::fetchByProject
-    fetchByRepository(repository: models.Project): q.Promise<Array<models.PullRequest>> {
-        var parsedUrl = url.parse(repository.pullRequestsUrl);
+    fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
+        var parsedUrl = url.parse(project.pullRequestsUrl);
         var requestConfig = {
             auth: {
                 username: this.user,
@@ -188,7 +187,7 @@ export class PullRequestRepository extends AbstractRepository {
                     result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
                 }
 
-                PullRequestRepository.pullRequests[repository.fullName] = result;
+                PullRequestRepository.pullRequests[project.fullName] = result;
                 defer.resolve(result);
             });
         });
