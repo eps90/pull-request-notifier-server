@@ -17,7 +17,10 @@ export class ProjectFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('links')) {
-            project.pullRequestsUrl = rawObject.links.pullrequests.href;
+            var links = rawObject.links;
+            if (links.hasOwnProperty('pullrequests')) {
+                project.pullRequestsUrl = rawObject.links.pullrequests.href;
+            }
         }
 
         return project;
