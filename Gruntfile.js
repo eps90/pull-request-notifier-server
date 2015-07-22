@@ -6,7 +6,7 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
         typescript: {
-            dist: {
+            build: {
                 src: ['lib/**/*.ts'],
                 dest: 'build',
                 options: {
@@ -18,6 +18,15 @@ module.exports = function(grunt) {
             test: {
                 src: ['test/**/*.ts'],
                 dest: 'build',
+                options: {
+                    module: "commonjs",
+                    target: "es5",
+                    basepath: "."
+                }
+            },
+            dist: {
+                src: ['index.ts'],
+                dest: 'dist',
                 options: {
                     module: "commonjs",
                     target: "es5",
@@ -42,10 +51,12 @@ module.exports = function(grunt) {
             }
         },
         clean: {
-            build: ['build']
+            build: ['build'],
+            dist: ['dist']
         }
     });
 
-    grunt.registerTask('default', ['clean:build', 'typescript:dist']);
+    grunt.registerTask('default', ['clean:build', 'typescript:build']);
     grunt.registerTask('test', ['clean:build', 'typescript:test', 'mochaTest:unit']);
+    grunt.registerTask('dist', ['clean:dist', 'typescript:dist']);
 };
