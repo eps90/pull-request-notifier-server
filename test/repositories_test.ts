@@ -107,10 +107,62 @@ describe("Repositories", () => {
             expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
+        it('should thrown an error when one of subrequests failed', (done) => {
+            var config: any = {
+                size: 19,
+                pagelen: 10,
+                next: 'http://example.com/repositories/bitbucket?page=2',
+                values: [
+                    {
+                        'name': 'my_repo',
+                        'full_name': 'org/my_repo'
+                    }
+                ]
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .reply(200, config);
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .query({page: '2'})
+                .replyWithError('something wrong happened');
+
+            var projectRepository = new repositories.ProjectRepository(appConfig);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);
+        });
+
         it('should throw an error when request has returned non-successful response code', (done) => {
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .reply(403, 'Forbidden');
+
+            var projectRepository = new repositories.ProjectRepository(appConfig);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);
+        });
+
+        it('should throw an error when on of subrequests has return non-successful response code', (done) => {
+            var config: any = {
+                size: 19,
+                pagelen: 10,
+                next: 'http://example.com/repositories/bitbucket?page=2',
+                values: [
+                    {
+                        'name': 'my_repo',
+                        'full_name': 'org/my_repo'
+                    }
+                ]
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .reply(200, config);
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket')
+                .query({page: '2'})
+                .reply(400, 'something went wrong');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
             expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);

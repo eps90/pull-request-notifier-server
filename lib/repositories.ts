@@ -41,7 +41,10 @@ class AbstractRepository {
             var promise: () => q.Promise<any> = () => {
                 var resourceUrl: string = urls[urlIndex];
                 var deferred = q.defer();
-                request(resourceUrl, (error, res, body) => {
+                request(resourceUrl, (error, res: http.IncomingMessage, body) => {
+                    if (error || res.statusCode !== 200) {
+                        return deferred.reject('Http request failed');
+                    }
                     var response: any = JSON.parse(body);
                     deferred.resolve(response.values);
                 });
@@ -110,16 +113,21 @@ export class ProjectRepository extends AbstractRepository {
             var result: Array<models.Project> = this.getCollection<models.Project>(factories.ProjectFactory, repos);
 
             var rest = this.getRequestPromises(this.getPagesList(response));
-            q.all(rest).done((results: Array<any>) => {
-                for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                    var resultRepos: any = results[resultIndex];
-                    result = result.concat(this.getCollection<models.Project>(factories.ProjectFactory, resultRepos));
+            q.all(rest).done(
+                (results: Array<any>) => {
+                    for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                        var resultRepos: any = results[resultIndex];
+                        result = result.concat(this.getCollection<models.Project>(factories.ProjectFactory, resultRepos));
+                    }
+
+                    ProjectRepository.repositories = result;
+
+                    defer.resolve(result);
+                },
+                (error) => {
+                    return defer.reject(error);
                 }
-
-                ProjectRepository.repositories = result;
-
-                defer.resolve(result);
-            });
+            );
         });
 
         return defer.promise;
@@ -146,6 +154,7 @@ export class PullRequestRepository extends AbstractRepository {
         this.password = config.password;
     }
 
+    // @todo Rename to ::fetchByProject
     fetchByRepository(repository: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(repository.pullRequestsUrl);
         var requestConfig = {
