@@ -11,7 +11,7 @@ export interface ConfigInterface {
 }
 
 export class Config {
-    config: any;
+    config: ConfigInterface;
     private configMapping = [
         'baseUrl',
         'teamName',
