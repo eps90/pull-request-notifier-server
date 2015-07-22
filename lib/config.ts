@@ -3,8 +3,6 @@
 import yaml = require('js-yaml');
 import fs = require('fs');
 
-// @todo Validate config contents
-// @todo Check whether config file exists
 export class Config {
     config: any;
     private configMapping = [
@@ -13,8 +11,13 @@ export class Config {
         'user',
         'password'
     ];
+    private configPath = 'config/config.yml';
 
     constructor() {
+        if (!fs.existsSync(this.configPath)) {
+            throw "'" + this.configPath + "' file not found";
+        }
+
         var config: any = yaml.safeLoad(fs.readFileSync('config/config.yml', 'utf-8'));
         for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {
             var property = this.configMapping[propertyIndex];

@@ -37,6 +37,14 @@ describe('Config', () => {
         expect(configInstance.config).to.have.property('password', 'topsecret');
     });
 
+    it('should throw when config file does not exist', () => {
+        mockFs({
+            'config': {}
+        });
+
+        expect(() => {new configModule.Config()}).to.throw("'config/config.yml' file not found");
+    });
+
     describe('Validation errors', () => {
         it('should throw when config has not provided required keys', () => {
             var configObj = {
