@@ -19,6 +19,11 @@ describe("Repositories", () => {
         password: 'topsecret'
     };
 
+    var basicAuth = {
+        user: 'my.user',
+        pass: 'topsecret'
+    };
+
     describe("ProjectRepository", () => {
         beforeEach(() => {
             repositories.ProjectRepository.repositories = [];
@@ -61,46 +66,54 @@ describe("Repositories", () => {
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
+                .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(config));
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .query({page: '2'})
+                .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(configNextPage));
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .query({page: '3'})
+                .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(thirdPage));
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
 
-            projectRepository.fetchAll().then((repos: Array<models.Project>) => {
-                expect(repos).to.have.length(3);
-                var repository: models.Project = repos[0];
-                expect(repository).to.be.instanceOf(models.Project);
-                expect(repository.name).to.eq('my_repo');
-                expect(repository.fullName).to.eq('org/my_repo');
+            projectRepository.fetchAll()
+                .then((repos: Array<models.Project>) => {
+                    expect(repos).to.have.length(3);
+                    var repository: models.Project = repos[0];
+                    expect(repository).to.be.instanceOf(models.Project);
+                    expect(repository.name).to.eq('my_repo');
+                    expect(repository.fullName).to.eq('org/my_repo');
 
-                var anotherRepository: models.Project = repos[1];
-                expect(anotherRepository).to.be.instanceOf(models.Project);
-                expect(anotherRepository.name).to.eq('another_repo');
-                expect(anotherRepository.fullName).to.eq('org/another_repo');
+                    var anotherRepository: models.Project = repos[1];
+                    expect(anotherRepository).to.be.instanceOf(models.Project);
+                    expect(anotherRepository.name).to.eq('another_repo');
+                    expect(anotherRepository.fullName).to.eq('org/another_repo');
 
-                var thirdRepository: models.Project = repos[2];
-                expect(thirdRepository).to.be.instanceOf(models.Project);
-                expect(thirdRepository.name).to.eq('aaaa');
-                expect(thirdRepository.fullName).to.eq('bbbb');
+                    var thirdRepository: models.Project = repos[2];
+                    expect(thirdRepository).to.be.instanceOf(models.Project);
+                    expect(thirdRepository.name).to.eq('aaaa');
+                    expect(thirdRepository.fullName).to.eq('bbbb');
 
-                expect(repositories.ProjectRepository.repositories).to.eq(repos);
+                    expect(repositories.ProjectRepository.repositories).to.eq(repos);
 
-                done();
-            });
+                    done();
+                })
+                .catch((error) => {
+                    done(error);
+                });
         });
 
         it('should throw an error when request has failed', (done) => {
             nock('http://example.com')
                 .get('/repositories/bitbucket')
+                .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
@@ -122,11 +135,13 @@ describe("Repositories", () => {
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
+                .basicAuth(basicAuth)
                 .reply(200, config);
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .query({page: '2'})
+                .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
@@ -136,6 +151,7 @@ describe("Repositories", () => {
         it('should throw an error when request has returned non-successful response code', (done) => {
             nock('http://example.com')
                 .get('/repositories/bitbucket')
+                .basicAuth(basicAuth)
                 .reply(403, 'Forbidden');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
@@ -157,11 +173,13 @@ describe("Repositories", () => {
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
+                .basicAuth(basicAuth)
                 .reply(200, config);
 
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .query({page: '2'})
+                .basicAuth(basicAuth)
                 .reply(400, 'something went wrong');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
@@ -273,10 +291,12 @@ describe("Repositories", () => {
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
                 .query({state: 'OPEN'})
+                .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(pullRequests));
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
                 .query({page: '2', state: 'OPEN'})
+                .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(secondPrs));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
@@ -291,12 +311,15 @@ describe("Repositories", () => {
                 expect(repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket']).to.eq(prs);
 
                 done();
+            }).catch((error) => {
+                done(error);
             });
         });
 
         it('should throw an error when request has failed', (done) => {
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
+                .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
             var project = new models.Project();
@@ -310,6 +333,7 @@ describe("Repositories", () => {
         it('should throw an error when authorization data is incorrect', (done) => {
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
+                .basicAuth(basicAuth)
                 .reply(403, 'Forbidden');
 
             var project = new models.Project();

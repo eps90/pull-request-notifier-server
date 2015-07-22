@@ -34,14 +34,14 @@ class AbstractRepository {
     }
 
     // @todo Check for errors
-    getRequestPromises(urls: Array<string>): Array<q.Promise<any>> {
+    getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
         var promises: Array<q.Promise<any>> = [];
 
         for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
             var promise: () => q.Promise<any> = () => {
                 var resourceUrl: string = urls[urlIndex];
                 var deferred = q.defer();
-                request(resourceUrl, (error, res: http.IncomingMessage, body) => {
+                request(resourceUrl, authConfig, (error, res: http.IncomingMessage, body) => {
                     if (error || res.statusCode !== 200) {
                         return deferred.reject('Http request failed');
                     }
@@ -112,7 +112,7 @@ export class ProjectRepository extends AbstractRepository {
             var repos: any = response.values;
             var result: Array<models.Project> = this.getCollection<models.Project>(factories.ProjectFactory, repos);
 
-            var rest = this.getRequestPromises(this.getPagesList(response));
+            var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
             q.all(rest).done(
                 (results: Array<any>) => {
                     for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
@@ -181,7 +181,7 @@ export class PullRequestRepository extends AbstractRepository {
             var pullRequests: any = response.values;
             var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
 
-            var rest = this.getRequestPromises(this.getPagesList(response));
+            var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
             q.all(rest).done((results: Array<any>) => {
                 for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                     var resultPrs: any = results[resultIndex];
