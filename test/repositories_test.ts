@@ -98,22 +98,22 @@ describe("Repositories", () => {
             });
         });
 
-        it('should throw an error when request has failed', () => {
+        it('should throw an error when request has failed', (done) => {
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .replyWithError('something wrong happened');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
-        it('should throw an error when request has returned non-successful response code', () => {
+        it('should throw an error when request has returned non-successful response code', (done) => {
             nock('http://example.com')
                 .get('/repositories/bitbucket')
                 .reply(403, 'Forbidden');
 
             var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error);
+            expect(projectRepository.fetchAll()).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
         it('should find all known repositories', () => {
@@ -242,7 +242,7 @@ describe("Repositories", () => {
             });
         });
 
-        it('should throw an error when request has failed', () => {
+        it('should throw an error when request has failed', (done) => {
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
                 .replyWithError('something wrong happened');
@@ -252,10 +252,10 @@ describe("Repositories", () => {
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
+            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
-        it('should throw an error when authorization data is incorrect', () => {
+        it('should throw an error when authorization data is incorrect', (done) => {
             nock('http://example.com')
                 .get('/bitbucket/bitbucket/pullrequests')
                 .reply(403, 'Forbidden');
@@ -265,7 +265,7 @@ describe("Repositories", () => {
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith(Error);
+            expect(pullRequestRepository.fetchByRepository(project)).to.be.rejectedWith('Http request failed').and.notify(done);
         });
 
         it('should find all known pull requests', () => {
