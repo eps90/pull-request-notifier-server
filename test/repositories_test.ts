@@ -215,77 +215,103 @@ describe("Repositories", () => {
                 next: 'http://example.com/bitbucket/bitbucket/pullrequests?page=2',
                 values: [
                     {
-                        author: {
-                            username: 'john.smith',
-                            display_name: 'John Smith'
-                        },
-                        source: {
-                            branch: {
-                                name: 'next'
+                        links: {
+                            self: {
+                                href: 'http://example.com/bitbucket/bitbucket/pullrequests/1'
                             }
-                        },
-                        destination: {
-                            repository: {
-                                full_name: 'bitbucket/bitbucket',
-                                name: 'bitbucket'
-                            },
-                            branch: {
-                                name: 'master'
-                            }
-                        },
-                        title: 'Fixed bugs',
-                        description: 'This is a special pull request',
-                        participants: [
-                            {
-                                role: 'REVIEWER',
-                                user: {
-                                    username: 'jon.snow',
-                                    display_name: 'Jon Snow'
-                                },
-                                approved: true
-                            }
-                        ],
-                        state: 'OPEN'
+                        }
                     }
                 ]
+            };
+
+            var pullRequestOne = {
+                author: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                source: {
+                    branch: {
+                        name: 'next'
+                    }
+                },
+                destination: {
+                    repository: {
+                        full_name: 'bitbucket/bitbucket',
+                        name: 'bitbucket'
+                    },
+                    branch: {
+                        name: 'master'
+                    }
+                },
+                title: 'Fixed bugs',
+                description: 'This is a special pull request',
+                participants: [
+                    {
+                        role: 'REVIEWER',
+                        user: {
+                            username: 'jon.snow',
+                            display_name: 'Jon Snow'
+                        },
+                        approved: true
+                    }
+                ],
+                state: 'OPEN',
+                links: {
+                    self: {
+                        href: 'http://example.com/bitbucket/bitbucket/pullrequests/1'
+                    }
+                }
             };
 
             var secondPrs: any = {
                 values: [
                     {
-                        author: {
-                            username: 'john.smith',
-                            display_name: 'John Smith'
-                        },
-                        source: {
-                            branch: {
-                                name: 'next'
+                        links: {
+                            self: {
+                                href: 'http://example.com/bitbucket/bitbucket/pullrequests/2'
                             }
-                        },
-                        destination: {
-                            repository: {
-                                full_name: 'bitbucket/bitbucket',
-                                name: 'bitbucket'
-                            },
-                            branch: {
-                                name: 'master'
-                            }
-                        },
-                        title: 'Fixed bugs',
-                        description: 'This is a special pull request',
-                        participants: [
-                            {
-                                role: 'REVIEWER',
-                                user: {
-                                    username: 'jon.snow',
-                                    display_name: 'Jon Snow'
-                                },
-                                approved: true
-                            }
-                        ],
-                        state: 'OPEN'
+                        }
                     }
                 ]
+            };
+
+            var pullRequestTwo = {
+                author: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                source: {
+                    branch: {
+                        name: 'next'
+                    }
+                },
+                destination: {
+                    repository: {
+                        full_name: 'bitbucket/bitbucket',
+                        name: 'bitbucket'
+                    },
+                    branch: {
+                        name: 'master'
+                    }
+                },
+                title: 'Fixed bugs',
+                description: 'This is a special pull request',
+                participants: [
+                    {
+                        role: 'REVIEWER',
+                        user: {
+                            username: 'jon.snow',
+                            display_name: 'Jon Snow'
+                        },
+                        approved: true
+                    }
+                ],
+                state: 'OPEN',
+                links: {
+                    self: {
+                        href: 'http://example.com/bitbucket/bitbucket/pullrequests/2'
+                    }
+                }
             };
 
             nock('http://example.com')
@@ -298,6 +324,15 @@ describe("Repositories", () => {
                 .query({page: '2', state: 'OPEN'})
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(secondPrs));
+
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(pullRequestOne));
+            nock('http://example.com')
+                .get('/bitbucket/bitbucket/pullrequests/2')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(pullRequestTwo));
 
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
             pullRequestRepository.fetchByProject(project).then((prs: Array<models.PullRequest>) => {

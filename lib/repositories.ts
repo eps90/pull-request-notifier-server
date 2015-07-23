@@ -147,6 +147,7 @@ export class PullRequestRepository extends AbstractRepository {
         this.password = config.password;
     }
 
+    // @todo to refactor
     fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);
         var requestConfig = {
@@ -170,18 +171,36 @@ export class PullRequestRepository extends AbstractRepository {
             }
 
             var response: any = JSON.parse(body);
-            var pullRequests: any = response.values;
+            var pullRequests: Array<any> = response.values;
+            var betterPullRequests = [];
             var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
 
-            var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
-            q.all(rest).done((results: Array<any>) => {
-                for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                    var resultPrs: any = results[resultIndex];
-                    result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
-                }
+            q.all(
+                result.map((pr: models.PullRequest) => {
+                    var deferred = q.defer();
+                    request(pr.selfLink, requestConfig, (err, res, body) => {
+                        if (error || res.statusCode !== 200) {
+                            return deferred.reject('Http request failed');
+                        }
 
-                PullRequestRepository.pullRequests[project.fullName] = result;
-                defer.resolve(result);
+                        var response = JSON.parse(body);
+                        deferred.resolve(factories.PullRequestFactory.create(response));
+                    });
+
+                    return deferred.promise;
+                })
+            ).then((prs: Array<models.PullRequest>) => {
+                    result = prs;
+                    var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
+                    q.all(rest).done((results: Array<any>) => {
+                        for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                            var resultPrs: any = results[resultIndex];
+                            result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
+                        }
+
+                        PullRequestRepository.pullRequests[project.fullName] = result;
+                        defer.resolve(result);
+                    });
             });
         });
 
