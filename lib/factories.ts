@@ -99,6 +99,12 @@ export class PullRequestFactory implements FactoryInterface {
             }
         }
 
+        if (rawObject.hasOwnProperty('links')) {
+            if (rawObject.links.hasOwnProperty('self') && rawObject.links.self.hasOwnProperty('href')) {
+                pullRequest.selfLink = rawObject.links.self.href;
+            }
+        }
+
         return pullRequest;
     }
 

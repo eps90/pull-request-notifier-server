@@ -119,5 +119,18 @@ describe('Factories', () => {
             expect(pullRequest.reviewers[0].user.displayName).to.eq('Jon Snow');
             expect(pullRequest.reviewers[0].approved).to.eq(true);
         });
+
+        it('should assign links to pull request', () => {
+            var rawObject: any = {
+                links: {
+                    self: {
+                        href: 'http://example.com/pullrequest/1'
+                    }
+                }
+            };
+
+            var pullRequest = factories.PullRequestFactory.create(rawObject);
+            expect(pullRequest.selfLink).to.eq('http://example.com/pullrequest/1');
+        });
     });
 });

@@ -28,4 +28,5 @@ export class PullRequest implements ModelInterface {
     targetBranch: string;
     reviewers: Array<Reviewer> = [];
     state: PullRequestState;
+    selfLink: string;
 }
