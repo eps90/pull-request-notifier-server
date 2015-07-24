@@ -10,6 +10,7 @@ export interface ConfigInterface {
     password: string;
 }
 
+// @todo Make somehow Config class static
 export class Config {
     config: ConfigInterface;
     private configMapping: Array<string> = [

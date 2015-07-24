@@ -70,6 +70,7 @@ class AbstractRepository {
     }
 }
 
+// @todo Add more meaninful errors
 export class ProjectRepository extends AbstractRepository {
     static repositories: Array<models.Project> = [];
 
