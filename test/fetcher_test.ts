@@ -27,7 +27,7 @@ describe('Fetcher', () => {
         nock.cleanAll();
     });
 
-    it.only('should initialize pull requests', (done) => {
+    it('should initialize pull requests', (done) => {
         var projects = {
             size: 1,
             pagelen: 10,
