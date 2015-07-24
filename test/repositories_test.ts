@@ -189,8 +189,7 @@ describe("Repositories", () => {
         it('should find all known repositories', () => {
             var projects = [new models.Project(), new models.Project()];
             repositories.ProjectRepository.repositories = projects;
-            var projectRepos = new repositories.ProjectRepository(appConfig);
-            var foundRepos = projectRepos.findAll();
+            var foundRepos = repositories.ProjectRepository.findAll();
             expect(foundRepos).to.equal(projects);
         });
     });
@@ -386,7 +385,7 @@ describe("Repositories", () => {
             ];
             var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
 
-            var pullRequests = pullRequestRepository.findAll();
+            var pullRequests = repositories.PullRequestRepository.findAll();
             expect(pullRequests).to.have.length(2);
         });
 
@@ -402,7 +401,7 @@ describe("Repositories", () => {
             ];
 
             var prRepository = new repositories.PullRequestRepository(appConfig);
-            var prs = prRepository.findAll();
+            var prs = repositories.PullRequestRepository.findAll();
             expect(prs).to.have.length(4);
         });
 
@@ -432,7 +431,7 @@ describe("Repositories", () => {
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
 
-            var pullRequests = prRepo.findByReviewer('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByReviewer('john.smith');
             expect(pullRequests).to.have.length(1);
             expect(pullRequests[0].reviewers[0].user).to.eq(userOne);
         });
@@ -456,7 +455,7 @@ describe("Repositories", () => {
             ];
             var prRepo = new repositories.PullRequestRepository(appConfig);
 
-            var pullRequests = prRepo.findByAuthor('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByAuthor('john.smith');
             expect(pullRequests).to.have.length(1);
             expect(pullRequests[0].author).to.eq(authorOne);
         });
@@ -469,10 +468,9 @@ describe("Repositories", () => {
             pullRequest.title = 'This is some title';
             pullRequest.targetRepository = project;
 
-            var prRepository = new repositories.PullRequestRepository(appConfig);
-            prRepository.add(pullRequest);
+            repositories.PullRequestRepository.add(pullRequest);
 
-            var actualPullRequests: Array<models.PullRequest> = prRepository.findAll();
+            var actualPullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
             expect(actualPullRequests).to.have.length(1);
 
             expect(actualPullRequests[0]).to.eq(pullRequest);

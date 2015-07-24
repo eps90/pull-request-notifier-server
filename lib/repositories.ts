@@ -126,7 +126,7 @@ export class ProjectRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    findAll(): Array<models.Project> {
+    static findAll(): Array<models.Project> {
         return ProjectRepository.repositories;
     }
 }
@@ -207,7 +207,7 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    findAll(): Array<models.PullRequest> {
+    static findAll(): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -218,7 +218,7 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    findByReviewer(username: string): Array<models.PullRequest> {
+    static findByReviewer(username: string): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -241,7 +241,7 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    findByAuthor(username: string): Array<models.PullRequest> {
+    static findByAuthor(username: string): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
@@ -255,7 +255,7 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    add(pullRequest: models.PullRequest): void {
+    static add(pullRequest: models.PullRequest): void {
         var repositoryName = pullRequest.targetRepository.fullName;
         if (!PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
             PullRequestRepository.pullRequests[repositoryName] = [];
