@@ -12,13 +12,13 @@ export interface ConfigInterface {
 
 export class Config {
     config: ConfigInterface;
-    private configMapping = [
+    private configMapping: Array<string> = [
         'baseUrl',
         'teamName',
         'user',
         'password'
     ];
-    private configPath = 'config/config.yml';
+    private configPath: string = 'config/config.yml';
 
     constructor() {
         if (!fs.existsSync(this.configPath)) {

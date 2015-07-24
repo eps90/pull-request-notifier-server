@@ -42,7 +42,9 @@ describe('Config', () => {
             'config': {}
         });
 
+        /* tslint:disable */
         expect(() => {new configModule.Config()}).to.throw("'config/config.yml' file not found");
+        /* tslint:enable */
     });
 
     describe('Validation errors', () => {
@@ -63,7 +65,9 @@ describe('Config', () => {
                 }
             });
 
+            /* tslint:disable */
             expect(() => { new configModule.Config()}).to.throw("password' config property is required");
+            /* tslint:enable */
         });
 
         it('should throw when config has empty property', () => {
@@ -84,7 +88,9 @@ describe('Config', () => {
                 }
             });
 
+            /* tslint:disable */
             expect(() => {new configModule.Config()}).to.throw("'baseUrl' config property cannot be null");
+            /* tslint:enable */
         });
     });
 });

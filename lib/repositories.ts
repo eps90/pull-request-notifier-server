@@ -86,6 +86,10 @@ export class ProjectRepository extends AbstractRepository {
         this.password = config.password;
     }
 
+    static findAll(): Array<models.Project> {
+        return ProjectRepository.repositories;
+    }
+
     fetchAll(): q.Promise<Array<models.Project>> {
         var resourceUrl: string = this.baseUrl + '/repositories/' + this.teamName;
         var requestConfig = {
@@ -117,17 +121,13 @@ export class ProjectRepository extends AbstractRepository {
 
                     defer.resolve(result);
                 },
-                (error) => {
-                    return defer.reject(error);
+                (err) => {
+                    return defer.reject(err);
                 }
             );
         });
 
         return defer.promise;
-    }
-
-    static findAll(): Array<models.Project> {
-        return ProjectRepository.repositories;
     }
 }
 
@@ -145,66 +145,6 @@ export class PullRequestRepository extends AbstractRepository {
         super();
         this.user = config.user;
         this.password = config.password;
-    }
-
-    // @todo to refactor
-    fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
-        var parsedUrl = url.parse(project.pullRequestsUrl);
-        var requestConfig = {
-            auth: {
-                username: this.user,
-                password: this.password
-            }
-        };
-
-        delete parsedUrl.search;
-        parsedUrl.query = {
-            state: 'OPEN'
-        };
-        var pullRequestsUrl = url.format(parsedUrl);
-
-        var defer = q.defer<Array<models.PullRequest>>();
-
-        request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
-            if (error || res.statusCode !== 200) {
-                return defer.reject('Http request failed');
-            }
-
-            var response: any = JSON.parse(body);
-            var pullRequests: Array<any> = response.values;
-            var betterPullRequests = [];
-            var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
-
-            q.all(
-                result.map((pr: models.PullRequest) => {
-                    var deferred = q.defer();
-                    request(pr.selfLink, requestConfig, (err, res, body) => {
-                        if (error || res.statusCode !== 200) {
-                            return deferred.reject('Http request failed');
-                        }
-
-                        var response = JSON.parse(body);
-                        deferred.resolve(factories.PullRequestFactory.create(response));
-                    });
-
-                    return deferred.promise;
-                })
-            ).then((prs: Array<models.PullRequest>) => {
-                    result = prs;
-                    var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
-                    q.all(rest).done((results: Array<any>) => {
-                        for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                            var resultPrs: any = results[resultIndex];
-                            result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
-                        }
-
-                        PullRequestRepository.pullRequests[project.fullName] = result;
-                        defer.resolve(result);
-                    });
-            });
-        });
-
-        return defer.promise;
     }
 
     static findAll(): Array<models.PullRequest> {
@@ -261,5 +201,64 @@ export class PullRequestRepository extends AbstractRepository {
             PullRequestRepository.pullRequests[repositoryName] = [];
         }
         PullRequestRepository.pullRequests[repositoryName].push(pullRequest);
+    }
+
+    // @todo to refactor
+    fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
+        var parsedUrl = url.parse(project.pullRequestsUrl);
+        var requestConfig = {
+            auth: {
+                username: this.user,
+                password: this.password
+            }
+        };
+
+        delete parsedUrl.search;
+        parsedUrl.query = {
+            state: 'OPEN'
+        };
+        var pullRequestsUrl = url.format(parsedUrl);
+
+        var defer = q.defer<Array<models.PullRequest>>();
+
+        request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
+            if (error || res.statusCode !== 200) {
+                return defer.reject('Http request failed');
+            }
+
+            var response: any = JSON.parse(body);
+            var pullRequests: Array<any> = response.values;
+            var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
+
+            q.all(
+                result.map((pr: models.PullRequest) => {
+                    var deferred = q.defer();
+                    request(pr.selfLink, requestConfig, (err, httpRes, innerBody) => {
+                        if (error || httpRes.statusCode !== 200) {
+                            return deferred.reject('Http request failed');
+                        }
+
+                        var innerResponse = JSON.parse(innerBody);
+                        deferred.resolve(factories.PullRequestFactory.create(innerResponse));
+                    });
+
+                    return deferred.promise;
+                })
+            ).then((prs: Array<models.PullRequest>) => {
+                    result = prs;
+                    var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
+                    q.all(rest).done((results: Array<any>) => {
+                        for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                            var resultPrs: any = results[resultIndex];
+                            result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
+                        }
+
+                        PullRequestRepository.pullRequests[project.fullName] = result;
+                        defer.resolve(result);
+                    });
+                });
+        });
+
+        return defer.promise;
     }
 }

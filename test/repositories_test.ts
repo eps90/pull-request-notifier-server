@@ -383,7 +383,6 @@ describe("Repositories", () => {
                 new models.PullRequest(),
                 new models.PullRequest()
             ];
-            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
 
             var pullRequests = repositories.PullRequestRepository.findAll();
             expect(pullRequests).to.have.length(2);
@@ -400,7 +399,6 @@ describe("Repositories", () => {
                 new models.PullRequest()
             ];
 
-            var prRepository = new repositories.PullRequestRepository(appConfig);
             var prs = repositories.PullRequestRepository.findAll();
             expect(prs).to.have.length(4);
         });
@@ -428,8 +426,6 @@ describe("Repositories", () => {
                 prOne,
                 prTwo
             ];
-            var prRepo = new repositories.PullRequestRepository(appConfig);
-
 
             var pullRequests = repositories.PullRequestRepository.findByReviewer('john.smith');
             expect(pullRequests).to.have.length(1);
@@ -453,7 +449,6 @@ describe("Repositories", () => {
                 prOne,
                 prTwo
             ];
-            var prRepo = new repositories.PullRequestRepository(appConfig);
 
             var pullRequests = repositories.PullRequestRepository.findByAuthor('john.smith');
             expect(pullRequests).to.have.length(1);
