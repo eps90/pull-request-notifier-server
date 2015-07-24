@@ -91,6 +91,7 @@ export class ProjectRepository extends AbstractRepository {
         return ProjectRepository.repositories;
     }
 
+    // @todo Make static
     fetchAll(): q.Promise<Array<models.Project>> {
         var resourceUrl: string = this.baseUrl + '/repositories/' + this.teamName;
         var requestConfig = {
@@ -205,6 +206,7 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     // @todo to refactor
+    // @todo make static
     fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);
         var requestConfig = {
