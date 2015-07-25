@@ -29,12 +29,12 @@ describe('Config', () => {
             }
         });
 
-        var configInstance = new configModule.Config();
+        var config = configModule.Config.getConfig();
 
-        expect(configInstance.config).to.have.property('baseUrl', 'http://example.com');
-        expect(configInstance.config).to.have.property('teamName', 'aaaa');
-        expect(configInstance.config).to.have.property('user', 'my.user');
-        expect(configInstance.config).to.have.property('password', 'topsecret');
+        expect(config).to.have.property('baseUrl', 'http://example.com');
+        expect(config).to.have.property('teamName', 'aaaa');
+        expect(config).to.have.property('user', 'my.user');
+        expect(config).to.have.property('password', 'topsecret');
     });
 
     it('should throw when config file does not exist', () => {
@@ -43,7 +43,7 @@ describe('Config', () => {
         });
 
         /* tslint:disable */
-        expect(() => {new configModule.Config()}).to.throw("'config/config.yml' file not found");
+        expect(() => {configModule.Config.getConfig()}).to.throw(Error);
         /* tslint:enable */
     });
 
@@ -66,7 +66,7 @@ describe('Config', () => {
             });
 
             /* tslint:disable */
-            expect(() => { new configModule.Config()}).to.throw("password' config property is required");
+            expect(() => { configModule.Config.getConfig()}).to.throw(Error);
             /* tslint:enable */
         });
 
@@ -89,7 +89,7 @@ describe('Config', () => {
             });
 
             /* tslint:disable */
-            expect(() => {new configModule.Config()}).to.throw("'baseUrl' config property cannot be null");
+            expect(() => { configModule.Config.getConfig() }).to.throw(Error);
             /* tslint:enable */
         });
     });

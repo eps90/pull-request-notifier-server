@@ -2,6 +2,7 @@
 
 import yaml = require('js-yaml');
 import fs = require('fs');
+import errors = require('./errors');
 
 export interface ConfigInterface {
     baseUrl: string;
@@ -10,32 +11,31 @@ export interface ConfigInterface {
     password: string;
 }
 
-// @todo Make somehow Config class static
 export class Config {
-    config: ConfigInterface;
-    private configMapping: Array<string> = [
+    private static configMapping: Array<string> = [
         'baseUrl',
         'teamName',
         'user',
         'password'
     ];
-    private configPath: string = 'config/config.yml';
 
-    constructor() {
+    private static configPath: string = 'config/config.yml';
+
+    static getConfig(): ConfigInterface {
         if (!fs.existsSync(this.configPath)) {
-            throw "'" + this.configPath + "' file not found";
+            throw errors.ConfigError.throwFileNotFound(this.configPath);
         }
 
         var config: any = yaml.safeLoad(fs.readFileSync('config/config.yml', 'utf-8'));
         for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {
             var property = this.configMapping[propertyIndex];
             if (!config.hasOwnProperty(property)) {
-                throw "'" + property + "' config property is required";
+                throw errors.ConfigError.throwConfigPropertyRequired(property);
             } else if (config[property] === null) {
-                throw "'" + property + "' config property cannot be null";
+                throw errors.ConfigError.throwConfigPropertyValueRequired(property);
             }
         }
 
-        this.config = config;
+        return config;
     }
 }
