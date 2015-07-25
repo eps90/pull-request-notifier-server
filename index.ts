@@ -1,21 +1,12 @@
 ///<reference path="typings/tsd.d.ts"/>
 
-import configModule = require('./lib/config');
 import repositories = require('./lib/repositories');
-import models = require('./lib/models');
+import fetcher = require('./lib/fetcher');
+
 import q = require('q');
 
-var configInstance = new configModule.Config();
-var config = configInstance.config;
-
-var projectRepository = new repositories.ProjectRepository(config);
-var pullRequestRepository = new repositories.PullRequestRepository(config);
-projectRepository.fetchAll().then((projects: Array<models.Project>) => {
-    return q.all(projects.map((element: models.Project) => {
-        return pullRequestRepository.fetchByProject(element);
-    }));
-}).then(() => {
-    console.log(repositories.PullRequestRepository.pullRequests);
+fetcher.Fetcher.initPullRequestCollection().then(() => {
+    console.log(repositories.PullRequestRepository.findAll());
 }).catch((error) => {
-    console.log(error);
+   console.error(error);
 });
