@@ -3,11 +3,11 @@
 import http = require('http');
 
 export class HttpRequestError {
-    static throwError(url: string, responseCode?: number, responseBody?: string) {
+    static throwError(url: string, response?: {statusCode?: number}, responseBody?: string) {
         var message = 'Http request to ' + url + ' failed';
         var messageParts = [];
-        if (responseCode !== undefined) {
-            messageParts.push('with response code ' + responseCode);
+        if (response !== undefined && response.hasOwnProperty('statusCode')) {
+            messageParts.push('with response code ' + response.statusCode);
         }
 
         if (responseBody !== undefined) {
