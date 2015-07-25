@@ -6,18 +6,27 @@ import repositories = require('./../lib/repositories');
 import nock = require('nock');
 import chai = require('chai');
 import chaiAsPromised = require('chai-as-promised');
+import configModule = require('./../lib/config');
 
 chai.use(chaiAsPromised);
 
 var expect = chai.expect;
 
 describe("Repositories", () => {
-    var appConfig = {
-        baseUrl: 'http://example.com',
-        teamName: 'bitbucket',
-        user: 'my.user',
-        password: 'topsecret'
-    };
+    before(() => {
+        var appConfig = {
+            baseUrl: 'http://example.com',
+            teamName: 'bitbucket',
+            user: 'my.user',
+            password: 'topsecret'
+        };
+
+        configModule.Config.setUp({config: appConfig});
+    });
+
+    after(() => {
+        configModule.Config.reset();
+    });
 
     var basicAuth = {
         user: 'my.user',
@@ -81,9 +90,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(thirdPage));
 
-            var projectRepository = new repositories.ProjectRepository(appConfig);
-
-            projectRepository.fetchAll()
+            repositories.ProjectRepository.fetchAll()
                 .then((repos: Array<models.Project>) => {
                     expect(repos).to.have.length(3);
                     var repository: models.Project = repos[0];
@@ -116,8 +123,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
-            var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should thrown an error when one of subrequests failed', (done) => {
@@ -144,8 +150,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
-            var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when request has returned non-successful response code', (done) => {
@@ -154,8 +159,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(403, 'Forbidden');
 
-            var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when on of subrequests has return non-successful response code', (done) => {
@@ -182,8 +186,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(400, 'something went wrong');
 
-            var projectRepository = new repositories.ProjectRepository(appConfig);
-            expect(projectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should find all known repositories', () => {
@@ -333,8 +336,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(pullRequestTwo));
 
-            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            pullRequestRepository.fetchByProject(project).then((prs: Array<models.PullRequest>) => {
+            repositories.PullRequestRepository.fetchByProject(project).then((prs: Array<models.PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
                 expect(pullRequest).to.be.instanceOf(models.PullRequest);
@@ -360,8 +362,7 @@ describe("Repositories", () => {
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
-            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when authorization data is incorrect', (done) => {
@@ -374,8 +375,7 @@ describe("Repositories", () => {
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
-            var pullRequestRepository = new repositories.PullRequestRepository(appConfig);
-            expect(pullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
+            expect(repositories.PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should find all known pull requests', () => {

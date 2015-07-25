@@ -13,7 +13,7 @@ import http = require('http');
 
 // @todo Get rid of AbstractRepository and make its methods simple functions
 class AbstractRepository {
-    getPagesList(response: any): Array<string> {
+    static getPagesList(response: any): Array<string> {
         if (!response.hasOwnProperty('next')) {
             return [];
         }
@@ -35,7 +35,7 @@ class AbstractRepository {
         return urlList;
     }
 
-    getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
+    static getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
         var promises: Array<q.Promise<any>> = [];
 
         for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
@@ -59,7 +59,7 @@ class AbstractRepository {
         return promises;
     }
 
-    getCollection<T extends models.ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
+    static getCollection<T extends models.ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
         var result: Array<T> = [];
 
         for (var repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
@@ -74,30 +74,18 @@ class AbstractRepository {
 export class ProjectRepository extends AbstractRepository {
     static repositories: Array<models.Project> = [];
 
-    private baseUrl: string;
-    private teamName: string;
-    private user: string;
-    private password: string;
-
-    constructor(config: configModule.ConfigInterface) {
-        super();
-        this.baseUrl = config.baseUrl;
-        this.teamName = config.teamName;
-        this.user = config.user;
-        this.password = config.password;
-    }
-
     static findAll(): Array<models.Project> {
         return ProjectRepository.repositories;
     }
 
-    // @todo Make static
-    fetchAll(): q.Promise<Array<models.Project>> {
-        var resourceUrl: string = this.baseUrl + '/repositories/' + this.teamName;
+    static fetchAll(): q.Promise<Array<models.Project>> {
+        var config = configModule.Config.getConfig();
+
+        var resourceUrl: string = config.baseUrl + '/repositories/' + config.teamName;
         var requestConfig = {
             auth: {
-                username: this.user,
-                password: this.password
+                username: config.user,
+                password: config.password
             }
         };
 
@@ -109,9 +97,9 @@ export class ProjectRepository extends AbstractRepository {
             }
             var response: any = JSON.parse(body);
             var repos: any = response.values;
-            var result: Array<models.Project> = this.getCollection<models.Project>(factories.ProjectFactory, repos);
+            var result: Array<models.Project> = AbstractRepository.getCollection<models.Project>(factories.ProjectFactory, repos);
 
-            var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
+            var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
             q.all(rest).done(
                 (results: Array<any>) => {
                     for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
@@ -139,15 +127,6 @@ interface PullRequestSet {
 
 export class PullRequestRepository extends AbstractRepository {
     static pullRequests: PullRequestSet = {};
-
-    private user: string;
-    private password: string;
-
-    constructor(config: configModule.ConfigInterface) {
-        super();
-        this.user = config.user;
-        this.password = config.password;
-    }
 
     static findAll(): Array<models.PullRequest> {
         var foundPullRequests: Array<models.PullRequest> = [];
@@ -206,13 +185,14 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     // @todo to refactor
-    // @todo make static
-    fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
+    static fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);
+        var config = configModule.Config.getConfig();
+
         var requestConfig = {
             auth: {
-                username: this.user,
-                password: this.password
+                username: config.user,
+                password: config.password
             }
         };
 
@@ -231,7 +211,7 @@ export class PullRequestRepository extends AbstractRepository {
 
             var response: any = JSON.parse(body);
             var pullRequests: Array<any> = response.values;
-            var result: Array<models.PullRequest> = this.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
+            var result: Array<models.PullRequest> = AbstractRepository.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
 
             q.all(
                 result.map((pr: models.PullRequest) => {
@@ -249,7 +229,7 @@ export class PullRequestRepository extends AbstractRepository {
                 })
             ).then((prs: Array<models.PullRequest>) => {
                     result = prs;
-                    var rest = this.getRequestPromises(this.getPagesList(response), requestConfig);
+                    var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
                     q.all(rest).done((results: Array<any>) => {
                         for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                             var resultPrs: any = results[resultIndex];

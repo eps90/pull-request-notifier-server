@@ -7,15 +7,13 @@ import repositories = require('./repositories');
 import configModule = require('./config');
 
 export class Fetcher {
-    static initPullRequestCollection(config: configModule.ConfigInterface): q.Promise<any> {
+    static initPullRequestCollection(): q.Promise<any> {
         var deferred = q.defer();
-        var projectRepository = new repositories.ProjectRepository(config);
-        var pullRequestRepository = new repositories.PullRequestRepository(config);
 
-        projectRepository.fetchAll().then((projects: Array<models.Project>) => {
+        repositories.ProjectRepository.fetchAll().then((projects: Array<models.Project>) => {
             q.all(
                 projects.map((project: models.Project) => {
-                    return pullRequestRepository.fetchByProject(project);
+                    return repositories.PullRequestRepository.fetchByProject(project);
                 })
             ).done((values) => {
                 deferred.resolve(null)
