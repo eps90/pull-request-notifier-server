@@ -3,6 +3,7 @@
 import models = require('./models');
 import factories = require('./factories');
 import configModule = require('./config');
+import errors = require('./errors');
 
 import request = require('request');
 import q = require('q');
@@ -43,7 +44,7 @@ class AbstractRepository {
                 var deferred = q.defer();
                 request(resourceUrl, authConfig, (error, res: http.IncomingMessage, body) => {
                     if (error || res.statusCode !== 200) {
-                        return deferred.reject('Http request failed');
+                        return deferred.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
                     }
                     var response: any = JSON.parse(body);
                     deferred.resolve(response.values);
@@ -70,7 +71,6 @@ class AbstractRepository {
     }
 }
 
-// @todo Add more meaninful errors
 export class ProjectRepository extends AbstractRepository {
     static repositories: Array<models.Project> = [];
 
@@ -105,7 +105,7 @@ export class ProjectRepository extends AbstractRepository {
 
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
-                return defer.reject('Http request failed');
+                return defer.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
             }
             var response: any = JSON.parse(body);
             var repos: any = response.values;
@@ -226,7 +226,7 @@ export class PullRequestRepository extends AbstractRepository {
 
         request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
-                return defer.reject('Http request failed');
+                return defer.reject(errors.HttpRequestError.throwError(pullRequestsUrl, res, body));
             }
 
             var response: any = JSON.parse(body);
@@ -236,9 +236,9 @@ export class PullRequestRepository extends AbstractRepository {
             q.all(
                 result.map((pr: models.PullRequest) => {
                     var deferred = q.defer();
-                    request(pr.selfLink, requestConfig, (err, httpRes, innerBody) => {
+                    request(pr.selfLink, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
                         if (error || httpRes.statusCode !== 200) {
-                            return deferred.reject('Http request failed');
+                            return deferred.reject(errors.HttpRequestError.throwError(pr.selfLink, httpRes, innerBody));
                         }
 
                         var innerResponse = JSON.parse(innerBody);
