@@ -1,7 +1,21 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
-export class HttpRequestError {
-    static throwError(url: string, response?: {statusCode?: number}, responseBody?: string): Error {
+class BaseError {
+    constructor() {
+        Error.apply(this, arguments);
+    }
+}
+
+BaseError.prototype = new Error();
+
+export class HttpRequestError extends BaseError {
+    name: string = 'HttpRequestError';
+
+    constructor(public message?: string) {
+        super();
+    }
+
+    static throwError(url: string, response?: {statusCode?: number}, responseBody?: string): HttpRequestError {
         var message = 'Http request to ' + url + ' failed';
         var messageParts = [];
         if (response !== undefined && response.hasOwnProperty('statusCode')) {
@@ -16,23 +30,29 @@ export class HttpRequestError {
             message += ' ' + messageParts.join(' and ');
         }
 
-        return new Error(message);
+        return new HttpRequestError(message);
     }
 }
 
-export class ConfigError {
-    static throwFileNotFound(fileName: string): Error {
+export class ConfigError extends BaseError {
+    name: string = 'ConfigError';
+
+    constructor(public message?: string) {
+        super();
+    }
+
+    static throwFileNotFound(fileName: string): ConfigError {
         var message = "Config file at '" + fileName + "' not found";
-        return new Error(message);
+        return new ConfigError(message);
     }
 
-    static throwConfigPropertyRequired(propertyName: string): Error {
+    static throwConfigPropertyRequired(propertyName: string): ConfigError {
         var message = "Config property '" + propertyName + "' is required";
-        return new Error(message);
+        return new ConfigError(message);
     }
 
-    static throwConfigPropertyValueRequired(propertyName: string): Error {
+    static throwConfigPropertyValueRequired(propertyName: string): ConfigError {
         var message = "Config property '" + propertyName + "' cannot be empty";
-        return new Error(message);
+        return new ConfigError(message);
     }
 }
