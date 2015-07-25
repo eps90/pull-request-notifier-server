@@ -3,6 +3,7 @@
 import yaml = require('js-yaml');
 import fs = require('fs');
 import errors = require('./errors');
+import logger = require('./logger');
 
 export interface ConfigInterface {
     baseUrl: string;
@@ -35,6 +36,8 @@ export class Config {
         if (!fs.existsSync(this.configPath)) {
             throw errors.ConfigError.throwFileNotFound(this.configPath);
         }
+
+        logger.info('Loading config file: %s', this.configPath);
 
         var config: any = yaml.safeLoad(fs.readFileSync(this.configPath, 'utf-8'));
         for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {

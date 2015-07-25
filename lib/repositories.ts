@@ -4,6 +4,7 @@ import models = require('./models');
 import factories = require('./factories');
 import configModule = require('./config');
 import errors = require('./errors');
+import logger = require('./logger');
 
 import request = require('request');
 import q = require('q');
@@ -42,10 +43,14 @@ class AbstractRepository {
             var promise: () => q.Promise<any> = () => {
                 var resourceUrl: string = urls[urlIndex];
                 var deferred = q.defer();
+
+                logger.info('About to make an HTTP request to %s', resourceUrl);
                 request(resourceUrl, authConfig, (error, res: http.IncomingMessage, body) => {
                     if (error || res.statusCode !== 200) {
+                        logger.error('Http request to %s failed', resourceUrl);
                         return deferred.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
                     }
+                    logger.info('Http request to %s succeeded', resourceUrl);
                     var response: any = JSON.parse(body);
                     deferred.resolve(response.values);
                 });
@@ -91,10 +96,14 @@ export class ProjectRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.Project>>();
 
+        logger.info('About to make an HTTP request to %s', resourceUrl);
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
+                logger.error('Http request to %s failed', resourceUrl);
                 return defer.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
             }
+
+            logger.info('Http request to %s succeeded', resourceUrl);
             var response: any = JSON.parse(body);
             var repos: any = response.values;
             var result: Array<models.Project> = AbstractRepository.getCollection<models.Project>(factories.ProjectFactory, repos);
@@ -204,8 +213,10 @@ export class PullRequestRepository extends AbstractRepository {
 
         var defer = q.defer<Array<models.PullRequest>>();
 
+        logger.info('About to make an HTTP request to %s', pullRequestsUrl);
         request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
+                logger.error('Http request to %s failed', pullRequestsUrl);
                 return defer.reject(errors.HttpRequestError.throwError(pullRequestsUrl, res, body));
             }
 
@@ -217,11 +228,15 @@ export class PullRequestRepository extends AbstractRepository {
             q.all(
                 result.map((pr: models.PullRequest) => {
                     var deferred = q.defer();
+
+                    logger.info('About to make an HTTP request to %s', pr.selfLink);
                     request(pr.selfLink, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
                         if (error || httpRes.statusCode !== 200) {
+                            logger.error('Http request to %s failed', pr.selfLink);
                             return deferred.reject(errors.HttpRequestError.throwError(pr.selfLink, httpRes, innerBody));
                         }
 
+                        logger.info('Http request to %s succeeded', pr.selfLink);
                         var innerResponse = JSON.parse(innerBody);
                         deferred.resolve(factories.PullRequestFactory.create(innerResponse));
                     });
