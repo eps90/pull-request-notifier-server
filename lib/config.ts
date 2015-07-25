@@ -11,6 +11,11 @@ export interface ConfigInterface {
     password: string;
 }
 
+export interface ConfigParams {
+    config?: ConfigInterface
+    path?: string;
+}
+
 export class Config {
     private static configMapping: Array<string> = [
         'baseUrl',
@@ -20,13 +25,18 @@ export class Config {
     ];
 
     private static configPath: string = 'config/config.yml';
+    private static cachedConfig: ConfigInterface;
 
     static getConfig(): ConfigInterface {
+        if (this.cachedConfig !== undefined) {
+            return this.cachedConfig;
+        }
+
         if (!fs.existsSync(this.configPath)) {
             throw errors.ConfigError.throwFileNotFound(this.configPath);
         }
 
-        var config: any = yaml.safeLoad(fs.readFileSync('config/config.yml', 'utf-8'));
+        var config: any = yaml.safeLoad(fs.readFileSync(this.configPath, 'utf-8'));
         for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {
             var property = this.configMapping[propertyIndex];
             if (!config.hasOwnProperty(property)) {
@@ -36,6 +46,23 @@ export class Config {
             }
         }
 
+        this.cachedConfig = config;
+
         return config;
+    }
+
+    static setUp(params: ConfigParams): void {
+        if (params.hasOwnProperty('config')) {
+            this.cachedConfig = params.config;
+        }
+
+        if (params.hasOwnProperty('path')) {
+            this.configPath = params.path;
+        }
+    }
+
+    static reset() {
+        this.cachedConfig = undefined;
+        this.configPath = 'config/config.yml';
     }
 }

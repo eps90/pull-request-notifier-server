@@ -7,6 +7,10 @@ var expect = chai.expect;
 import jsYaml = require('js-yaml');
 
 describe('Config', () => {
+    beforeEach(() => {
+        configModule.Config.reset();
+    });
+
     afterEach(() => {
         mockFs.restore();
     });
@@ -45,6 +49,122 @@ describe('Config', () => {
         /* tslint:disable */
         expect(() => {configModule.Config.getConfig()}).to.throw(Error);
         /* tslint:enable */
+    });
+
+    it('should allow to set config to not to load it from file', () => {
+        var cachedConfig = {
+            baseUrl: 'http://example.com',
+            teamName: 'aaaa',
+            user: 'my.user',
+            password: 'topsecret'
+        };
+
+        var fileConfig = {
+            baseUrl: 'http://example.fr',
+            teamName: 'bbbb',
+            user: 'dummy.user',
+            password: 'weak.password'
+        };
+
+        var configContent = jsYaml.dump(fileConfig);
+
+        mockFs({
+            'config': {
+                'config.yml': mockFs.file({
+                    content: configContent
+                })
+            }
+        });
+
+        configModule.Config.setUp({config: cachedConfig});
+        var config = configModule.Config.getConfig();
+
+        expect(config).to.have.property('baseUrl', 'http://example.com');
+        expect(config).to.have.property('teamName', 'aaaa');
+        expect(config).to.have.property('user', 'my.user');
+        expect(config).to.have.property('password', 'topsecret');
+    });
+
+    it('should allow to change config path', () => {
+        var configOne = {
+            baseUrl: 'http://example.com',
+            teamName: 'aaaa',
+            user: 'my.user',
+            password: 'topsecret'
+        };
+
+        var configTwo = {
+            baseUrl: 'http://example.fr',
+            teamName: 'bbbb',
+            user: 'dummy.user',
+            password: 'weak.password'
+        };
+
+        var configOneContent = jsYaml.dump(configOne);
+        var configTwoContent = jsYaml.dump(configTwo);
+
+        mockFs({
+            'config': {
+                'config.yml': mockFs.file({
+                    content: configOneContent
+                }),
+                'another_config.yml': mockFs.file({
+                    content: configTwoContent
+                })
+            }
+        });
+
+        configModule.Config.setUp({path: 'config/another_config.yml'});
+        var config = configModule.Config.getConfig();
+
+        expect(config).to.have.property('baseUrl', 'http://example.fr');
+        expect(config).to.have.property('teamName', 'bbbb');
+        expect(config).to.have.property('user', 'dummy.user');
+        expect(config).to.have.property('password', 'weak.password');
+    });
+
+    it('should keep cached config event if the config file contents changes', () => {
+        var configOne = {
+            baseUrl: 'http://example.com',
+            teamName: 'aaaa',
+            user: 'my.user',
+            password: 'topsecret'
+        };
+
+        var configTwo = {
+            baseUrl: 'http://example.fr',
+            teamName: 'bbbb',
+            user: 'dummy.user',
+            password: 'weak.password'
+        };
+
+        var configOneContent = jsYaml.dump(configOne);
+        var configTwoContent = jsYaml.dump(configTwo);
+
+        mockFs({
+            'config': {
+                'config.yml': mockFs.file({
+                    content: configOneContent
+                })
+            }
+        });
+
+        configModule.Config.getConfig();
+
+        mockFs({
+            'config': {
+                'config.yml': mockFs.file({
+                    content: configTwoContent
+                })
+            }
+        });
+
+        var config = configModule.Config.getConfig();
+
+        expect(config).to.have.property('baseUrl', 'http://example.com');
+        expect(config).to.have.property('teamName', 'aaaa');
+        expect(config).to.have.property('user', 'my.user');
+        expect(config).to.have.property('password', 'topsecret');
     });
 
     describe('Validation errors', () => {
