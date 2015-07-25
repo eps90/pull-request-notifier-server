@@ -16,4 +16,12 @@ describe('Errors', () => {
             expect(() => {throw errors.HttpRequestError.throwError(url, response, message)}).to.throw(Error, expectedErrorString);
         });
     });
+
+    describe('ConfigError', () => {
+        it('should throw a customized message', () => {
+            var configPath = 'config/config.yml';
+            var expectedErrorString = "Config file at 'config/config.yml' not found";
+            expect(() => {throw errors.ConfigError.throwFileNotFound(configPath)}).to.throw(Error, expectedErrorString);
+        });
+    });
 });

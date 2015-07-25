@@ -21,3 +21,10 @@ export class HttpRequestError {
         return new Error(message);
     }
 }
+
+export class ConfigError {
+    static throwFileNotFound(fileName: string) {
+        var message = "Config file at '" + fileName + "' not found";
+        return new Error(message);
+    }
+}
