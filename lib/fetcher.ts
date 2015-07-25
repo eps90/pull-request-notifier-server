@@ -4,7 +4,6 @@ import q = require('q');
 
 import models = require('./models');
 import repositories = require('./repositories');
-import configModule = require('./config');
 
 export class Fetcher {
     static initPullRequestCollection(): q.Promise<any> {
@@ -16,7 +15,7 @@ export class Fetcher {
                     return repositories.PullRequestRepository.fetchByProject(project);
                 })
             ).done((values) => {
-                deferred.resolve(null)
+                deferred.resolve(null);
             });
         }).catch((error) => {
             deferred.reject(error);

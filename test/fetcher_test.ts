@@ -102,14 +102,14 @@ describe('Fetcher', () => {
             .reply(200, JSON.stringify(pullRequestTwo));
 
         fetcher.Fetcher.initPullRequestCollection().then(() => {
-            var pullRequests = repositories.PullRequestRepository.findAll();
-            expect(pullRequests).to.have.length(2);
-            expect(pullRequests[0].title).to.eq('Pull request one');
-            expect(pullRequests[1].title).to.eq('Pull request two');
+            var foundPullRequests = repositories.PullRequestRepository.findAll();
+            expect(foundPullRequests).to.have.length(2);
+            expect(foundPullRequests[0].title).to.eq('Pull request one');
+            expect(foundPullRequests[1].title).to.eq('Pull request two');
 
             done();
         }).catch((error) => {
             done(error);
-        })
+        });
     });
 });

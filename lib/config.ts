@@ -12,7 +12,7 @@ export interface ConfigInterface {
 }
 
 export interface ConfigParams {
-    config?: ConfigInterface
+    config?: ConfigInterface;
     path?: string;
 }
 
@@ -61,7 +61,7 @@ export class Config {
         }
     }
 
-    static reset() {
+    static reset(): void {
         this.cachedConfig = undefined;
         this.configPath = 'config/config.yml';
     }

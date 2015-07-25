@@ -211,7 +211,8 @@ export class PullRequestRepository extends AbstractRepository {
 
             var response: any = JSON.parse(body);
             var pullRequests: Array<any> = response.values;
-            var result: Array<models.PullRequest> = AbstractRepository.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
+            var result: Array<models.PullRequest> =
+                AbstractRepository.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
 
             q.all(
                 result.map((pr: models.PullRequest) => {

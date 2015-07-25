@@ -1,7 +1,5 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
-import http = require('http');
-
 export class HttpRequestError {
     static throwError(url: string, response?: {statusCode?: number}, responseBody?: string): Error {
         var message = 'Http request to ' + url + ' failed';
