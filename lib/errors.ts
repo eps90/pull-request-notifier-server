@@ -18,6 +18,6 @@ export class HttpRequestError {
             message += ' ' + messageParts.join(' and ');
         }
 
-        throw new Error(message);
+        return new Error(message);
     }
 }
