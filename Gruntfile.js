@@ -37,9 +37,10 @@ module.exports = function(grunt) {
         mochaTest: {
             unit: {
                 options: {
-                    reporter: 'spec'
+                    reporter: 'spec',
+                    require: 'build/test/bootstrap.js'
                 },
-                src: ['build/test/*.js']
+                src: ['build/test/*_test.js']
             }
         },
         tslint: {
