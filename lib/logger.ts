@@ -8,4 +8,6 @@ var logger = new (winston.Logger)({
     ]
 });
 
+logger.cli();
+
 export = logger;
