@@ -27,4 +27,14 @@ export class ConfigError {
         var message = "Config file at '" + fileName + "' not found";
         return new Error(message);
     }
+
+    static throwConfigPropertyRequired(propertyName: string) {
+        var message = "Config property '" + propertyName + "' is required";
+        return new Error(message);
+    }
+
+    static throwConfigPropertyValueRequired(propertyName: string) {
+        var message = "Config property '" + propertyName + "' cannot be empty";
+        return new Error(message);
+    }
 }
