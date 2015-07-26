@@ -40,7 +40,7 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     require: 'build/test/bootstrap.js'
                 },
-                src: ['build/test/*_test.js']
+                src: ['build/test/**/*_test.js']
             }
         },
         tslint: {
