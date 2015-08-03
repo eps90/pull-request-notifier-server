@@ -53,8 +53,7 @@ describe('Webhook listener', () => {
         expect(pullRequests[0].description).to.eq('Description of pull request');
     });
 
-    it('should update a pull request on pullrequest:updated', () => {
-        var eventType = 'pullrequest:updated';
+    function createUpdateLikePayload(eventKey: string) {
         var payload = {
             pullrequest: {
                 "id" :  1 ,
@@ -94,11 +93,36 @@ describe('Webhook listener', () => {
         samplePr.targetRepository = sampleProject;
         repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-        webhookHandler.WebhookHandler.handlePayload(eventType, payloadString);
+        webhookHandler.WebhookHandler.handlePayload(eventKey, payloadString);
 
         var pullRequests = repositories.PullRequestRepository.findAll();
         expect(pullRequests.length).to.eq(1);
         expect(pullRequests[0].title).to.eq('Title of pull request');
         expect(pullRequests[0].state).to.eq(models.PullRequestState.Open);
+    }
+
+    it('should update a pull request on pullrequest:updated', () => {
+        var eventType = 'pullrequest:updated';
+        createUpdateLikePayload(eventType);
+    });
+
+    it('should update a pull request on pullrequest:approved', () => {
+        var eventType = 'pullrequest:approved';
+        createUpdateLikePayload(eventType);
+    });
+
+    it('should update a pull request on pullrequest:unapproved', () => {
+        var eventType = 'pullrequest:unapproved';
+        createUpdateLikePayload(eventType);
+    });
+
+    it('should update a pull request on pullrequest:fulfilled', () => {
+        var eventType = 'pullrequest:fulfilled';
+        createUpdateLikePayload(eventType);
+    });
+
+    it('should update a pull request on pullrequest:rejected', () => {
+        var eventType = 'pullrequest:updated';
+        createUpdateLikePayload(eventType);
     });
 });

@@ -7,6 +7,12 @@ export class WebhookHandler {
     private static PULLREQUEST_CREATED = 'pullrequest:created';
     private static PULLREQUEST_UPDATED = 'pullrequest:updated';
 
+    private static PULLREQUEST_FULFILLED = 'pullrequest:fulfilled';
+    private static PULLREQUEST_REJECTED = 'pullrequest:rejected';
+
+    private static PULLREQUEST_APPROVED = 'pullrequest:approved';
+    private static PULLREQUEST_UNAPPROVED = 'pullrequest:unapproved';
+
     static handlePayload(type: string, body: string) {
         var parsedBody = JSON.parse(body);
         switch (type) {
@@ -14,6 +20,10 @@ export class WebhookHandler {
                 this.onPullRequestCreated(parsedBody);
                 break;
             case this.PULLREQUEST_UPDATED:
+            case this.PULLREQUEST_APPROVED:
+            case this.PULLREQUEST_UNAPPROVED:
+            case this.PULLREQUEST_FULFILLED:
+            case this.PULLREQUEST_REJECTED:
                 this.onPullRequestUpdated(parsedBody);
                 break;
         }
