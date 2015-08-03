@@ -5,9 +5,9 @@ var expect = chai.expect;
 
 import models = require('./../../lib/models');
 import repositories = require('./../../lib/repositories');
-import webhookHandler = require('./../../lib/server/webhook_handler');
+import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
 
-describe('Webhook listener', () => {
+describe('EventPayloadHandler', () => {
     beforeEach(() => {
         repositories.PullRequestRepository.pullRequests = {};
     });
@@ -43,7 +43,7 @@ describe('Webhook listener', () => {
         };
 
         var payloadString = JSON.stringify(payload);
-        webhookHandler.WebhookHandler.handlePayload(eventType, payloadString);
+        eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString);
 
         var pullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
         expect(pullRequests.length).to.eq(1);
@@ -93,7 +93,7 @@ describe('Webhook listener', () => {
         samplePr.targetRepository = sampleProject;
         repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-        webhookHandler.WebhookHandler.handlePayload(eventKey, payloadString);
+        eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString);
 
         var pullRequests = repositories.PullRequestRepository.findAll();
         expect(pullRequests.length).to.eq(1);

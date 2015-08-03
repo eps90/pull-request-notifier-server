@@ -4,7 +4,7 @@ import repositories = require('./../repositories');
 import factories = require('./../factories');
 import logger = require('./../logger');
 
-export class WebhookHandler {
+export class EventPayloadHandler {
     private static PULLREQUEST_CREATED = 'pullrequest:created';
     private static PULLREQUEST_UPDATED = 'pullrequest:updated';
 
