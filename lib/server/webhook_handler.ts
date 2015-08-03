@@ -4,10 +4,12 @@ import repositories = require('./../repositories');
 import factories = require('./../factories');
 
 export class WebhookHandler {
+    private static PULLREQUEST_CREATED = 'pullrequest:created';
+
     static handlePayload(type: string, body: string) {
         var parsedBody = JSON.parse(body);
         switch (type) {
-            case 'pullrequest:created':
+            case this.PULLREQUEST_CREATED:
                 this.onPullRequestCreated(parsedBody);
                 break;
         }
