@@ -2,7 +2,7 @@
 
 import repositories = require('./lib/repositories');
 import fetcher = require('./lib/fetcher');
-import webhook = require('./lib/server/webook_listener');
+import webhook = require('./lib/server/webhook_listener');
 
 import q = require('q');
 
