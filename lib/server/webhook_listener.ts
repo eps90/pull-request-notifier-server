@@ -2,6 +2,7 @@
 
 import http = require('http');
 import logger = require('./../logger');
+import eventPayloadHandler = require('./event_payload_handler');
 
 export class WebhookListener {
     static createServer() {
@@ -20,6 +21,7 @@ export class WebhookListener {
                 if (req.headers.hasOwnProperty('x-event-key')) {
                     var eventType = req.headers['x-event-key'];
                     logger.info("Request with event payload '%s'", eventType);
+                    eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody);
                 } else {
                     logger.warn("Request does not contain 'x-event-key' header");
                 }
