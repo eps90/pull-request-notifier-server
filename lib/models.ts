@@ -21,6 +21,7 @@ export class Reviewer implements ModelInterface {
 export enum PullRequestState {Open, Merged, Declined}
 
 export class PullRequest implements ModelInterface {
+    id: number;
     title: string;
     description: string;
     author: User;

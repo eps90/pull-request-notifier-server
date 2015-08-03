@@ -63,6 +63,10 @@ export class PullRequestFactory implements FactoryInterface {
     static create(rawObject: any): models.PullRequest {
         var pullRequest = new models.PullRequest();
 
+        if (rawObject.hasOwnProperty('id')) {
+            pullRequest.id = rawObject.id;
+        }
+
         if (rawObject.hasOwnProperty('title')) {
             pullRequest.title = rawObject.title;
         }

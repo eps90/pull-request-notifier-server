@@ -62,6 +62,7 @@ describe('Factories', () => {
     describe('PullRequestFactory', () => {
         it('should create PullRequests model from given object', () => {
             var rawObject: any = {
+                id: 1,
                 author: {
                     username: 'john.smith',
                     display_name: 'John Smith'
@@ -105,6 +106,7 @@ describe('Factories', () => {
 
             var pullRequest = factories.PullRequestFactory.create(rawObject);
 
+            expect(pullRequest.id).to.eq(1);
             expect(pullRequest.title).to.equal('Fixed bugs');
             expect(pullRequest.description).to.eq('This is a special pull request');
             expect(pullRequest.targetRepository.fullName).to.eq('bitbucket/bitbucket');
