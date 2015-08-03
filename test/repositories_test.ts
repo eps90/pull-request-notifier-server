@@ -471,5 +471,47 @@ describe("Repositories", () => {
             expect(actualPullRequests[0]).to.eq(pullRequest);
             expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0]).to.eq(pullRequest);
         });
+
+        it('should allow to update a pull request', () => {
+            var sampleProject = new models.Project();
+            sampleProject.fullName = 'team_name/repo_name';
+
+            var existentPullRequest = new models.PullRequest();
+            existentPullRequest.id = 1;
+            existentPullRequest.title = 'This is some title';
+            existentPullRequest.description = 'This is a description';
+            existentPullRequest.targetRepository = sampleProject;
+
+            var newPullRequest = new models.PullRequest();
+            newPullRequest.id = 1;
+            newPullRequest.title = 'This is new title';
+            newPullRequest.targetRepository = sampleProject;
+
+            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [existentPullRequest];
+            repositories.PullRequestRepository.update(newPullRequest);
+
+            var pullRequests = repositories.PullRequestRepository.findAll();
+            expect(pullRequests.length).to.eq(1);
+            expect(pullRequests[0].id).to.eq(1);
+            expect(pullRequests[0].title).to.eq('This is new title');
+            expect(pullRequests[0].description).to.be.undefined;
+        });
+
+        it('should add a new pull request on update if it doesn\'t exist', () => {
+            var sampleProject = new models.Project();
+            sampleProject.fullName = 'team_name/repo_name';
+
+            var newPullRequest = new models.PullRequest();
+            newPullRequest.id = 1;
+            newPullRequest.title = 'This is new title';
+            newPullRequest.targetRepository = sampleProject;
+
+            repositories.PullRequestRepository.update(newPullRequest);
+
+            var pullRequests = repositories.PullRequestRepository.findAll();
+            expect(pullRequests.length).to.eq(1);
+            expect(pullRequests[0].id).to.eq(1);
+            expect(pullRequests[0].title).to.eq('This is new title');
+        });
     });
 });
