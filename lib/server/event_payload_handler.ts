@@ -15,7 +15,6 @@ export class EventPayloadHandler {
     private static PULLREQUEST_UNAPPROVED = 'pullrequest:unapproved';
 
     static handlePayload(type: string, body: string) {
-        logger.info("Received event payload '" + type + "'");
         var parsedBody = JSON.parse(body);
         switch (type) {
             case this.PULLREQUEST_CREATED:
