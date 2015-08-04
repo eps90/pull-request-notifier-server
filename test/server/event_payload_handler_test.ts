@@ -116,13 +116,57 @@ describe('EventPayloadHandler', () => {
         createUpdateLikePayload(eventType);
     });
 
-    it('should update a pull request on pullrequest:fulfilled', () => {
+    function createCloseLikePayload(eventKey: string) {
+        var payload = {
+            pullrequest: {
+                "id" :  1 ,
+                "title" :  "Title of pull request" ,
+                "description" :  "Description of pull request" ,
+                "state" :  "MERGED" ,
+                "author" : {
+                    "username": "emmap1",
+                    "display_name": "Emma"
+                },
+                "destination" : {
+                    "branch" : {  "name" :  "master" },
+                    "repository" : {
+                        "full_name": "team_name/repo_name",
+                        "name": "repo_name"
+                    }
+                },
+                "participants" : [
+                    // @todo
+                ],
+                "links": {
+                    "self": {
+                        "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
+                    }
+                }
+            }
+        };
+        var payloadString = JSON.stringify(payload);
+
+        var sampleProject = new models.Project();
+        sampleProject.fullName = 'team_name/repo_name';
+
+        var samplePr = new models.PullRequest();
+        samplePr.id = 1;
+        samplePr.targetRepository = sampleProject;
+        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
+
+        eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString);
+
+        var pullRequests = repositories.PullRequestRepository.findAll();
+        expect(pullRequests.length).to.eq(0);
+    }
+
+    it('should remove a pull request on pullrequest:fulfilled', () => {
         var eventType = 'pullrequest:fulfilled';
-        createUpdateLikePayload(eventType);
+        createCloseLikePayload(eventType);
     });
 
-    it('should update a pull request on pullrequest:rejected', () => {
-        var eventType = 'pullrequest:updated';
-        createUpdateLikePayload(eventType);
+    it('should remove a pull request on pullrequest:rejected', () => {
+        var eventType = 'pullrequest:rejected';
+        createCloseLikePayload(eventType);
     });
 });

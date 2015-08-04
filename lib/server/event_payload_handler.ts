@@ -23,9 +23,11 @@ export class EventPayloadHandler {
             case this.PULLREQUEST_UPDATED:
             case this.PULLREQUEST_APPROVED:
             case this.PULLREQUEST_UNAPPROVED:
+                this.onPullRequestUpdated(parsedBody);
+                break;
             case this.PULLREQUEST_FULFILLED:
             case this.PULLREQUEST_REJECTED:
-                this.onPullRequestUpdated(parsedBody);
+                this.onPullRequestClosed(parsedBody);
                 break;
             default:
                 logger.info('Unhandled event payload: ' + type);
@@ -43,5 +45,11 @@ export class EventPayloadHandler {
         logger.info('Updating a pull request');
         var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.update(pullRequest);
+    }
+
+    private static onPullRequestClosed(body: any) {
+        logger.info('Closing a pull request');
+        var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
+        repositories.PullRequestRepository.remove(pullRequest);
     }
 }
