@@ -207,6 +207,18 @@ export class PullRequestRepository extends AbstractRepository {
         this.add(pullRequest);
     }
 
+    static remove(pullRequest: models.PullRequest):void {
+        var projectName = pullRequest.targetRepository.fullName;
+        var projectPrs = this.pullRequests[projectName] || [];
+        for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {
+            var currentPullRequest: models.PullRequest = projectPrs[prIndex];
+            if (currentPullRequest.id === pullRequest.id) {
+                this.pullRequests[projectName].splice(prIndex, 1);
+                return;
+            }
+        }
+    }
+
     // @todo to refactor
     static fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);

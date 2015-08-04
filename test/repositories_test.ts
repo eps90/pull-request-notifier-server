@@ -513,5 +513,21 @@ describe("Repositories", () => {
             expect(pullRequests[0].id).to.eq(1);
             expect(pullRequests[0].title).to.eq('This is new title');
         });
+
+        it('should be able to remove given pull request', () => {
+            var sampleProject = new models.Project();
+            sampleProject.fullName = 'team_name/repo_name';
+
+            var pullRequest = new models.PullRequest();
+            pullRequest.id = 1;
+            pullRequest.title = 'This is new title';
+            pullRequest.targetRepository = sampleProject;
+
+            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [pullRequest];
+
+            repositories.PullRequestRepository.remove(pullRequest);
+
+            expect(repositories.PullRequestRepository.findAll().length).to.eq(0);
+        });
     });
 });
