@@ -16,6 +16,10 @@ describe('SocketServer', () => {
         socketServer.SocketServer.startSocketServer();
     });
 
+    after(() => {
+        socketServer.SocketServer.stopSocketServer();
+    });
+
     it('should emit server:introduced on client:introduce event', (done) => {
         var client = socketIoClient.connect('http://localhost:8765', options);
         client.on('server:introduced', () => {

@@ -5,10 +5,11 @@ import repositories = require('./../repositories');
 import models = require('./../models');
 
 export class SocketServer {
+    private static io: SocketIO.Server;
     static startSocketServer() {
-        var io = Server(8765);
+        this.io = Server(8765);
 
-        io.on('connection', (socket) => {
+        this.io.on('connection', (socket) => {
             socket.on('client:introduce', (username: string) => {
                 socket.join(username);
 
@@ -16,8 +17,12 @@ export class SocketServer {
                 userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(username);
                 userPullRequests.assigned = repositories.PullRequestRepository.findByReviewer(username);
 
-                io.to(username).emit('server:introduced', userPullRequests);
+                this.io.to(username).emit('server:introduced', userPullRequests);
             });
         });
+    }
+
+    static stopSocketServer() {
+        this.io.close();
     }
 }
