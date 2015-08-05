@@ -3,6 +3,7 @@
 import repositories = require('./../repositories');
 import factories = require('./../factories');
 import logger = require('./../logger');
+import eventDispatcher = require('./../events/event_dispatcher');
 
 export interface HandlerInterface {
     supportedEvents: Array<string>;
@@ -46,23 +47,23 @@ export class PullRequestHandler implements HandlerInterface {
                 break;
             default:
                 logger.info('Unhandled event payload: ' + type);
-                break;
+                return;
         }
     }
 
-    onPullRequestCreated(body: any) {
+    private onPullRequestCreated(body: any) {
         logger.info('Adding a pull request to the repository');
         var newPullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.add(newPullRequest);
     }
 
-    onPullRequestUpdated(body: any) {
+    private onPullRequestUpdated(body: any) {
         logger.info('Updating a pull request');
         var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.update(pullRequest);
     }
 
-    onPullRequestClosed(body: any) {
+    private onPullRequestClosed(body: any) {
         logger.info('Closing a pull request');
         var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.remove(pullRequest);
@@ -80,7 +81,13 @@ export class EventPayloadHandler {
             var handler: HandlerInterface = this.handlers[handlerIndex];
             if (handler.supportedEvents.indexOf(type) !== -1) {
                 handler.handlePayload(type, bodyDecoded);
+                this.triggerEvent(type, bodyDecoded);
             }
         }
+    }
+
+    private static triggerEvent(payloadType: string, contents: any = {}) {
+        var eventName = 'webhook:' + payloadType;
+        eventDispatcher.EventDispatcher.getInstance().emit(eventName, contents);
     }
 }

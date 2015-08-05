@@ -6,6 +6,7 @@ var expect = chai.expect;
 import models = require('./../../lib/models');
 import repositories = require('./../../lib/repositories');
 import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
+import eventDispatcher = require('./../../lib/events/event_dispatcher');
 
 describe('EventPayloadHandler', () => {
     describe('PullRequestHandler', () => {
@@ -169,6 +170,89 @@ describe('EventPayloadHandler', () => {
         it('should remove a pull request on pullrequest:rejected', () => {
             var eventType = 'pullrequest:rejected';
             createCloseLikePayload(eventType);
+        });
+    });
+
+    describe('Emitting events', () => {
+        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+
+        beforeEach(() => {
+            dispatcher.removeAllListeners();
+        });
+
+        function testEmittingEvents(inputEventType, expectedEventType, done) {
+            var eventType = inputEventType;
+            var payload = {
+                pullrequest: {
+                    "id" :  1 ,
+                    "title" :  "Title of pull request" ,
+                    "description" :  "Description of pull request" ,
+                    "state" :  "OPEN" ,
+                    "author" : {
+                        "username": "emmap1",
+                        "display_name": "Emma"
+                    },
+                    "destination" : {
+                        "branch" : {  "name" :  "master" },
+                        "repository" : {
+                            "full_name": "team_name/repo_name",
+                            "name": "repo_name"
+                        }
+                    },
+                    "participants" : [
+                        // @todo
+                    ],
+                    "links": {
+                        "self": {
+                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
+                        }
+                    }
+                }
+            };
+
+            dispatcher.once(expectedEventType, (pullRequestPayload) => {
+                expect(pullRequestPayload.pullrequest.id).to.eq(payload.pullrequest.id);
+                done();
+            });
+
+            var payloadString = JSON.stringify(payload);
+            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString);
+        }
+
+        it('should emit webhook:pullrequest:created on pullrequest:created event payload', (done) => {
+            var eventType = 'pullrequest:created';
+            var emittedEventType = 'webhook:pullrequest:created';
+            testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:pullrequest:updated on pullrequest:updated event payload', (done) => {
+            var eventType = 'pullrequest:updated';
+            var emittedEventType = 'webhook:pullrequest:updated';
+            testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:pullrequest:approved on pullrequest:approved event payload', (done) => {
+            var eventType = 'pullrequest:approved';
+            var emittedEventType = 'webhook:pullrequest:approved';
+            testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:pullrequest:unapproved on pullrequest:unapproved event payload', (done) => {
+            var eventType = 'pullrequest:unapproved';
+            var emittedEventType = 'webhook:pullrequest:unapproved';
+            testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:pullrequest:rejected on pullrequest:rejected event payload', (done) => {
+            var eventType = 'pullrequest:rejected';
+            var emittedEventType = 'webhook:pullrequest:rejected';
+            testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:pullrequest:fulfilled on pullrequest:fulfilled event payload', (done) => {
+            var eventType = 'pullrequest:fulfilled';
+            var emittedEventType = 'webhook:pullrequest:fulfilled';
+            testEmittingEvents(eventType, emittedEventType, done);
         });
     });
 });
