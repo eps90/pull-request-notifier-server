@@ -176,7 +176,7 @@ export class PullRequestRepository extends AbstractRepository {
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: models.PullRequest) => {
-                    return pr.author.username === username;
+                    return pr.hasOwnProperty('author') && pr.author.username === username;
                 });
                 foundPullRequests = foundPullRequests.concat(prs);
             }
