@@ -34,6 +34,9 @@
     },
     "winston/winston.d.ts": {
       "commit": "f6c8ca47193fb67947944a3170912672ac3e908e"
+    },
+    "socket.io/socket.io.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
     }
   }
 }
