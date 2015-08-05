@@ -31,3 +31,8 @@ export class PullRequest implements ModelInterface {
     state: PullRequestState;
     selfLink: string;
 }
+
+export class UserPullRequestsSet {
+    authored: Array<PullRequest> = [];
+    assigned: Array<PullRequest> = [];
+}
