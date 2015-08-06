@@ -3,6 +3,7 @@
 import http = require('http');
 import logger = require('./../logger');
 import eventPayloadHandler = require('./event_payload_handler');
+import configModule = require('./../config');
 
 export class WebhookListener {
     static createServer() {
@@ -38,8 +39,10 @@ export class WebhookListener {
             }
         });
 
-        server.listen(8888);
-        logger.info('HTTP server starts listening on port 8888');
+        var config = configModule.Config.getConfig();
+        var webhookPort = config.webhook_port;
+        server.listen(webhookPort);
+        logger.info('HTTP server starts listening on port ' + webhookPort);
 
         return server;
     }
