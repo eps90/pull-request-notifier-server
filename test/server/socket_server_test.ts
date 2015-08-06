@@ -77,7 +77,7 @@ describe('SocketServer', () => {
             dispatcher.removeAllListeners();
         });
 
-        it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
+        function testEmittingEventViaSocket(inputEvent: string, done) {
             var username = 'john.smith';
             var payload = {
                 pullrequest: {
@@ -143,8 +143,13 @@ describe('SocketServer', () => {
                     done();
                 });
 
-                dispatcher.emit('webhook:pullrequest:created', payload);
+                dispatcher.emit(inputEvent, payload);
             });
+        }
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
+            var inputEvent = 'webhook:pullrequest:created';
+            testEmittingEventViaSocket(inputEvent, done);
         });
     });
 });
