@@ -18,7 +18,9 @@ describe("Repositories", () => {
             baseUrl: 'http://example.com',
             teamName: 'bitbucket',
             user: 'my.user',
-            password: 'topsecret'
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         configModule.Config.setUp({config: appConfig});

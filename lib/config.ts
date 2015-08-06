@@ -10,6 +10,8 @@ export interface ConfigInterface {
     teamName: string;
     user: string;
     password: string;
+    webhook_port: number;
+    socket_port: number;
 }
 
 export interface ConfigParams {
@@ -34,6 +36,16 @@ export class Config {
         'password': {
             required: true,
             notEmpty: true
+        },
+        webhook_port: {
+            required: true,
+            notEmpty: true,
+            type: 'number'
+        },
+        socket_port: {
+            required: true,
+            notEmpty: true,
+            type: 'number'
         }
     };
 
@@ -72,6 +84,10 @@ export class Config {
 
             if (keyValue.notEmpty && config.hasOwnProperty(keyName) && config[keyName] === null) {
                 throw errors.ConfigError.throwConfigPropertyValueRequired(keyValue);
+            }
+
+            if (keyValue.hasOwnProperty('type') && config.hasOwnProperty(keyName) && typeof config[keyName] !== keyValue.type) {
+                throw errors.ConfigError.throwConfigPropertyHasWrongType(keyValue, keyValue.type, typeof config[keyName]);
             }
         }
     }

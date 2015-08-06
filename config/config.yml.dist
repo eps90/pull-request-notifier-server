@@ -2,3 +2,5 @@ baseUrl: ~
 teamName: ~
 user: ~
 password: ~
+webhook_port: ~
+socket_port: ~

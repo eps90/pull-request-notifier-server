@@ -20,7 +20,9 @@ describe('Config', () => {
             baseUrl: 'http://example.com',
             teamName: 'aaaa',
             user: 'my.user',
-            password: 'topsecret'
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configContent = jsYaml.safeDump(configObj);
@@ -39,6 +41,8 @@ describe('Config', () => {
         expect(config).to.have.property('teamName', 'aaaa');
         expect(config).to.have.property('user', 'my.user');
         expect(config).to.have.property('password', 'topsecret');
+        expect(config).to.have.property('webhook_port', 1234);
+        expect(config).to.have.property('socket_port', 4321);
     });
 
     it('should throw when config file does not exist', () => {
@@ -56,14 +60,18 @@ describe('Config', () => {
             baseUrl: 'http://example.com',
             teamName: 'aaaa',
             user: 'my.user',
-            password: 'topsecret'
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var fileConfig = {
             baseUrl: 'http://example.fr',
             teamName: 'bbbb',
             user: 'dummy.user',
-            password: 'weak.password'
+            password: 'weak.password',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configContent = jsYaml.dump(fileConfig);
@@ -90,14 +98,18 @@ describe('Config', () => {
             baseUrl: 'http://example.com',
             teamName: 'aaaa',
             user: 'my.user',
-            password: 'topsecret'
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configTwo = {
             baseUrl: 'http://example.fr',
             teamName: 'bbbb',
             user: 'dummy.user',
-            password: 'weak.password'
+            password: 'weak.password',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configOneContent = jsYaml.dump(configOne);
@@ -128,14 +140,18 @@ describe('Config', () => {
             baseUrl: 'http://example.com',
             teamName: 'aaaa',
             user: 'my.user',
-            password: 'topsecret'
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configTwo = {
             baseUrl: 'http://example.fr',
             teamName: 'bbbb',
             user: 'dummy.user',
-            password: 'weak.password'
+            password: 'weak.password',
+            webhook_port: 1234,
+            socket_port: 4321
         };
 
         var configOneContent = jsYaml.dump(configOne);
@@ -211,6 +227,28 @@ describe('Config', () => {
             /* tslint:disable */
             expect(() => { configModule.Config.getConfig() }).to.throw(Error);
             /* tslint:enable */
+        });
+
+        it('should throw when config value is in wrong type', () => {
+            var configObj = {
+                baseUrl: null,
+                teamName: 'aaaa',
+                user: 'my.user',
+                password: 'topsecret',
+                webhook_port: 'abc'
+            };
+
+            var configContent = jsYaml.safeDump(configObj);
+
+            mockFs({
+                'config': {
+                    'config.yml': mockFs.file({
+                        content: configContent
+                    })
+                }
+            });
+
+            expect(() => { configModule.Config.getConfig() }).to.throw(Error);
         });
     });
 });
