@@ -6,13 +6,16 @@ import models = require('./../models');
 import factories = require('./../factories');
 import eventDispatcher = require('./../events/event_dispatcher');
 import logger = require('./../logger');
+import configModule = require('./../config');
 
 export class SocketServer {
     static io: SocketIO.Server;
     static startSocketServer() {
-        var port: number = 8765;
-        logger.info('Starting socket.io server on port ' + port);
-        this.io = Server(port);
+        var config = configModule.Config.getConfig();
+        var socketPort = config.socket_port;
+        
+        logger.info('Starting socket.io server on port ' + socketPort);
+        this.io = Server(socketPort);
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 
         this.io.on('connection', (socket) => {

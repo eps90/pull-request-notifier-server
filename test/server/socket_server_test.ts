@@ -7,13 +7,26 @@ import socketServer = require('./../../lib/server/socket_server');
 import repositories = require('./../../lib/repositories');
 import models = require('./../../lib/models');
 import eventDispatcher = require('./../../lib/events/event_dispatcher');
+import configModule = require('./../../lib/config');
 
 describe('SocketServer', () => {
     var options = {
         'force new connection': true
     };
+    var socketPort = 4321;
 
     before(() => {
+        var config = {
+            baseUrl: 'http://example.com',
+            teamName: 'aaaa',
+            user: 'my.user',
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: socketPort
+        };
+        configModule.Config.reset();
+        configModule.Config.setUp({config: config});
+
         socketServer.SocketServer.startSocketServer();
     });
 
@@ -22,7 +35,7 @@ describe('SocketServer', () => {
     });
 
     it('should emit server:introduced on client:introduce event', (done) => {
-        var client = socketIoClient.connect('http://localhost:8765', options);
+        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', () => {
             client.disconnect();
             done();
@@ -55,7 +68,7 @@ describe('SocketServer', () => {
             assignedPullRequest
         ];
 
-        var client = socketIoClient.connect('http://localhost:8765', options);
+        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', (pullRequests: models.UserPullRequestsSet) => {
             expect(pullRequests.assigned.length).to.eq(1);
             expect(pullRequests.authored.length).to.eq(1);
@@ -129,7 +142,7 @@ describe('SocketServer', () => {
                 assignedPullRequest
             ];
 
-            var client = socketIoClient.connect('http://localhost:8765', options);
+            var client = socketIoClient.connect('http://localhost:' + socketPort, options);
             client.emit('client:introduce', username);
 
             client.on('server:introduced', () => {
