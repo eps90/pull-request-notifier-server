@@ -55,4 +55,10 @@ export class ConfigError extends BaseError {
         var message = "Config property '" + propertyName + "' cannot be empty";
         return new ConfigError(message);
     }
+
+    static throwConfigPropertyHasWrongType(propertyName: string, expectedType: string, actualType: string): ConfigError {
+        var message = "Expected property '" + propertyName + "' to be type of '" + expectedType + "'" +
+            ". Got '" + actualType + "' instead";
+        return new ConfigError(message);
+    }
 }

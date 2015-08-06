@@ -35,5 +35,13 @@ describe('Errors', () => {
             var expectedErrorString = "Config property 'abc' cannot be empty";
             expect(() => { throw errors.ConfigError.throwConfigPropertyValueRequired(propertyName); }).to.throw(expectedErrorString);
         });
+
+        it('should throw when config value is in wrong type', () => {
+            var propertyName = 'abc';
+            var expectedType = 'number';
+            var actualType = 'string';
+            var expectedErrorString = "Expected property 'abc' to be type of 'number'. Got 'string' instead";
+            expect(() => { throw errors.ConfigError.throwConfigPropertyHasWrongType(propertyName, expectedType, actualType)}).to.throw(expectedErrorString);
+        });
     });
 });
