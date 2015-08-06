@@ -40,16 +40,16 @@ export class Config {
         logger.info('Loading config file: %s', this.configPath);
 
         var config: any = yaml.safeLoad(fs.readFileSync(this.configPath, 'utf-8'));
-        this.validateConfig(config);
+        this.validateConfig(config, this.configMapping);
 
         this.cachedConfig = config;
 
         return config;
     }
 
-    private static validateConfig(config: any) {
-        for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {
-            var property = this.configMapping[propertyIndex];
+    private static validateConfig(config: any, configMapping: any) {
+        for (var propertyIndex = 0; propertyIndex < configMapping.length; propertyIndex++) {
+            var property = configMapping[propertyIndex];
             if (!config.hasOwnProperty(property)) {
                 throw errors.ConfigError.throwConfigPropertyRequired(property);
             } else if (config[property] === null) {
