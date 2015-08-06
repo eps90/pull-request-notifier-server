@@ -18,12 +18,24 @@ export interface ConfigParams {
 }
 
 export class Config {
-    private static configMapping: Array<string> = [
-        'baseUrl',
-        'teamName',
-        'user',
-        'password'
-    ];
+    private static configMapping: any = {
+        'baseUrl': {
+            required: true,
+            notEmpty: true
+        },
+        'teamName': {
+            required: true,
+            notEmpty: true
+        },
+        'user': {
+            required: true,
+            notEmpty: true
+        },
+        'password': {
+            required: true,
+            notEmpty: true
+        }
+    };
 
     private static configPath: string = 'config/config.yml';
     private static cachedConfig: ConfigInterface;
@@ -48,12 +60,18 @@ export class Config {
     }
 
     private static validateConfig(config: any, configMapping: any) {
-        for (var propertyIndex = 0; propertyIndex < configMapping.length; propertyIndex++) {
-            var property = configMapping[propertyIndex];
-            if (!config.hasOwnProperty(property)) {
-                throw errors.ConfigError.throwConfigPropertyRequired(property);
-            } else if (config[property] === null) {
-                throw errors.ConfigError.throwConfigPropertyValueRequired(property);
+        for (var keyName in configMapping) {
+            if (!configMapping.hasOwnProperty(keyName)) {
+                continue;
+            }
+
+            var keyValue = configMapping[keyName];
+            if (keyValue.required && !config.hasOwnProperty(keyName)) {
+                throw errors.ConfigError.throwConfigPropertyRequired(keyValue);
+            }
+
+            if (keyValue.notEmpty && config.hasOwnProperty(keyName) && config[keyName] === null) {
+                throw errors.ConfigError.throwConfigPropertyValueRequired(keyValue);
             }
         }
     }
