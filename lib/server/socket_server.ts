@@ -5,21 +5,27 @@ import repositories = require('./../repositories');
 import models = require('./../models');
 import factories = require('./../factories');
 import eventDispatcher = require('./../events/event_dispatcher');
+import logger = require('./../logger');
 
 export class SocketServer {
     static io: SocketIO.Server;
     static startSocketServer() {
+        logger.info('Starting socket.io server');
         this.io = Server(8765);
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 
         this.io.on('connection', (socket) => {
+            logger.info('Client connected');
+
             socket.on('client:introduce', (username: string) => {
+                logger.info('Client introduced');
                 socket.join(username);
 
                 var userPullRequests = new models.UserPullRequestsSet();
                 userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(username);
                 userPullRequests.assigned = repositories.PullRequestRepository.findByReviewer(username);
 
+                logger.info("Emitting event 'server:introduced'");
                 this.io.to(username).emit('server:introduced', userPullRequests);
             });
         });
@@ -33,12 +39,14 @@ export class SocketServer {
     }
 
     private static onWebhookEvent(payloadDecoded: {pullrequest: any}) {
+        logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
         var author = pullRequest.author.username;
 
         var userPullRequests = new models.UserPullRequestsSet();
         userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(author);
 
+        logger.info("Emitting event 'server:pullrequests:updated'");
         SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
     }
 
