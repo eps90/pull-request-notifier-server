@@ -40,6 +40,14 @@ export class Config {
         logger.info('Loading config file: %s', this.configPath);
 
         var config: any = yaml.safeLoad(fs.readFileSync(this.configPath, 'utf-8'));
+        this.validateConfig(config);
+
+        this.cachedConfig = config;
+
+        return config;
+    }
+
+    private static validateConfig(config: any) {
         for (var propertyIndex = 0; propertyIndex < this.configMapping.length; propertyIndex++) {
             var property = this.configMapping[propertyIndex];
             if (!config.hasOwnProperty(property)) {
@@ -48,10 +56,6 @@ export class Config {
                 throw errors.ConfigError.throwConfigPropertyValueRequired(property);
             }
         }
-
-        this.cachedConfig = config;
-
-        return config;
     }
 
     static setUp(params: ConfigParams): void {
