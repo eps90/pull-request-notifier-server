@@ -10,8 +10,9 @@ import logger = require('./../logger');
 export class SocketServer {
     static io: SocketIO.Server;
     static startSocketServer() {
-        logger.info('Starting socket.io server');
-        this.io = Server(8765);
+        var port: number = 8765;
+        logger.info('Starting socket.io server on port ' + port);
+        this.io = Server(port);
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 
         this.io.on('connection', (socket) => {
