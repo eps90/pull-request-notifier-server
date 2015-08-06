@@ -151,5 +151,30 @@ describe('SocketServer', () => {
             var inputEvent = 'webhook:pullrequest:created';
             testEmittingEventViaSocket(inputEvent, done);
         });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:updated', (done) => {
+            var inputEvent = 'webhook:pullrequest:updated';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:approved', (done) => {
+            var inputEvent = 'webhook:pullrequest:approved';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:unapproved', (done) => {
+            var inputEvent = 'webhook:pullrequest:unapproved';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:fulfilled', (done) => {
+            var inputEvent = 'webhook:pullrequest:fulfilled';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:rejected', (done) => {
+            var inputEvent = 'webhook:pullrequest:rejected';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
     });
 });
