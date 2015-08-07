@@ -62,3 +62,14 @@ Running the following command will execute `grunt test`:
 ```bash
 npm start
 ```
+
+## Deployment
+The project uses [ShiptIt](https://github.com/shipitjs/shipit) for deployment. ShipIt has built-in Grunt integation so deploying the app can be done by running the following:
+```bash
+grunt shipit:[stage] deploy
+```
+Available stages:
+
+* staging
+
+ShipIt will create a `current` and `releases` directories, like **Capistrano**.
