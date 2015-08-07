@@ -59,6 +59,10 @@ module.exports = function(grunt) {
             build: ['build'],
             dist: ['dist']
         },
+        // @todo Compile typescript files on deploy
+        // @todo Clean up unnecessary files
+        // @todo Clean up local node modules on deploy
+        // @todo Stop/start supervisor program on deploy
         shipit: {
             options: {
                 workspace: '/tmp/bitbucket-notifier',

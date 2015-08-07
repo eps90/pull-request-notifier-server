@@ -73,3 +73,14 @@ Available stages:
 * staging
 
 ShipIt will create a `current` and `releases` directories, like **Capistrano**.
+
+## Things to be done
+
+1. `config/config.yml` is currently ignored by git, so application should initialize it. Ideally, it shoud be initialized in composer way - read and map environment variables and assign proper values to destintation config. For dev environment it should prompt for required config based on `config.yml.dist`.
+2. Little refactor :) Some things have been already marked as _@todo_ in code so keep an eye on it.
+
+## Additional featutes (TBD)
+
+1. **Tags parser** - parse tags from comments/description to provide additional custom metadata of project
+2. **PR pub/sub** - subscribe to the pull request to follow the actions on it. In effect, subscribed user will get the same (or similar) notifications as well as assigned/authored user
+3. **PR todo list** - in general for QA. After the PR has been merged, it should appear in _TODO LIST_ for client that has _QA_ role. Needs a local database.
