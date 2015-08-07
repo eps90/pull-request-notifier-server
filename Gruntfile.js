@@ -3,6 +3,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-tslint');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-shipit');
+    grunt.loadNpmTasks('shipit-deploy');
+    grunt.loadNpmTasks('shipit-npm');
+    require('shipit-npm')(grunt.shipit);
 
     grunt.initConfig({
         typescript: {
@@ -54,6 +58,22 @@ module.exports = function(grunt) {
         clean: {
             build: ['build'],
             dist: ['dist']
+        },
+        shipit: {
+            options: {
+                workspace: '/tmp/bitbucket-notifier',
+                deployTo: '/tmp/bitbucket-notifier',
+                repositoryUrl: 'git@bitbucket.org:dacsoftware/bitbucket-notifier.git',
+                ignores: ['.git'],
+                keepReleases: 3,
+                npm: {
+                    remote: false,
+                    installFlags: ['--production']
+                }
+            },
+            staging: {
+                servers: 'root@127.0.0.1'
+            }
         }
     });
 
