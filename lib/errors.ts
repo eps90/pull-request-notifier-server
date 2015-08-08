@@ -11,7 +11,7 @@ BaseError.prototype = new Error();
 export class HttpRequestError extends BaseError {
     name: string = 'HttpRequestError';
 
-    constructor(public message?: string) {
+    constructor() {
         super();
     }
 
@@ -37,7 +37,7 @@ export class HttpRequestError extends BaseError {
 export class ConfigError extends BaseError {
     name: string = 'ConfigError';
 
-    constructor(public message?: string) {
+    constructor() {
         super();
     }
 

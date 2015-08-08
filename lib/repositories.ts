@@ -207,7 +207,7 @@ export class PullRequestRepository extends AbstractRepository {
         this.add(pullRequest);
     }
 
-    static remove(pullRequest: models.PullRequest):void {
+    static remove(pullRequest: models.PullRequest): void {
         var projectName = pullRequest.targetRepository.fullName;
         var projectPrs = this.pullRequests[projectName] || [];
         for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {

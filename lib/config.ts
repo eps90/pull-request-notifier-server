@@ -71,7 +71,22 @@ export class Config {
         return config;
     }
 
-    private static validateConfig(config: any, configMapping: any) {
+    static setUp(params: ConfigParams): void {
+        if (params.hasOwnProperty('config')) {
+            this.cachedConfig = params.config;
+        }
+
+        if (params.hasOwnProperty('path')) {
+            this.configPath = params.path;
+        }
+    }
+
+    static reset(): void {
+        this.cachedConfig = undefined;
+        this.configPath = 'config/config.yml';
+    }
+
+    private static validateConfig(config: any, configMapping: any): void {
         for (var keyName in configMapping) {
             if (!configMapping.hasOwnProperty(keyName)) {
                 continue;
@@ -90,20 +105,5 @@ export class Config {
                 throw errors.ConfigError.throwConfigPropertyHasWrongType(keyValue, keyValue.type, typeof config[keyName]);
             }
         }
-    }
-
-    static setUp(params: ConfigParams): void {
-        if (params.hasOwnProperty('config')) {
-            this.cachedConfig = params.config;
-        }
-
-        if (params.hasOwnProperty('path')) {
-            this.configPath = params.path;
-        }
-    }
-
-    static reset(): void {
-        this.cachedConfig = undefined;
-        this.configPath = 'config/config.yml';
     }
 }

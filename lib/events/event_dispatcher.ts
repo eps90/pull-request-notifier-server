@@ -9,11 +9,11 @@ var EventEmitter = events.EventEmitter;
 export class EventDispatcher extends events.EventEmitter {
     private static instance: EventDispatcher;
 
-    static getInstance() {
+    static getInstance(): EventDispatcher {
         if (this.instance === undefined) {
             logger.info('Creating new instance of EventDispatcher');
         }
-        return this.instance || (this.instance = new EventDispatcher);
+        return this.instance || (this.instance = new EventDispatcher());
     }
 }
 

@@ -11,7 +11,7 @@ export interface HandlerInterface {
 }
 
 export class PullRequestHandler implements HandlerInterface {
-    supportedEvents:Array<string> = [
+    supportedEvents: Array<string> = [
         'pullrequest:created',
         'pullrequest:updated',
         'pullrequest:fulfilled',
@@ -20,16 +20,14 @@ export class PullRequestHandler implements HandlerInterface {
         'pullrequest:unapproved',
     ];
 
-    private PULLREQUEST_CREATED = 'pullrequest:created';
-    private PULLREQUEST_UPDATED = 'pullrequest:updated';
+    private PULLREQUEST_CREATED: string = 'pullrequest:created';
+    private PULLREQUEST_UPDATED: string = 'pullrequest:updated';
 
-    private PULLREQUEST_FULFILLED = 'pullrequest:fulfilled';
-    private PULLREQUEST_REJECTED = 'pullrequest:rejected';
+    private PULLREQUEST_FULFILLED: string = 'pullrequest:fulfilled';
+    private PULLREQUEST_REJECTED: string = 'pullrequest:rejected';
 
-    private PULLREQUEST_APPROVED = 'pullrequest:approved';
-    private PULLREQUEST_UNAPPROVED = 'pullrequest:unapproved';
-
-    constructor() {}
+    private PULLREQUEST_APPROVED: string = 'pullrequest:approved';
+    private PULLREQUEST_UNAPPROVED: string = 'pullrequest:unapproved';
 
     handlePayload(type: string, bodyDecoded: any): void {
         switch (type) {
@@ -51,19 +49,19 @@ export class PullRequestHandler implements HandlerInterface {
         }
     }
 
-    private onPullRequestCreated(body: any) {
+    private onPullRequestCreated(body: any): void {
         logger.info('Adding a pull request to the repository');
         var newPullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.add(newPullRequest);
     }
 
-    private onPullRequestUpdated(body: any) {
+    private onPullRequestUpdated(body: any): void {
         logger.info('Updating a pull request');
         var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.update(pullRequest);
     }
 
-    private onPullRequestClosed(body: any) {
+    private onPullRequestClosed(body: any): void {
         logger.info('Closing a pull request');
         var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.remove(pullRequest);
@@ -75,7 +73,7 @@ export class EventPayloadHandler {
         new PullRequestHandler()
     ];
 
-    static handlePayload(type: string, bodyEncoded: string) {
+    static handlePayload(type: string, bodyEncoded: string): void {
         var bodyDecoded = JSON.parse(bodyEncoded);
         for (var handlerIndex = 0; handlerIndex < this.handlers.length; handlerIndex++) {
             var handler: HandlerInterface = this.handlers[handlerIndex];
@@ -86,7 +84,7 @@ export class EventPayloadHandler {
         }
     }
 
-    private static triggerEvent(payloadType: string, contents: any = {}) {
+    private static triggerEvent(payloadType: string, contents: any = {}): void {
         var eventName = 'webhook:' + payloadType;
         eventDispatcher.EventDispatcher.getInstance().emit(eventName, contents);
     }

@@ -55,7 +55,7 @@ describe('EventPayloadHandler', () => {
             expect(pullRequests[0].description).to.eq('Description of pull request');
         });
 
-        function createUpdateLikePayload(eventKey: string) {
+        function createUpdateLikePayload(eventKey: string): void {
             var payload = {
                 pullrequest: {
                     "id" :  1 ,
@@ -118,7 +118,7 @@ describe('EventPayloadHandler', () => {
             createUpdateLikePayload(eventType);
         });
 
-        function createCloseLikePayload(eventKey: string) {
+        function createCloseLikePayload(eventKey: string): void {
             var payload = {
                 pullrequest: {
                     "id" :  1 ,
@@ -180,7 +180,7 @@ describe('EventPayloadHandler', () => {
             dispatcher.removeAllListeners();
         });
 
-        function testEmittingEvents(inputEventType, expectedEventType, done) {
+        function testEmittingEvents(inputEventType, expectedEventType, done): void {
             var eventType = inputEventType;
             var payload = {
                 pullrequest: {

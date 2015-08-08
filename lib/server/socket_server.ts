@@ -10,10 +10,10 @@ import configModule = require('./../config');
 
 export class SocketServer {
     static io: SocketIO.Server;
-    static startSocketServer() {
+    static startSocketServer(): void {
         var config = configModule.Config.getConfig();
         var socketPort = config.socket_port;
-        
+
         logger.info('Starting socket.io server on port ' + socketPort);
         this.io = Server(socketPort);
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
@@ -42,7 +42,11 @@ export class SocketServer {
         dispatcher.on('webhook:pullrequest:rejected', SocketServer.onWebhookEvent);
     }
 
-    private static onWebhookEvent(payloadDecoded: {pullrequest: any}) {
+    static stopSocketServer(): void {
+        this.io.close();
+    }
+
+    private static onWebhookEvent(payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
         var author = pullRequest.author.username;
@@ -52,9 +56,5 @@ export class SocketServer {
 
         logger.info("Emitting event 'server:pullrequests:updated'");
         SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
-    }
-
-    static stopSocketServer() {
-        this.io.close();
     }
 }

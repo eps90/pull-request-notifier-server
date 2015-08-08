@@ -248,7 +248,7 @@ describe('Config', () => {
                 }
             });
 
-            expect(() => { configModule.Config.getConfig() }).to.throw(Error);
+            expect(() => { configModule.Config.getConfig(); }).to.throw(Error);
         });
     });
 });

@@ -18,7 +18,10 @@ export class Fetcher {
                     return repositories.PullRequestRepository.fetchByProject(project);
                 })
             ).done((values) => {
-                logger.info('Pull request collection initialized. Found %d pull requests', repositories.PullRequestRepository.findAll().length);
+                logger.info(
+                    'Pull request collection initialized. Found %d pull requests',
+                    repositories.PullRequestRepository.findAll().length
+                );
                 deferred.resolve(null);
             });
         }).catch((error) => {

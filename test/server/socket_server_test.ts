@@ -90,7 +90,7 @@ describe('SocketServer', () => {
             dispatcher.removeAllListeners();
         });
 
-        function testEmittingEventViaSocket(inputEvent: string, done) {
+        function testEmittingEventViaSocket(inputEvent: string, done): void {
             var username = 'john.smith';
             var payload = {
                 pullrequest: {

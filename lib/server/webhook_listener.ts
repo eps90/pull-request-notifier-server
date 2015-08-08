@@ -6,7 +6,7 @@ import eventPayloadHandler = require('./event_payload_handler');
 import configModule = require('./../config');
 
 export class WebhookListener {
-    static createServer() {
+    static createServer(): void {
         logger.info('Creating HTTP server');
         var server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
             logger.info('Incoming HTTP request');

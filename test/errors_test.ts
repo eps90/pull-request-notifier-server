@@ -41,7 +41,8 @@ describe('Errors', () => {
             var expectedType = 'number';
             var actualType = 'string';
             var expectedErrorString = "Expected property 'abc' to be type of 'number'. Got 'string' instead";
-            expect(() => { throw errors.ConfigError.throwConfigPropertyHasWrongType(propertyName, expectedType, actualType)}).to.throw(expectedErrorString);
+            expect(() => { throw errors.ConfigError.throwConfigPropertyHasWrongType(propertyName, expectedType, actualType); })
+                .to.throw(expectedErrorString);
         });
     });
 });
