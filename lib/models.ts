@@ -32,6 +32,9 @@ export class PullRequest implements ModelInterface {
     selfLink: string;
 }
 
+// @todo Change name to PullRequestEvent
+// @todo Add triggered event name (Bitbucket)
+// @todo Add context pull request (that triggered a webhook)
 export class UserPullRequestsSet {
     authored: Array<PullRequest> = [];
     assigned: Array<PullRequest> = [];

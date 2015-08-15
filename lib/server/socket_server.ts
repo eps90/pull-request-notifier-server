@@ -46,6 +46,8 @@ export class SocketServer {
         this.io.close();
     }
 
+    // @todo Why assigned pull requests are sent?
+    // @todo Sent all aggregated pull requests connected with author
     private static onWebhookEvent(payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
