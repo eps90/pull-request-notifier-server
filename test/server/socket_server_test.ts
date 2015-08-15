@@ -90,15 +90,12 @@ describe('SocketServer', () => {
         client.emit('client:introduce', username);
     });
 
-    describe('Emitting pull requests via sockets', () => {
+    describe('Emitting pull requests via sockets to author', () => {
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 
-        after(() => {
-            dispatcher.removeAllListeners();
-        });
-
         function testEmittingEventViaSocket(inputEvent: string, done): void {
-            var username = 'john.smith';
+            var authorUsername = 'john.smith';
+            var reviewerUsername = 'anna.kowalsky';
             var payload = {
                 pullrequest: {
                     "id" :  1 ,
@@ -106,7 +103,7 @@ describe('SocketServer', () => {
                     "description" :  "Description of pull request" ,
                     "state" :  "OPEN" ,
                     "author" : {
-                        "username": username,
+                        "username": authorUsername,
                         "display_name": "Emma"
                     },
                     "destination" : {
@@ -131,7 +128,10 @@ describe('SocketServer', () => {
             project.fullName = 'team_name/repo_name';
 
             var user = new models.User();
-            user.username = username;
+            user.username = authorUsername;
+
+            var anotherUser = new models.User();
+            anotherUser.username = reviewerUsername;
 
             var authoredPullRequest = new models.PullRequest();
             authoredPullRequest.id = 1;
@@ -154,7 +154,10 @@ describe('SocketServer', () => {
             ];
 
             var client = socketIoClient.connect('http://localhost:' + socketPort, options);
-            client.emit('client:introduce', username);
+            client.emit('client:introduce', authorUsername);
+
+            var reviwererClient = socketIoClient.connect('http://localhost:' + socketPort, options);
+            reviwererClient.emit('client:introduce');
 
             client.on('server:introduced', () => {
                 client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
@@ -172,6 +175,130 @@ describe('SocketServer', () => {
 
                 dispatcher.emit(inputEvent, payload);
             });
+        }
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
+            var inputEvent = 'webhook:pullrequest:created';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:updated', (done) => {
+            var inputEvent = 'webhook:pullrequest:updated';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:approved', (done) => {
+            var inputEvent = 'webhook:pullrequest:approved';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:unapproved', (done) => {
+            var inputEvent = 'webhook:pullrequest:unapproved';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:fulfilled', (done) => {
+            var inputEvent = 'webhook:pullrequest:fulfilled';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+
+        it('should emit server:pullrequests:updated on webhook:pullrequest:rejected', (done) => {
+            var inputEvent = 'webhook:pullrequest:rejected';
+            testEmittingEventViaSocket(inputEvent, done);
+        });
+    });
+
+    describe('Emitting pull requests via sockets to reviewers', () => {
+        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+
+        function testEmittingEventViaSocket(inputEvent: string, done): void {
+            var reviewerUsername = 'anna.kowalsky';
+            var payload = {
+                pullrequest: {
+                    "id" :  1 ,
+                    "title" :  "Title of pull request" ,
+                    "description" :  "Description of pull request" ,
+                    "state" :  "OPEN" ,
+                    "author" : {
+                        "username": 'john.smith',
+                        "display_name": "Emma"
+                    },
+                    "destination" : {
+                        "branch" : {  "name" :  "master" },
+                        "repository" : {
+                            "full_name": "team_name/repo_name",
+                            "name": "repo_name"
+                        }
+                    },
+                    "reviewers" : [
+                        {
+                            "username": reviewerUsername
+                        }
+                    ],
+                    "links": {
+                        "self": {
+                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
+                        }
+                    }
+                }
+            };
+
+            var project = new models.Project();
+            project.fullName = 'team_name/repo_name';
+
+            var user = new models.User();
+            user.username = 'john.smith';
+
+            var anotherUser = new models.User();
+            anotherUser.username = reviewerUsername;
+
+            var authoredPullRequest = new models.PullRequest();
+            authoredPullRequest.id = 1;
+            authoredPullRequest.title = 'Authored pull request';
+            authoredPullRequest.author = user;
+            authoredPullRequest.targetRepository = project;
+
+            var userAsReviewer = new models.Reviewer();
+            userAsReviewer.user = user;
+
+            var reviewer = new models.Reviewer();
+            reviewer.user = anotherUser;
+
+            var assignedPullRequest = new models.PullRequest();
+            assignedPullRequest.id = 2;
+            assignedPullRequest.title = 'Assigned pull request';
+            assignedPullRequest.reviewers.push(userAsReviewer, reviewer);
+            assignedPullRequest.targetRepository = project;
+
+            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+                authoredPullRequest,
+                assignedPullRequest
+            ];
+
+            var client = socketIoClient.connect('http://localhost:' + socketPort, options);
+
+            try {
+                client.emit('client:introduce', reviewerUsername);
+
+                client.on('server:introduced', () => {
+                    client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
+                        expect(pullRequests.sourceEvent).to.eq(inputEvent);
+                        expect(pullRequests.context.id).to.eq(1);
+                        expect(pullRequests.context.title).to.eq('Title of pull request');
+
+                        expect(pullRequests.pullRequests.length).to.eq(1);
+                        expect(pullRequests.pullRequests[0].title).to.eq('Assigned pull request');
+
+                        client.disconnect();
+                        done();
+                    });
+
+                    dispatcher.emit(inputEvent, payload);
+                });
+            } catch (e) {
+                done(e);
+            }
+
         }
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {

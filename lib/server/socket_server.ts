@@ -57,8 +57,7 @@ export class SocketServer {
     static stopSocketServer(): void {
         this.io.close();
     }
-
-    // @todo Send request to reviewers
+    
     private static onWebhookEvent(eventName:string, payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
@@ -69,7 +68,20 @@ export class SocketServer {
         userPullRequests.context = pullRequest;
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
-        logger.info("Emitting event 'server:pullrequests:updated'");
+        logger.info("Emitting event 'server:pullrequests:updated' to '" + author +"'");
         SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
+
+        var reviewers = payloadDecoded.pullrequest.reviewers || [];
+
+        for (var reviewerIdx = 0, reviewersLength = reviewers.length; reviewerIdx < reviewersLength; reviewerIdx++) {
+            var reviewerUsername = reviewers[reviewerIdx].username;
+            var reviewerPr = new models.PullRequestEvent();
+            reviewerPr.sourceEvent = eventName;
+            reviewerPr.context = pullRequest;
+            reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
+
+            logger.info("Emitting event 'server:pullrequests:updated' to '" + reviewerUsername + '"');
+            SocketServer.io.to(reviewerUsername).emit('server:pullrequests:updated', reviewerPr);
+        }
     }
 }
