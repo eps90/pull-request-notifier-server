@@ -8,6 +8,7 @@ import logger = require('./logger');
 
 import request = require('request');
 import q = require('q');
+import _ = require('lodash');
 
 import url = require('url');
 import http = require('http');
@@ -183,6 +184,15 @@ export class PullRequestRepository extends AbstractRepository {
         }
 
         return foundPullRequests;
+    }
+
+    static findByUser(username: string): Array<models.PullRequest> {
+        var result = this.findByAuthor(username).concat(this.findByReviewer(username));
+        var pullRequests = _.uniq(result, (element: models.PullRequest) => {
+            return element.targetRepository.fullName + '#' + element.id;
+        });
+
+        return pullRequests;
     }
 
     static add(pullRequest: models.PullRequest): void {

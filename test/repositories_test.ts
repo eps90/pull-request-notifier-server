@@ -457,6 +457,80 @@ describe("Repositories", () => {
             expect(pullRequests[0].author).to.eq(authorOne);
         });
 
+        it('should find all pull requests belonging to user (assigned and authored)', () => {
+            var authorOne = new models.User();
+            authorOne.username = 'john.smith';
+
+            var authorTwo = new models.User();
+            authorTwo.username = 'anna.kowalsky';
+
+            var authorAsReviewer = new models.Reviewer();
+            authorAsReviewer.user = authorOne;
+            authorAsReviewer.approved = true;
+
+            var project = new models.Project();
+            project.fullName = 'team_name/repo_name';
+
+            var prOne = new models.PullRequest();
+            prOne.id = 1;
+            prOne.targetRepository = project;
+            prOne.author = authorOne;
+
+            var prTwo = new models.PullRequest();
+            prTwo.id = 2;
+            prTwo.author = authorTwo;
+            prTwo.targetRepository = project;
+            prTwo.reviewers.push(authorAsReviewer);
+
+            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+                prOne,
+                prTwo
+            ];
+
+            var pullRequests = repositories.PullRequestRepository.findByUser('john.smith');
+            expect(pullRequests).to.have.length(2);
+            expect(pullRequests[0].author.username).to.eq('john.smith');
+            expect(pullRequests[1].reviewers[0].user.username).to.eq('john.smith');
+        });
+
+        it('should not return duplicated pull requests when requesting for user pull requests', () => {
+            var authorOne = new models.User();
+            authorOne.username = 'john.smith';
+
+            var authorTwo = new models.User();
+            authorTwo.username = 'anna.kowalsky';
+
+            var authorAsReviewer = new models.Reviewer();
+            authorAsReviewer.user = authorOne;
+            authorAsReviewer.approved = true;
+
+            var project = new models.Project();
+            project.fullName = 'team_name/repo_name';
+
+            var anotherProject = new models.Project();
+            project.fullName = 'team_name/another_repo_name';
+
+            var prOne = new models.PullRequest();
+            prOne.id = 1;
+            prOne.targetRepository = project;
+            prOne.author = authorOne;
+            prOne.reviewers.push(authorAsReviewer);
+
+            var prTwo = new models.PullRequest();
+            prTwo.id = 1;
+            prTwo.targetRepository = anotherProject;
+            prTwo.author = authorTwo;
+            prTwo.reviewers.push(authorAsReviewer);
+
+            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+                prOne,
+                prTwo
+            ];
+
+            var pullRequests = repositories.PullRequestRepository.findByUser('john.smith');
+            expect(pullRequests).to.have.length(2);
+        });
+
         it('should allow to add new pull request', () => {
             var project = new models.Project();
             project.fullName = 'aaa/bbb';
