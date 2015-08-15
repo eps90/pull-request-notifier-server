@@ -68,6 +68,7 @@ export class SocketServer {
 
         var userPullRequests = new models.PullRequestEvent();
         userPullRequests.sourceEvent = eventName;
+        userPullRequests.context = pullRequest;
         userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(author);
 
         logger.info("Emitting event 'server:pullrequests:updated'");

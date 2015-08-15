@@ -32,9 +32,9 @@ export class PullRequest implements ModelInterface {
     selfLink: string;
 }
 
-// @todo Add context pull request (that triggered a webhook)
 export class PullRequestEvent {
     sourceEvent: string = '';
+    context: PullRequest;
     authored: Array<PullRequest> = [];
     assigned: Array<PullRequest> = [];
 }
