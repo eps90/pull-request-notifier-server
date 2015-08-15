@@ -27,8 +27,7 @@ export class SocketServer {
 
                 var userPullRequests = new models.PullRequestEvent();
                 userPullRequests.sourceEvent = 'client:introduce';
-                userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(username);
-                userPullRequests.assigned = repositories.PullRequestRepository.findByReviewer(username);
+                userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(username);
 
                 logger.info("Emitting event 'server:introduced'");
                 this.io.to(username).emit('server:introduced', userPullRequests);
@@ -59,8 +58,7 @@ export class SocketServer {
         this.io.close();
     }
 
-    // @todo Why assigned pull requests are sent?
-    // @todo Sent all aggregated pull requests connected with author
+    // @todo Send request to reviewers
     private static onWebhookEvent(eventName:string, payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
@@ -69,7 +67,7 @@ export class SocketServer {
         var userPullRequests = new models.PullRequestEvent();
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
-        userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(author);
+        userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
         logger.info("Emitting event 'server:pullrequests:updated'");
         SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);

@@ -52,9 +52,14 @@ describe('SocketServer', () => {
         var user = new models.User();
         user.username = username;
 
+        var project = new models.Project();
+        project.fullName = 'team_name/repo_name';
+
         var authoredPullRequest = new models.PullRequest();
+        authoredPullRequest.id = 1;
         authoredPullRequest.title = 'Authored pull request';
         authoredPullRequest.author = user;
+        authoredPullRequest.targetRepository = project;
 
         var userAsReviewer = new models.Reviewer();
         userAsReviewer.user = user;
@@ -62,6 +67,7 @@ describe('SocketServer', () => {
         var assignedPullRequest = new models.PullRequest();
         assignedPullRequest.title = 'Assigned pull request';
         assignedPullRequest.reviewers.push(userAsReviewer);
+        assignedPullRequest.targetRepository = project;
 
         repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
             authoredPullRequest,
@@ -72,11 +78,10 @@ describe('SocketServer', () => {
         client.on('server:introduced', (pullRequests: models.PullRequestEvent) => {
             expect(pullRequests.sourceEvent).to.eq('client:introduce');
             expect(pullRequests.context).to.be.undefined;
-            expect(pullRequests.assigned.length).to.eq(1);
-            expect(pullRequests.authored.length).to.eq(1);
+            expect(pullRequests.pullRequests.length).to.eq(2);
 
-            expect(pullRequests.assigned[0].title).to.eq('Assigned pull request');
-            expect(pullRequests.authored[0].title).to.eq('Authored pull request');
+            expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');
+            expect(pullRequests.pullRequests[1].title).to.eq('Assigned pull request');
 
             client.disconnect();
             done();
@@ -129,15 +134,19 @@ describe('SocketServer', () => {
             user.username = username;
 
             var authoredPullRequest = new models.PullRequest();
+            authoredPullRequest.id = 1;
             authoredPullRequest.title = 'Authored pull request';
             authoredPullRequest.author = user;
+            authoredPullRequest.targetRepository = project;
 
             var userAsReviewer = new models.Reviewer();
             userAsReviewer.user = user;
 
             var assignedPullRequest = new models.PullRequest();
+            assignedPullRequest.id = 2;
             assignedPullRequest.title = 'Assigned pull request';
             assignedPullRequest.reviewers.push(userAsReviewer);
+            assignedPullRequest.targetRepository = project;
 
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
@@ -153,10 +162,9 @@ describe('SocketServer', () => {
                     expect(pullRequests.context.id).to.eq(1);
                     expect(pullRequests.context.title).to.eq('Title of pull request');
 
-                    expect(pullRequests.assigned.length).to.eq(0);
-                    expect(pullRequests.authored.length).to.eq(1);
+                    expect(pullRequests.pullRequests.length).to.eq(2);
 
-                    expect(pullRequests.authored[0].title).to.eq('Authored pull request');
+                    expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');
 
                     client.disconnect();
                     done();

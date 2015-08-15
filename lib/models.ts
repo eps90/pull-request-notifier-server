@@ -35,6 +35,5 @@ export class PullRequest implements ModelInterface {
 export class PullRequestEvent {
     sourceEvent: string = '';
     context: PullRequest;
-    authored: Array<PullRequest> = [];
-    assigned: Array<PullRequest> = [];
+    pullRequests: Array<PullRequest> = [];
 }
