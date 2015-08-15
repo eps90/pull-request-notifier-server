@@ -25,7 +25,7 @@ export class SocketServer {
                 logger.info('Client introduced');
                 socket.join(username);
 
-                var userPullRequests = new models.UserPullRequestsSet();
+                var userPullRequests = new models.PullRequestEvent();
                 userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(username);
                 userPullRequests.assigned = repositories.PullRequestRepository.findByReviewer(username);
 
@@ -53,7 +53,7 @@ export class SocketServer {
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
         var author = pullRequest.author.username;
 
-        var userPullRequests = new models.UserPullRequestsSet();
+        var userPullRequests = new models.PullRequestEvent();
         userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(author);
 
         logger.info("Emitting event 'server:pullrequests:updated'");
