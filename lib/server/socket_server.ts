@@ -57,8 +57,8 @@ export class SocketServer {
     static stopSocketServer(): void {
         this.io.close();
     }
-    
-    private static onWebhookEvent(eventName:string, payloadDecoded: {pullrequest: any}): void {
+
+    private static onWebhookEvent(eventName: string, payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
         var author = pullRequest.author.username;
@@ -68,7 +68,7 @@ export class SocketServer {
         userPullRequests.context = pullRequest;
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
-        logger.info("Emitting event 'server:pullrequests:updated' to '" + author +"'");
+        logger.info("Emitting event 'server:pullrequests:updated' to '" + author + "'");
         SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
 
         var reviewers = payloadDecoded.pullrequest.reviewers || [];

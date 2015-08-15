@@ -52,9 +52,6 @@ describe('SocketServer', () => {
         var user = new models.User();
         user.username = username;
 
-        var project = new models.Project();
-        project.fullName = 'team_name/repo_name';
-
         var authoredPullRequest = new models.PullRequest();
         authoredPullRequest.id = 1;
         authoredPullRequest.title = 'Authored pull request';
