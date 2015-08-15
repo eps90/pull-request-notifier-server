@@ -26,6 +26,7 @@ export class SocketServer {
                 socket.join(username);
 
                 var userPullRequests = new models.PullRequestEvent();
+                userPullRequests.sourceEvent = 'client:introduce';
                 userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(username);
                 userPullRequests.assigned = repositories.PullRequestRepository.findByReviewer(username);
 
@@ -34,12 +35,24 @@ export class SocketServer {
             });
         });
 
-        dispatcher.on('webhook:pullrequest:created', SocketServer.onWebhookEvent);
-        dispatcher.on('webhook:pullrequest:updated', SocketServer.onWebhookEvent);
-        dispatcher.on('webhook:pullrequest:approved', SocketServer.onWebhookEvent);
-        dispatcher.on('webhook:pullrequest:unapproved', SocketServer.onWebhookEvent);
-        dispatcher.on('webhook:pullrequest:fulfilled', SocketServer.onWebhookEvent);
-        dispatcher.on('webhook:pullrequest:rejected', SocketServer.onWebhookEvent);
+        dispatcher.on('webhook:pullrequest:created', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:created', payloadDecoded);
+        });
+        dispatcher.on('webhook:pullrequest:updated', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:updated', payloadDecoded);
+        });
+        dispatcher.on('webhook:pullrequest:approved', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:approved', payloadDecoded);
+        });
+        dispatcher.on('webhook:pullrequest:unapproved', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:unapproved', payloadDecoded);
+        });
+        dispatcher.on('webhook:pullrequest:fulfilled', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:fulfilled', payloadDecoded);
+        });
+        dispatcher.on('webhook:pullrequest:rejected', (payloadDecoded: any) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:rejected', payloadDecoded);
+        });
     }
 
     static stopSocketServer(): void {
@@ -48,12 +61,13 @@ export class SocketServer {
 
     // @todo Why assigned pull requests are sent?
     // @todo Sent all aggregated pull requests connected with author
-    private static onWebhookEvent(payloadDecoded: {pullrequest: any}): void {
+    private static onWebhookEvent(eventName:string, payloadDecoded: {pullrequest: any}): void {
         logger.info('Webhook event received');
         var pullRequest = factories.PullRequestFactory.create(payloadDecoded.pullrequest);
         var author = pullRequest.author.username;
 
         var userPullRequests = new models.PullRequestEvent();
+        userPullRequests.sourceEvent = eventName;
         userPullRequests.authored = repositories.PullRequestRepository.findByAuthor(author);
 
         logger.info("Emitting event 'server:pullrequests:updated'");

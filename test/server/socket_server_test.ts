@@ -70,6 +70,7 @@ describe('SocketServer', () => {
 
         var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', (pullRequests: models.PullRequestEvent) => {
+            expect(pullRequests.sourceEvent).to.eq('client:introduce');
             expect(pullRequests.assigned.length).to.eq(1);
             expect(pullRequests.authored.length).to.eq(1);
 
@@ -147,6 +148,8 @@ describe('SocketServer', () => {
 
             client.on('server:introduced', () => {
                 client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
+                    expect(pullRequests.sourceEvent).to.eq(inputEvent);
+
                     expect(pullRequests.assigned.length).to.eq(0);
                     expect(pullRequests.authored.length).to.eq(1);
 
