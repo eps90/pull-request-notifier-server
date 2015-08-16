@@ -100,14 +100,9 @@ export class EventPayloadHandler {
     static handlePayload(type: string, bodyEncoded: string): q.Promise<any> {
         var bodyDecoded = JSON.parse(bodyEncoded);
         var deferred = q.defer();
-        var handlers: Array<HandlerInterface> = [];
-
-        for (var handlerIndex = 0; handlerIndex < this.handlers.length; handlerIndex++) {
-            var handler: HandlerInterface = this.handlers[handlerIndex];
-            if (handler.supportedEvents.indexOf(type) !== -1) {
-                handlers.push(handler);
-            }
-        }
+        var handlers: Array<HandlerInterface> = this.handlers.filter((handler: HandlerInterface) => {
+             return handler.supportedEvents.indexOf(type) !== -1;
+        });
 
         q.all(
             handlers.map((handler: HandlerInterface) => {
