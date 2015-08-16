@@ -33,6 +33,7 @@ export class PullRequest implements ModelInterface {
 }
 
 export class PullRequestEvent {
+    actor: User;
     sourceEvent: string = '';
     context: PullRequest;
     pullRequests: Array<PullRequest> = [];
