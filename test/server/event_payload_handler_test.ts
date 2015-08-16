@@ -14,7 +14,7 @@ describe('EventPayloadHandler', () => {
             repositories.PullRequestRepository.pullRequests = {};
         });
 
-        it('should create add new pull request to repository on pullrequest:created', () => {
+        it('should create add new pull request to repository on pullrequest:created', (done) => {
             var eventType = 'pullrequest:created';
             var payload = {
                 pullrequest: {
@@ -45,17 +45,18 @@ describe('EventPayloadHandler', () => {
             };
 
             var payloadString = JSON.stringify(payload);
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString);
-
-            var pullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
-            expect(pullRequests.length).to.eq(1);
-            expect(pullRequests[0].author.username).to.eq('emmap1');
-            expect(pullRequests[0].author.displayName).to.eq('Emma');
-            expect(pullRequests[0].title).to.eq('Title of pull request');
-            expect(pullRequests[0].description).to.eq('Description of pull request');
+            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
+                var pullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
+                expect(pullRequests.length).to.eq(1);
+                expect(pullRequests[0].author.username).to.eq('emmap1');
+                expect(pullRequests[0].author.displayName).to.eq('Emma');
+                expect(pullRequests[0].title).to.eq('Title of pull request');
+                expect(pullRequests[0].description).to.eq('Description of pull request');
+                done();
+            });
         });
 
-        function createUpdateLikePayload(eventKey: string): void {
+        function createUpdateLikePayload(eventKey: string, done): void {
             var payload = {
                 pullrequest: {
                     "id" :  1 ,
@@ -95,30 +96,31 @@ describe('EventPayloadHandler', () => {
             samplePr.targetRepository = sampleProject;
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString);
-
-            var pullRequests = repositories.PullRequestRepository.findAll();
-            expect(pullRequests.length).to.eq(1);
-            expect(pullRequests[0].title).to.eq('Title of pull request');
-            expect(pullRequests[0].state).to.eq(models.PullRequestState.Open);
+            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                var pullRequests = repositories.PullRequestRepository.findAll();
+                expect(pullRequests.length).to.eq(1);
+                expect(pullRequests[0].title).to.eq('Title of pull request');
+                expect(pullRequests[0].state).to.eq(models.PullRequestState.Open);
+                done();
+            });
         }
 
-        it('should update a pull request on pullrequest:updated', () => {
+        it('should update a pull request on pullrequest:updated', (done) => {
             var eventType = 'pullrequest:updated';
-            createUpdateLikePayload(eventType);
+            createUpdateLikePayload(eventType, done);
         });
 
-        it('should update a pull request on pullrequest:approved', () => {
+        it('should update a pull request on pullrequest:approved', (done) => {
             var eventType = 'pullrequest:approved';
-            createUpdateLikePayload(eventType);
+            createUpdateLikePayload(eventType, done);
         });
 
-        it('should update a pull request on pullrequest:unapproved', () => {
+        it('should update a pull request on pullrequest:unapproved', (done) => {
             var eventType = 'pullrequest:unapproved';
-            createUpdateLikePayload(eventType);
+            createUpdateLikePayload(eventType, done);
         });
 
-        function createCloseLikePayload(eventKey: string): void {
+        function createCloseLikePayload(eventKey: string, done): void {
             var payload = {
                 pullrequest: {
                     "id" :  1 ,
@@ -156,20 +158,21 @@ describe('EventPayloadHandler', () => {
             samplePr.targetRepository = sampleProject;
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString);
-
-            var pullRequests = repositories.PullRequestRepository.findAll();
-            expect(pullRequests.length).to.eq(0);
+            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                var pullRequests = repositories.PullRequestRepository.findAll();
+                expect(pullRequests.length).to.eq(0);
+                done();
+            });
         }
 
-        it('should remove a pull request on pullrequest:fulfilled', () => {
+        it('should remove a pull request on pullrequest:fulfilled', (done) => {
             var eventType = 'pullrequest:fulfilled';
-            createCloseLikePayload(eventType);
+            createCloseLikePayload(eventType, done);
         });
 
-        it('should remove a pull request on pullrequest:rejected', () => {
+        it('should remove a pull request on pullrequest:rejected', (done) => {
             var eventType = 'pullrequest:rejected';
-            createCloseLikePayload(eventType);
+            createCloseLikePayload(eventType, done);
         });
     });
 

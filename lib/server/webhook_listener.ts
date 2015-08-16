@@ -23,13 +23,15 @@ export class WebhookListener {
                     if (req.headers.hasOwnProperty('x-event-key')) {
                         var eventType = req.headers['x-event-key'];
                         logger.info("Request with event payload '%s'", eventType);
-                        eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody);
+                        eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
+                            res.writeHead(200, 'OK');
+                            res.end();
+                        });
                     } else {
                         logger.warn("Request does not contain 'x-event-key' header");
+                        res.writeHead(200, 'OK');
+                        res.end();
                     }
-
-                    res.writeHead(200, 'OK');
-                    res.end();
                 });
             } else {
                 req.on('end', () => {

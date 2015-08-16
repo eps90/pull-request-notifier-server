@@ -97,17 +97,35 @@ export class EventPayloadHandler {
         new PullRequestHandler()
     ];
 
-    static handlePayload(type: string, bodyEncoded: string): void {
+    static handlePayload(type: string, bodyEncoded: string): q.Promise<any> {
         var bodyDecoded = JSON.parse(bodyEncoded);
+        var deferred = q.defer();
+        var handlers: Array<HandlerInterface> = [];
+
         for (var handlerIndex = 0; handlerIndex < this.handlers.length; handlerIndex++) {
             var handler: HandlerInterface = this.handlers[handlerIndex];
             if (handler.supportedEvents.indexOf(type) !== -1) {
+                handlers.push(handler);
+            }
+        }
+
+        q.all(
+            handlers.map((handler: HandlerInterface) => {
+                var handlerDefer = q.defer();
+
                 var preparedBody = handler.prepareBody(bodyDecoded);
                 handler.handlePayload(type, preparedBody).then(() => {
                     this.triggerEvent(type, preparedBody);
+                    handlerDefer.resolve(true);
                 });
-            }
-        }
+
+                return handlerDefer.promise;
+            })
+        ).then(() => {
+            deferred.resolve(true);
+        });
+
+        return deferred.promise;
     }
 
     private static triggerEvent(payloadType: string, contents: any = {}): void {
