@@ -93,39 +93,17 @@ describe('SocketServer', () => {
         function testEmittingEventViaSocket(inputEvent: string, done): void {
             var authorUsername = 'john.smith';
             var reviewerUsername = 'anna.kowalsky';
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "OPEN" ,
-                    "author" : {
-                        "username": authorUsername,
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "participants" : [
-                        // @todo
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
-                    }
-                }
-            };
 
             var project = new models.Project();
             project.fullName = 'team_name/repo_name';
 
             var user = new models.User();
             user.username = authorUsername;
+
+            var payloadPr = new models.PullRequest();
+            payloadPr.id = 1;
+            payloadPr.title = "Title of pull request";
+            payloadPr.author = user;
 
             var anotherUser = new models.User();
             anotherUser.username = reviewerUsername;
@@ -157,20 +135,20 @@ describe('SocketServer', () => {
             reviwererClient.emit('client:introduce');
 
             client.on('server:introduced', () => {
-                client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
-                    expect(pullRequests.sourceEvent).to.eq(inputEvent);
-                    expect(pullRequests.context.id).to.eq(1);
-                    expect(pullRequests.context.title).to.eq('Title of pull request');
+                client.on('server:pullrequests:updated', (pullRequestEvent: models.PullRequestEvent) => {
+                    expect(pullRequestEvent.sourceEvent).to.eq(inputEvent);
+                    expect(pullRequestEvent.context.id).to.eq(1);
+                    expect(pullRequestEvent.context.title).to.eq('Title of pull request');
 
-                    expect(pullRequests.pullRequests.length).to.eq(2);
+                    expect(pullRequestEvent.pullRequests.length).to.eq(2);
 
-                    expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');
+                    expect(pullRequestEvent.pullRequests[0].title).to.eq('Authored pull request');
 
                     client.disconnect();
                     done();
                 });
 
-                dispatcher.emit(inputEvent, payload);
+                dispatcher.emit(inputEvent, payloadPr);
             });
         }
 
@@ -210,35 +188,6 @@ describe('SocketServer', () => {
 
         function testEmittingEventViaSocket(inputEvent: string, done): void {
             var reviewerUsername = 'anna.kowalsky';
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "OPEN" ,
-                    "author" : {
-                        "username": 'john.smith',
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "reviewers" : [
-                        {
-                            "username": reviewerUsername
-                        }
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
-                    }
-                }
-            };
 
             var project = new models.Project();
             project.fullName = 'team_name/repo_name';
@@ -249,17 +198,23 @@ describe('SocketServer', () => {
             var anotherUser = new models.User();
             anotherUser.username = reviewerUsername;
 
-            var authoredPullRequest = new models.PullRequest();
-            authoredPullRequest.id = 1;
-            authoredPullRequest.title = 'Authored pull request';
-            authoredPullRequest.author = user;
-            authoredPullRequest.targetRepository = project;
-
             var userAsReviewer = new models.Reviewer();
             userAsReviewer.user = user;
 
             var reviewer = new models.Reviewer();
             reviewer.user = anotherUser;
+
+            var payloadPr = new models.PullRequest();
+            payloadPr.id = 1;
+            payloadPr.title = 'Title of pull request';
+            payloadPr.author = user;
+            payloadPr.reviewers.push(reviewer);
+
+            var authoredPullRequest = new models.PullRequest();
+            authoredPullRequest.id = 1;
+            authoredPullRequest.title = 'Authored pull request';
+            authoredPullRequest.author = user;
+            authoredPullRequest.targetRepository = project;
 
             var assignedPullRequest = new models.PullRequest();
             assignedPullRequest.id = 2;
@@ -290,7 +245,7 @@ describe('SocketServer', () => {
                         done();
                     });
 
-                    dispatcher.emit(inputEvent, payload);
+                    dispatcher.emit(inputEvent, payloadPr);
                 });
             } catch (e) {
                 done(e);
