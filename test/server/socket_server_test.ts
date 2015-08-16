@@ -139,6 +139,7 @@ describe('SocketServer', () => {
                     expect(pullRequestEvent.sourceEvent).to.eq(inputEvent);
                     expect(pullRequestEvent.context.id).to.eq(1);
                     expect(pullRequestEvent.context.title).to.eq('Title of pull request');
+                    expect(pullRequestEvent.actor.username).to.eq(user.username);
 
                     expect(pullRequestEvent.pullRequests.length).to.eq(2);
 
@@ -148,7 +149,7 @@ describe('SocketServer', () => {
                     done();
                 });
 
-                dispatcher.emit(inputEvent, payloadPr);
+                dispatcher.emit(inputEvent, payloadPr, user);
             });
         }
 

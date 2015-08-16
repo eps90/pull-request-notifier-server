@@ -34,23 +34,23 @@ export class SocketServer {
             });
         });
 
-        dispatcher.on('webhook:pullrequest:created', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:created', pullRequest);
+        dispatcher.on('webhook:pullrequest:created', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:created', pullRequest, actor);
         });
-        dispatcher.on('webhook:pullrequest:updated', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:updated', pullRequest);
+        dispatcher.on('webhook:pullrequest:updated', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:updated', pullRequest, actor);
         });
-        dispatcher.on('webhook:pullrequest:approved', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:approved', pullRequest);
+        dispatcher.on('webhook:pullrequest:approved', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:approved', pullRequest, actor);
         });
-        dispatcher.on('webhook:pullrequest:unapproved', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:unapproved', pullRequest);
+        dispatcher.on('webhook:pullrequest:unapproved', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:unapproved', pullRequest, actor);
         });
-        dispatcher.on('webhook:pullrequest:fulfilled', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:fulfilled', pullRequest);
+        dispatcher.on('webhook:pullrequest:fulfilled', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:fulfilled', pullRequest, actor);
         });
-        dispatcher.on('webhook:pullrequest:rejected', (pullRequest: models.PullRequest) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:rejected', pullRequest);
+        dispatcher.on('webhook:pullrequest:rejected', (pullRequest: models.PullRequest, actor: models.User) => {
+            SocketServer.onWebhookEvent('webhook:pullrequest:rejected', pullRequest, actor);
         });
     }
 
@@ -58,11 +58,12 @@ export class SocketServer {
         this.io.close();
     }
 
-    private static onWebhookEvent(eventName: string, pullRequest: models.PullRequest): void {
+    private static onWebhookEvent(eventName: string, pullRequest: models.PullRequest, actor: models.User): void {
         logger.info('Webhook event received');
         var author = pullRequest.author.username;
 
         var userPullRequests = new models.PullRequestEvent();
+        userPullRequests.actor = actor;
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
