@@ -32,31 +32,31 @@ export class PullRequestHandler implements HandlerInterface {
     private PULLREQUEST_APPROVED: string = 'pullrequest:approved';
     private PULLREQUEST_UNAPPROVED: string = 'pullrequest:unapproved';
 
-    handlePayload(type: string, bodyDecoded: any): q.Promise<any> {
-        var deferred = q.defer();
+    handlePayload(type: string, pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
+        var deferred = q.defer<models.PullRequest>();
 
         switch (type) {
             case this.PULLREQUEST_CREATED:
-                this.onPullRequestCreated(bodyDecoded).then(() => {
-                    deferred.resolve(bodyDecoded);
+                this.onPullRequestCreated(pullRequest).then(() => {
+                    deferred.resolve(pullRequest);
                 });
                 break;
             case this.PULLREQUEST_UPDATED:
             case this.PULLREQUEST_APPROVED:
             case this.PULLREQUEST_UNAPPROVED:
-                this.onPullRequestUpdated(bodyDecoded).then(() => {
-                    deferred.resolve(bodyDecoded);
+                this.onPullRequestUpdated(pullRequest).then(() => {
+                    deferred.resolve(pullRequest);
                 });
                 break;
             case this.PULLREQUEST_FULFILLED:
             case this.PULLREQUEST_REJECTED:
-                this.onPullRequestClosed(bodyDecoded).then(() => {
-                    deferred.resolve(bodyDecoded);
+                this.onPullRequestClosed(pullRequest).then(() => {
+                    deferred.resolve(pullRequest);
                 });
                 break;
             default:
                 logger.info('Unhandled event payload: ' + type);
-                deferred.resolve(bodyDecoded);
+                deferred.resolve(pullRequest);
                 return;
         }
 
