@@ -439,8 +439,6 @@ describe("Repositories", () => {
         });
 
         it('should fetch single pull request by prepared link', (done) => {
-            var prUrl = '/repositories/bitbucket/bitbucket/pullrequests/1';
-
             var prEncoded = {
                 id: 1,
                 author: {

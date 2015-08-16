@@ -28,7 +28,7 @@ describe('EventPayloadHandler', () => {
             socket_port: 4321
         };
 
-        configModule.Config.setUp({config: appConfig})
+        configModule.Config.setUp({config: appConfig});
     });
 
     afterEach(() => {
