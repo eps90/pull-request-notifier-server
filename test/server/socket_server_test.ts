@@ -238,6 +238,7 @@ describe('SocketServer', () => {
                         expect(pullRequests.sourceEvent).to.eq(inputEvent);
                         expect(pullRequests.context.id).to.eq(1);
                         expect(pullRequests.context.title).to.eq('Title of pull request');
+                        expect(pullRequests.actor.username).to.eq(user.username);
 
                         expect(pullRequests.pullRequests.length).to.eq(1);
                         expect(pullRequests.pullRequests[0].title).to.eq('Assigned pull request');
@@ -246,7 +247,7 @@ describe('SocketServer', () => {
                         done();
                     });
 
-                    dispatcher.emit(inputEvent, payloadPr);
+                    dispatcher.emit(inputEvent, payloadPr, user);
                 });
             } catch (e) {
                 done(e);

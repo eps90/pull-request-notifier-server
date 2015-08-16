@@ -77,6 +77,7 @@ export class SocketServer {
             var reviewerUsername = reviewers[reviewerIdx].user.username;
             var reviewerPr = new models.PullRequestEvent();
             reviewerPr.sourceEvent = eventName;
+            reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
             reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
 
