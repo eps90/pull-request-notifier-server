@@ -10,7 +10,7 @@ import q = require('q');
 export interface HandlerInterface {
     supportedEvents: Array<string>;
     handlePayload(type: string, bodyDecoded: any): q.Promise<any>;
-    prepareBody(bodyEncoded: any): any;
+    prepareBody(bodyEncoded: any): q.Promise<any>;
 }
 
 export class PullRequestHandler implements HandlerInterface {
@@ -63,8 +63,11 @@ export class PullRequestHandler implements HandlerInterface {
         return deferred.promise;
     }
 
-    prepareBody(bodyDecoded): models.PullRequest {
-        return factories.PullRequestFactory.create(bodyDecoded.pullrequest);
+    prepareBody(bodyDecoded): q.Promise<models.PullRequest> {
+        var deferred = q.defer<models.PullRequest>();
+        var pullRequest = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
+        deferred.resolve(pullRequest);
+        return deferred.promise;
     }
 
     private onPullRequestCreated(pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
@@ -108,10 +111,11 @@ export class EventPayloadHandler {
             handlers.map((handler: HandlerInterface) => {
                 var handlerDefer = q.defer();
 
-                var preparedBody = handler.prepareBody(bodyDecoded);
-                handler.handlePayload(type, preparedBody).then(() => {
-                    this.triggerEvent(type, preparedBody);
-                    handlerDefer.resolve(true);
+                handler.prepareBody(bodyDecoded).then((preparedBody) => {
+                    handler.handlePayload(type, preparedBody).then(() => {
+                        this.triggerEvent(type, preparedBody);
+                        handlerDefer.resolve(true);
+                    });
                 });
 
                 return handlerDefer.promise;
