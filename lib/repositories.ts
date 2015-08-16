@@ -297,10 +297,19 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    static fetchOne(project: models.Project, prId: number): q.Promise<models.PullRequest> {
+    static fetchOne(pullRequestUrl: string): q.Promise<models.PullRequest>;
+    static fetchOne(project: models.Project, prId: number): q.Promise<models.PullRequest>;
+
+    static fetchOne(projectOrUrl: any, prId?: number): q.Promise<models.PullRequest> {
         var deferred = q.defer<models.PullRequest>();
         var config = configModule.Config.getConfig();
-        var prUrl = config.baseUrl + '/repositories/' + project.fullName + '/pullrequests/' + prId;
+        var prUrl = '';
+
+        if (typeof projectOrUrl === 'string') {
+            prUrl = projectOrUrl;
+        } else {
+            prUrl = config.baseUrl + '/repositories/' + projectOrUrl.fullName + '/pullrequests/' + prId;
+        }
 
         var requestConfig = {
             auth: {
@@ -318,7 +327,6 @@ export class PullRequestRepository extends AbstractRepository {
 
             var response: any = JSON.parse(body);
             var pullRequest = factories.PullRequestFactory.create(response);
-            console.log(pullRequest);
             deferred.resolve(pullRequest);
         });
 

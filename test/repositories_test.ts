@@ -438,6 +438,64 @@ describe("Repositories", () => {
             });
         });
 
+        it('should fetch single pull request by prepared link', (done) => {
+            var prUrl = '/repositories/bitbucket/bitbucket/pullrequests/1';
+
+            var prEncoded = {
+                id: 1,
+                author: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                source: {
+                    branch: {
+                        name: 'next'
+                    }
+                },
+                destination: {
+                    repository: {
+                        full_name: 'bitbucket/bitbucket',
+                        name: 'bitbucket'
+                    },
+                    branch: {
+                        name: 'master'
+                    }
+                },
+                title: 'Fixed bugs',
+                description: 'This is a special pull request',
+                participants: [
+                    {
+                        role: 'REVIEWER',
+                        user: {
+                            username: 'jon.snow',
+                            display_name: 'Jon Snow'
+                        },
+                        approved: true
+                    }
+                ],
+                state: 'OPEN',
+                links: {
+                    self: {
+                        href: 'http://example.com/repositories/bitbucket/bitbucket/pullrequests/1'
+                    }
+                }
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
+
+            repositories.PullRequestRepository.fetchOne('http://example.com/repositories/bitbucket/bitbucket/pullrequests/1')
+                .then((pr: models.PullRequest) => {
+                    expect(pr.id).to.eq(1);
+                    expect(pr.title).to.eq('Fixed bugs');
+                    done();
+                }).catch((e) => {
+                    done(e);
+                });
+        });
+
         it('should find all known pull requests', () => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest(),
