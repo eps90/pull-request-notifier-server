@@ -211,7 +211,7 @@ describe('EventPayloadHandler', () => {
             };
 
             dispatcher.once(expectedEventType, (pullRequestPayload) => {
-                expect(pullRequestPayload.pullrequest.id).to.eq(payload.pullrequest.id);
+                expect(pullRequestPayload.id).to.eq(payload.pullrequest.id);
                 done();
             });
 

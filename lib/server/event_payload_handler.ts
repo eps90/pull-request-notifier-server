@@ -4,10 +4,12 @@ import repositories = require('./../repositories');
 import factories = require('./../factories');
 import logger = require('./../logger');
 import eventDispatcher = require('./../events/event_dispatcher');
+import models = require('./../models');
 
 export interface HandlerInterface {
     supportedEvents: Array<string>;
     handlePayload(type: string, bodyDecoded: any): void;
+    prepareBody(bodyEncoded: any): any;
 }
 
 export class PullRequestHandler implements HandlerInterface {
@@ -49,21 +51,22 @@ export class PullRequestHandler implements HandlerInterface {
         }
     }
 
-    private onPullRequestCreated(body: any): void {
-        logger.info('Adding a pull request to the repository');
-        var newPullRequest = factories.PullRequestFactory.create(body.pullrequest);
-        repositories.PullRequestRepository.add(newPullRequest);
+    prepareBody(bodyDecoded): models.PullRequest {
+        return factories.PullRequestFactory.create(bodyDecoded.pullrequest);
     }
 
-    private onPullRequestUpdated(body: any): void {
+    private onPullRequestCreated(pullRequest: models.PullRequest): void {
+        logger.info('Adding a pull request to the repository');
+        repositories.PullRequestRepository.add(pullRequest);
+    }
+
+    private onPullRequestUpdated(pullRequest: models.PullRequest): void {
         logger.info('Updating a pull request');
-        var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.update(pullRequest);
     }
 
-    private onPullRequestClosed(body: any): void {
+    private onPullRequestClosed(pullRequest: models.PullRequest): void {
         logger.info('Closing a pull request');
-        var pullRequest = factories.PullRequestFactory.create(body.pullrequest);
         repositories.PullRequestRepository.remove(pullRequest);
     }
 }
@@ -78,8 +81,9 @@ export class EventPayloadHandler {
         for (var handlerIndex = 0; handlerIndex < this.handlers.length; handlerIndex++) {
             var handler: HandlerInterface = this.handlers[handlerIndex];
             if (handler.supportedEvents.indexOf(type) !== -1) {
-                handler.handlePayload(type, bodyDecoded);
-                this.triggerEvent(type, bodyDecoded);
+                var preparedBody = handler.prepareBody(bodyDecoded);
+                handler.handlePayload(type, preparedBody);
+                this.triggerEvent(type, preparedBody);
             }
         }
     }
