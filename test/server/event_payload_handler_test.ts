@@ -1,4 +1,6 @@
 ///<reference path="../../typings/tsd.d.ts"/>
+///<reference path="../../custom_typings/nock.d.ts"/>
+
 
 import chai = require('chai');
 var expect = chai.expect;
@@ -7,8 +9,32 @@ import models = require('./../../lib/models');
 import repositories = require('./../../lib/repositories');
 import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
 import eventDispatcher = require('./../../lib/events/event_dispatcher');
+import nock = require('nock');
+import configModule = require('./../../lib/config');
 
 describe('EventPayloadHandler', () => {
+    var basicAuth = {
+        user: 'my.user',
+        pass: 'topsecret'
+    };
+
+    beforeEach(() => {
+        var appConfig = {
+            baseUrl: 'http://example.com',
+            teamName: 'bitbucket',
+            user: 'my.user',
+            password: 'topsecret',
+            webhook_port: 1234,
+            socket_port: 4321
+        };
+
+        configModule.Config.setUp({config: appConfig})
+    });
+
+    afterEach(() => {
+        configModule.Config.reset();
+    });
+
     describe('PullRequestHandler', () => {
         beforeEach(() => {
             repositories.PullRequestRepository.pullRequests = {};
@@ -16,33 +42,39 @@ describe('EventPayloadHandler', () => {
 
         it('should create add new pull request to repository on pullrequest:created', (done) => {
             var eventType = 'pullrequest:created';
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "OPEN" ,
-                    "author" : {
-                        "username": "emmap1",
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "participants" : [
-                        // @todo
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
+            var prEncoded = {
+                "id" :  1 ,
+                "title" :  "Title of pull request" ,
+                "description" :  "Description of pull request" ,
+                "state" :  "OPEN" ,
+                "author" : {
+                    "username": "emmap1",
+                    "display_name": "Emma"
+                },
+                "destination" : {
+                    "branch" : {  "name" :  "master" },
+                    "repository" : {
+                        "full_name": "team_name/repo_name",
+                        "name": "repo_name"
+                    }
+                },
+                "participants" : [
+                    // @todo
+                ],
+                "links": {
+                    "self": {
+                        "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
                     }
                 }
             };
+            var payload = {
+                pullrequest: prEncoded
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
 
             var payloadString = JSON.stringify(payload);
             eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
@@ -57,33 +89,40 @@ describe('EventPayloadHandler', () => {
         });
 
         function createUpdateLikePayload(eventKey: string, done): void {
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "OPEN" ,
-                    "author" : {
-                        "username": "emmap1",
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "participants" : [
-                        // @todo
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
+            var prEncoded = {
+                "id" :  1 ,
+                "title" :  "Title of pull request" ,
+                "description" :  "Description of pull request" ,
+                "state" :  "OPEN" ,
+                "author" : {
+                    "username": "emmap1",
+                    "display_name": "Emma"
+                },
+                "destination" : {
+                    "branch" : {  "name" :  "master" },
+                    "repository" : {
+                        "full_name": "team_name/repo_name",
+                        "name": "repo_name"
+                    }
+                },
+                "participants" : [
+                    // @todo
+                ],
+                "links": {
+                    "self": {
+                        "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
                     }
                 }
             };
+            var payload = {
+                pullrequest: prEncoded
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
+
             var payloadString = JSON.stringify(payload);
 
             var sampleProject = new models.Project();
@@ -121,33 +160,40 @@ describe('EventPayloadHandler', () => {
         });
 
         function createCloseLikePayload(eventKey: string, done): void {
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "MERGED" ,
-                    "author" : {
-                        "username": "emmap1",
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "participants" : [
-                        // @todo
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
+            var prEncoded = {
+                "id" :  1 ,
+                "title" :  "Title of pull request" ,
+                "description" :  "Description of pull request" ,
+                "state" :  "MERGED" ,
+                "author" : {
+                    "username": "emmap1",
+                    "display_name": "Emma"
+                },
+                "destination" : {
+                    "branch" : {  "name" :  "master" },
+                    "repository" : {
+                        "full_name": "team_name/repo_name",
+                        "name": "repo_name"
+                    }
+                },
+                "participants" : [
+                    // @todo
+                ],
+                "links": {
+                    "self": {
+                        "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
                     }
                 }
             };
+            var payload = {
+                pullrequest: prEncoded
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
+
             var payloadString = JSON.stringify(payload);
 
             var sampleProject = new models.Project();
@@ -185,33 +231,39 @@ describe('EventPayloadHandler', () => {
 
         function testEmittingEvents(inputEventType, expectedEventType, done): void {
             var eventType = inputEventType;
-            var payload = {
-                pullrequest: {
-                    "id" :  1 ,
-                    "title" :  "Title of pull request" ,
-                    "description" :  "Description of pull request" ,
-                    "state" :  "OPEN" ,
-                    "author" : {
-                        "username": "emmap1",
-                        "display_name": "Emma"
-                    },
-                    "destination" : {
-                        "branch" : {  "name" :  "master" },
-                        "repository" : {
-                            "full_name": "team_name/repo_name",
-                            "name": "repo_name"
-                        }
-                    },
-                    "participants" : [
-                        // @todo
-                    ],
-                    "links": {
-                        "self": {
-                            "href": "https://api.bitbucket.org/api/2.0/pullrequests/1"
-                        }
+            var prEncoded = {
+                "id" :  1 ,
+                "title" :  "Title of pull request" ,
+                "description" :  "Description of pull request" ,
+                "state" :  "OPEN" ,
+                "author" : {
+                    "username": "emmap1",
+                    "display_name": "Emma"
+                },
+                "destination" : {
+                    "branch" : {  "name" :  "master" },
+                    "repository" : {
+                        "full_name": "team_name/repo_name",
+                        "name": "repo_name"
+                    }
+                },
+                "participants" : [
+                    // @todo
+                ],
+                "links": {
+                    "self": {
+                        "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
                     }
                 }
             };
+            var payload = {
+                pullrequest: prEncoded
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
 
             dispatcher.once(expectedEventType, (pullRequestPayload) => {
                 expect(pullRequestPayload.id).to.eq(payload.pullrequest.id);

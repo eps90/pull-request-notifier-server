@@ -65,8 +65,10 @@ export class PullRequestHandler implements HandlerInterface {
 
     prepareBody(bodyDecoded): q.Promise<models.PullRequest> {
         var deferred = q.defer<models.PullRequest>();
-        var pullRequest = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
-        deferred.resolve(pullRequest);
+        var dummyPr = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
+        repositories.PullRequestRepository.fetchOne(dummyPr.selfLink).then((pullRequest: models.PullRequest) => {
+            deferred.resolve(pullRequest);
+        });
         return deferred.promise;
     }
 
