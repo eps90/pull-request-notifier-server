@@ -296,4 +296,32 @@ export class PullRequestRepository extends AbstractRepository {
 
         return defer.promise;
     }
+
+    static fetchOne(project: models.Project, prId: number): q.Promise<models.PullRequest> {
+        var deferred = q.defer<models.PullRequest>();
+        var config = configModule.Config.getConfig();
+        var prUrl = config.baseUrl + '/repositories/' + project.fullName + '/pullrequests/' + prId;
+
+        var requestConfig = {
+            auth: {
+                username: config.user,
+                password: config.password
+            }
+        };
+
+        logger.info('About to make an HTTP request to %s', prUrl);
+        request(prUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
+            if (error || res.statusCode !== 200) {
+                logger.error('Http request to %s failed', prUrl);
+                return deferred.reject(errors.HttpRequestError.throwError(prUrl, res, body));
+            }
+
+            var response: any = JSON.parse(body);
+            var pullRequest = factories.PullRequestFactory.create(response);
+            console.log(pullRequest);
+            deferred.resolve(pullRequest);
+        });
+
+        return deferred.promise;
+    }
 }

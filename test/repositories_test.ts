@@ -380,6 +380,64 @@ describe("Repositories", () => {
             expect(repositories.PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
         });
 
+        it('should fetch single pull request by its project and id', (done) => {
+            var pullRequestId = 1;
+            var project = new models.Project();
+            project.fullName = 'bitbucket/bitbucket';
+
+            var prEncoded = {
+                id: 1,
+                author: {
+                    username: 'john.smith',
+                    display_name: 'John Smith'
+                },
+                source: {
+                    branch: {
+                        name: 'next'
+                    }
+                },
+                destination: {
+                    repository: {
+                        full_name: 'bitbucket/bitbucket',
+                        name: 'bitbucket'
+                    },
+                    branch: {
+                        name: 'master'
+                    }
+                },
+                title: 'Fixed bugs',
+                description: 'This is a special pull request',
+                participants: [
+                    {
+                        role: 'REVIEWER',
+                        user: {
+                            username: 'jon.snow',
+                            display_name: 'Jon Snow'
+                        },
+                        approved: true
+                    }
+                ],
+                state: 'OPEN',
+                links: {
+                    self: {
+                        href: 'http://example.com/bitbucket/bitbucket/pullrequests/2'
+                    }
+                }
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(prEncoded));
+
+            repositories.PullRequestRepository.fetchOne(project, pullRequestId).then((pr: models.PullRequest) => {
+                expect(pr.id).to.eq(pullRequestId);
+                done();
+            }).catch((e) => {
+                done(e);
+            });
+        });
+
         it('should find all known pull requests', () => {
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 new models.PullRequest(),
