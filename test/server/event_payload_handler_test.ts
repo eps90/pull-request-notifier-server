@@ -67,8 +67,13 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
+            var actorEncoded = {
+                username: 'john.smith',
+                display_name: 'John Smith'
+            };
             var payload = {
-                pullrequest: prEncoded
+                pullrequest: prEncoded,
+                actor: actorEncoded
             };
 
             nock('http://example.com')
@@ -114,8 +119,14 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
+            var actorEncoded = {
+                username: 'john.smith',
+                display_name: 'John Smith'
+            };
+
             var payload = {
-                pullrequest: prEncoded
+                pullrequest: prEncoded,
+                actor: actorEncoded
             };
 
             nock('http://example.com')
@@ -185,8 +196,13 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
+            var actorEncoded = {
+                "username": 'john.smith',
+                "display_name": "John Smith"
+            };
             var payload = {
-                pullrequest: prEncoded
+                pullrequest: prEncoded,
+                actor: actorEncoded
             };
 
             nock('http://example.com')
@@ -256,8 +272,14 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
+            var actorEncoded = {
+                username: 'john.smith',
+                display_name: 'John Smith'
+            };
+
             var payload = {
-                pullrequest: prEncoded
+                pullrequest: prEncoded,
+                actor: actorEncoded
             };
 
             nock('http://example.com')
@@ -265,8 +287,9 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            dispatcher.once(expectedEventType, (pullRequestPayload) => {
-                expect(pullRequestPayload.id).to.eq(payload.pullrequest.id);
+            dispatcher.once(expectedEventType, (pullRequestPayload: eventPayloadHandler.PullRequestWithActor) => {
+                expect(pullRequestPayload.pullRequest.id).to.eq(payload.pullrequest.id);
+                expect(pullRequestPayload.actor.username).to.eq('john.smith');
                 done();
             });
 

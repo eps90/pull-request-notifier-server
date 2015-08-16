@@ -1,4 +1,5 @@
 ///<reference path="../../typings/tsd.d.ts"/>
+// @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
 import repositories = require('./../repositories');
 import factories = require('./../factories');
@@ -11,6 +12,11 @@ export interface HandlerInterface {
     supportedEvents: Array<string>;
     handlePayload(type: string, bodyDecoded: any): q.Promise<any>;
     prepareBody(bodyEncoded: any): q.Promise<any>;
+}
+
+export class PullRequestWithActor {
+    pullRequest: models.PullRequest;
+    actor: models.User;
 }
 
 export class PullRequestHandler implements HandlerInterface {
@@ -32,67 +38,71 @@ export class PullRequestHandler implements HandlerInterface {
     private PULLREQUEST_APPROVED: string = 'pullrequest:approved';
     private PULLREQUEST_UNAPPROVED: string = 'pullrequest:unapproved';
 
-    handlePayload(type: string, pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
+    handlePayload(type: string, pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
+        var deferred = q.defer<PullRequestWithActor>();
 
         switch (type) {
             case this.PULLREQUEST_CREATED:
-                this.onPullRequestCreated(pullRequest).then(() => {
-                    deferred.resolve(pullRequest);
+                this.onPullRequestCreated(pullRequestWithActor).then(() => {
+                    deferred.resolve(pullRequestWithActor);
                 });
                 break;
             case this.PULLREQUEST_UPDATED:
             case this.PULLREQUEST_APPROVED:
             case this.PULLREQUEST_UNAPPROVED:
-                this.onPullRequestUpdated(pullRequest).then(() => {
-                    deferred.resolve(pullRequest);
+                this.onPullRequestUpdated(pullRequestWithActor).then(() => {
+                    deferred.resolve(pullRequestWithActor);
                 });
                 break;
             case this.PULLREQUEST_FULFILLED:
             case this.PULLREQUEST_REJECTED:
-                this.onPullRequestClosed(pullRequest).then(() => {
-                    deferred.resolve(pullRequest);
+                this.onPullRequestClosed(pullRequestWithActor).then(() => {
+                    deferred.resolve(pullRequestWithActor);
                 });
                 break;
             default:
                 logger.info('Unhandled event payload: ' + type);
-                deferred.resolve(pullRequest);
+                deferred.resolve(pullRequestWithActor);
                 return;
         }
 
         return deferred.promise;
     }
 
-    prepareBody(bodyDecoded): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
+    prepareBody(bodyDecoded): q.Promise<PullRequestWithActor> {
+        var deferred = q.defer<PullRequestWithActor>();
         var dummyPr = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
+        var actor = factories.UserFactory.create(bodyDecoded.actor);
         repositories.PullRequestRepository.fetchOne(dummyPr.selfLink).then((pullRequest: models.PullRequest) => {
-            deferred.resolve(pullRequest);
+            var prWithActor = new PullRequestWithActor();
+            prWithActor.pullRequest = pullRequest;
+            prWithActor.actor = actor;
+            deferred.resolve(prWithActor);
         });
         return deferred.promise;
     }
 
-    private onPullRequestCreated(pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
+    private onPullRequestCreated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
+        var deferred = q.defer<PullRequestWithActor>();
         logger.info('Adding a pull request to the repository');
-        repositories.PullRequestRepository.add(pullRequest);
-        deferred.resolve(pullRequest);
+        repositories.PullRequestRepository.add(pullRequestWithActor.pullRequest);
+        deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
 
-    private onPullRequestUpdated(pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
+    private onPullRequestUpdated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
+        var deferred = q.defer<PullRequestWithActor>();
         logger.info('Updating a pull request');
-        repositories.PullRequestRepository.update(pullRequest);
-        deferred.resolve(pullRequest);
+        repositories.PullRequestRepository.update(pullRequestWithActor.pullRequest);
+        deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
 
-    private onPullRequestClosed(pullRequest: models.PullRequest): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
+    private onPullRequestClosed(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
+        var deferred = q.defer<PullRequestWithActor>();
         logger.info('Closing a pull request');
-        repositories.PullRequestRepository.remove(pullRequest);
-        deferred.resolve(pullRequest);
+        repositories.PullRequestRepository.remove(pullRequestWithActor.pullRequest);
+        deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
 }
