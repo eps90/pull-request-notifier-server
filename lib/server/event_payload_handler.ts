@@ -15,8 +15,8 @@ export interface HandlerInterface {
 }
 
 export class PullRequestWithActor {
-    pullRequest: models.PullRequest;
-    actor: models.User;
+    pullRequest: models.PullRequest = new models.PullRequest();
+    actor: models.User = new models.User();
 }
 
 export class PullRequestHandler implements HandlerInterface {

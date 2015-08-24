@@ -8,6 +8,7 @@ import repositories = require('./../../lib/repositories');
 import models = require('./../../lib/models');
 import eventDispatcher = require('./../../lib/events/event_dispatcher');
 import configModule = require('./../../lib/config');
+import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
 
 describe('SocketServer', () => {
     var options = {
@@ -100,10 +101,14 @@ describe('SocketServer', () => {
             var user = new models.User();
             user.username = authorUsername;
 
-            var payloadPr = new models.PullRequest();
-            payloadPr.id = 1;
-            payloadPr.title = "Title of pull request";
-            payloadPr.author = user;
+            var pullRequest = new models.PullRequest();
+            pullRequest.id = 1;
+            pullRequest.title = "Title of pull request";
+            pullRequest.author = user;
+
+            var payload = new eventPayloadHandler.PullRequestWithActor();
+            payload.pullRequest = pullRequest;
+            payload.actor = user;
 
             var anotherUser = new models.User();
             anotherUser.username = reviewerUsername;
@@ -149,7 +154,7 @@ describe('SocketServer', () => {
                     done();
                 });
 
-                dispatcher.emit(inputEvent, payloadPr, user);
+                dispatcher.emit(inputEvent, payload);
             });
         }
 
@@ -211,6 +216,10 @@ describe('SocketServer', () => {
             payloadPr.author = user;
             payloadPr.reviewers.push(reviewer);
 
+            var payload = new eventPayloadHandler.PullRequestWithActor();
+            payload.pullRequest = payloadPr;
+            payload.actor = user;
+
             var authoredPullRequest = new models.PullRequest();
             authoredPullRequest.id = 1;
             authoredPullRequest.title = 'Authored pull request';
@@ -247,7 +256,7 @@ describe('SocketServer', () => {
                         done();
                     });
 
-                    dispatcher.emit(inputEvent, payloadPr, user);
+                    dispatcher.emit(inputEvent, payload);
                 });
             } catch (e) {
                 done(e);
