@@ -75,7 +75,6 @@ describe('SocketServer', () => {
         var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', (pullRequests: models.PullRequestEvent) => {
             expect(pullRequests.sourceEvent).to.eq('client:introduce');
-            expect(pullRequests.context).to.be.undefined;
             expect(pullRequests.pullRequests.length).to.eq(2);
 
             expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');

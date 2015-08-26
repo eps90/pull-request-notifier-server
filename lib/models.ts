@@ -15,7 +15,7 @@ export class User implements ModelInterface {
 
 export class Reviewer implements ModelInterface {
     approved: boolean;
-    user: User;
+    user: User = new User();
 }
 
 export enum PullRequestState {Open, Merged, Declined}
@@ -30,8 +30,8 @@ export class PullRequest implements ModelInterface {
     id: number;
     title: string;
     description: string;
-    author: User;
-    targetRepository: Project;
+    author: User = new User();
+    targetRepository: Project = new Project();
     targetBranch: string;
     reviewers: Array<Reviewer> = [];
     state: PullRequestState;
@@ -39,8 +39,8 @@ export class PullRequest implements ModelInterface {
 }
 
 export class PullRequestEvent {
-    actor: User;
+    actor: User = new User();
     sourceEvent: string = '';
-    context: PullRequest;
+    context: PullRequest = new PullRequest();
     pullRequests: Array<PullRequest> = [];
 }
