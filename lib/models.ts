@@ -20,6 +20,7 @@ export class Reviewer implements ModelInterface {
 
 export enum PullRequestState {Open, Merged, Declined}
 
+// @todo Add link to Pull Request in browser
 export class PullRequest implements ModelInterface {
     id: number;
     title: string;
