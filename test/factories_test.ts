@@ -132,7 +132,23 @@ describe('Factories', () => {
             };
 
             var pullRequest = factories.PullRequestFactory.create(rawObject);
-            expect(pullRequest.selfLink).to.eq('http://example.com/pullrequest/1');
+            expect(pullRequest.links.self).to.eq('http://example.com/pullrequest/1');
+        });
+    });
+
+    describe('PullRequestLinksFactory', () => {
+        it('should create PullRequestLinks model from given object', () => {
+            var rawObject = {
+                self: {
+                    href: "http://example.com/aaa/bbb"
+                },
+                html: {
+                    href: "http://example.com/ccc/ddd"
+                }
+            };
+
+            var prLinks = factories.PullRequestLinksFactory.create(rawObject);
+            expect(prLinks.self).to.eq('http://example.com/aaa/bbb');
         });
     });
 });

@@ -59,6 +59,18 @@ export class ReviewerFactory implements FactoryInterface {
     }
 }
 
+export class PullRequestLinksFactory implements FactoryInterface {
+    static create(rawObject: any): models.PullRequestLinks {
+        var links = new models.PullRequestLinks();
+
+        if (rawObject.hasOwnProperty('self') && rawObject.self.hasOwnProperty('href')) {
+            links.self = rawObject.self.href;
+        }
+
+        return links;
+    }
+}
+
 export class PullRequestFactory implements FactoryInterface {
     static create(rawObject: any): models.PullRequest {
         var pullRequest = new models.PullRequest();
@@ -104,9 +116,7 @@ export class PullRequestFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('links')) {
-            if (rawObject.links.hasOwnProperty('self') && rawObject.links.self.hasOwnProperty('href')) {
-                pullRequest.selfLink = rawObject.links.self.href;
-            }
+            pullRequest.links = PullRequestLinksFactory.create(rawObject.links);
         }
 
         return pullRequest;
@@ -130,5 +140,4 @@ export class PullRequestFactory implements FactoryInterface {
 
         return state;
     }
-
 }
