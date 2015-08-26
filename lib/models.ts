@@ -22,6 +22,7 @@ export enum PullRequestState {Open, Merged, Declined}
 
 export class PullRequestLinks {
     self: string;
+    html: string;
 }
 
 // @todo Add link to Pull Request in browser

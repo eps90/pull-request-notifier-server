@@ -149,6 +149,7 @@ describe('Factories', () => {
 
             var prLinks = factories.PullRequestLinksFactory.create(rawObject);
             expect(prLinks.self).to.eq('http://example.com/aaa/bbb');
+            expect(prLinks.html).to.eq('http://example.com/ccc/ddd');
         });
     });
 });
