@@ -66,6 +66,7 @@ export class SocketServer {
         userPullRequests.actor = actor;
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
+        // @todo Bring back authored and assigned pull requests
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
         logger.info("Emitting event 'server:pullrequests:updated' to '" + author + "'");
@@ -79,6 +80,7 @@ export class SocketServer {
             reviewerPr.sourceEvent = eventName;
             reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
+            // @todo Bring back authored and assigned pull requests
             reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
 
             logger.info("Emitting event 'server:pullrequests:updated' to '" + reviewerUsername + '"');
