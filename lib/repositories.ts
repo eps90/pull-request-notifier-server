@@ -265,14 +265,14 @@ export class PullRequestRepository extends AbstractRepository {
                 result.map((pr: models.PullRequest) => {
                     var deferred = q.defer();
 
-                    logger.info('About to make an HTTP request to %s', pr.selfLink);
-                    request(pr.selfLink, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
+                    logger.info('About to make an HTTP request to %s', pr.links.self);
+                    request(pr.links.self, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
                         if (error || httpRes.statusCode !== 200) {
-                            logger.error('Http request to %s failed', pr.selfLink);
-                            return deferred.reject(errors.HttpRequestError.throwError(pr.selfLink, httpRes, innerBody));
+                            logger.error('Http request to %s failed', pr.links.self);
+                            return deferred.reject(errors.HttpRequestError.throwError(pr.links.self, httpRes, innerBody));
                         }
 
-                        logger.info('Http request to %s succeeded', pr.selfLink);
+                        logger.info('Http request to %s succeeded', pr.links.self);
                         var innerResponse = JSON.parse(innerBody);
                         deferred.resolve(factories.PullRequestFactory.create(innerResponse));
                     });

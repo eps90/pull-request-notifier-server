@@ -73,7 +73,7 @@ export class PullRequestHandler implements HandlerInterface {
         var deferred = q.defer<PullRequestWithActor>();
         var dummyPr = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
         var actor = factories.UserFactory.create(bodyDecoded.actor);
-        repositories.PullRequestRepository.fetchOne(dummyPr.selfLink).then((pullRequest: models.PullRequest) => {
+        repositories.PullRequestRepository.fetchOne(dummyPr.links.self).then((pullRequest: models.PullRequest) => {
             var prWithActor = new PullRequestWithActor();
             prWithActor.pullRequest = pullRequest;
             prWithActor.actor = actor;

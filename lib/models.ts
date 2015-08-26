@@ -20,6 +20,10 @@ export class Reviewer implements ModelInterface {
 
 export enum PullRequestState {Open, Merged, Declined}
 
+export class PullRequestLinks {
+    self: string;
+}
+
 // @todo Add link to Pull Request in browser
 export class PullRequest implements ModelInterface {
     id: number;
@@ -30,7 +34,7 @@ export class PullRequest implements ModelInterface {
     targetBranch: string;
     reviewers: Array<Reviewer> = [];
     state: PullRequestState;
-    selfLink: string;
+    links: PullRequestLinks = new PullRequestLinks();
 }
 
 export class PullRequestEvent {
