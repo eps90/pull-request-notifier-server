@@ -5,8 +5,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-shipit');
     grunt.loadNpmTasks('shipit-deploy');
-    grunt.loadNpmTasks('shipit-npm');
-    require('shipit-npm')(grunt.shipit);
 
     grunt.initConfig({
         typescript: {
@@ -59,6 +57,8 @@ module.exports = function(grunt) {
             build: ['build'],
             dist: ['dist']
         },
+
+        // @todo Install npm dependencies
         // @todo Compile typescript files on deploy
         // @todo Clean up unnecessary files
         // @todo Clean up local node modules on deploy
@@ -69,11 +69,7 @@ module.exports = function(grunt) {
                 deployTo: '/tmp/bitbucket-notifier',
                 repositoryUrl: 'git@bitbucket.org:dacsoftware/bitbucket-notifier.git',
                 ignores: ['.git'],
-                keepReleases: 3,
-                npm: {
-                    remote: false,
-                    installFlags: ['--production']
-                }
+                keepReleases: 3
             },
             staging: {
                 servers: 'root@127.0.0.1'
