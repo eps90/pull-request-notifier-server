@@ -79,8 +79,8 @@ module.exports = function(grunt) {
         grunt.shipit.local('npm install', {cwd: '/tmp/bitbucket-notifier'}, this.async());
     });
 
-    grunt.registerTask('typescript:build', function () {
-        return grunt.shipit.local('grunt dist', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+    grunt.registerTask('ts:build', function () {
+        grunt.shipit.local('grunt dist', {cwd: '/tmp/bitbucket-notifier'}, this.async());
     });
 
     grunt.shipit.on('fetched', function () {
