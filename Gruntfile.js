@@ -58,8 +58,6 @@ module.exports = function(grunt) {
             dist: ['dist']
         },
 
-        // @todo Install npm dependencies
-        // @todo Compile typescript files on deploy
         // @todo Clean up unnecessary files
         // @todo Clean up local node modules on deploy
         // @todo Stop/start supervisor program on deploy
@@ -75,6 +73,19 @@ module.exports = function(grunt) {
                 servers: 'root@127.0.0.1'
             }
         }
+    });
+
+    grunt.registerTask('install:deps', function () {
+        grunt.shipit.local('npm install --production', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+        grunt.shipit.local('npm prune --production', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+    });
+
+    grunt.registerTask('typescript:build', function () {
+        return grunt.shipit.local('grunt dist', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+    });
+
+    grunt.shipit.on('fetched', function () {
+        grunt.task.run(['install:deps', 'typescript:build']);
     });
 
     grunt.registerTask('default', ['clean:build', 'typescript:build']);
