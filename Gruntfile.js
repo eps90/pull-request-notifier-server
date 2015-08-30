@@ -34,6 +34,13 @@ module.exports = function(grunt) {
                     target: "es5",
                     basepath: "."
                 }
+            },
+            bin: {
+                src: ['bin/install.ts'],
+                options: {
+                    module: "commonjs",
+                    target: "es5"
+                }
             }
         },
         mochaTest: {
@@ -89,5 +96,5 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['clean:build', 'typescript:build']);
     grunt.registerTask('test', ['clean:build', 'typescript:test', 'mochaTest:unit']);
-    grunt.registerTask('dist', ['clean:dist', 'typescript:dist']);
+    grunt.registerTask('dist', ['clean:dist', 'typescript:dist', 'typescript:bin']);
 };
