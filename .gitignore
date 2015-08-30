@@ -4,3 +4,4 @@ build
 config/config.yml
 dist
 npm-debug.log
+bin/*.js
