@@ -1,0 +1,12 @@
+{
+  "template": "config/config.yml.dist",
+  "destination": "config/config.yml",
+  "env_map": {
+    "baseUrl": "BBNOTIFIER_BASE_URL",
+    "teamName": "BBNOTIFIER_TEAM_NAME",
+    "user": "BBNOTIFIER_USER",
+    "password": "BBNOTIFIER_PASSWORD",
+    "webhook_port": "BBNOTIFIER_WEBHOOK_PORT",
+    "socket_port": "BBNOTIFIER_SOCKET_PORT"
+  }
+}
