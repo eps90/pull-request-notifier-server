@@ -37,6 +37,7 @@ module.exports = function(grunt) {
             },
             bin: {
                 src: ['bin/install.ts'],
+                dest: 'dist',
                 options: {
                     module: "commonjs",
                     target: "es5"
