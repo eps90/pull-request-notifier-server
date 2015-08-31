@@ -92,14 +92,14 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('install:config', function() {
-        grunt.shipit.remote('cd /tmp/bitbucket-notifier && node dist/bin/install.js', this.async());
+        grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node dist/bin/install.js', this.async());
     });
 
     grunt.shipit.on('fetched', function () {
         grunt.task.run(['install:deps', 'typescript:build']);
     });
 
-    grunt.shipit.on('updated', function () {
+    grunt.shipit.on('published', function () {
         grunt.task.run('install:config');
     });
 
