@@ -7,7 +7,7 @@ import jsYaml = require('js-yaml');
 import fs = require('fs');
 import installerModule = require('./../../lib/installer/installer');
 
-describe.only('Installer', () => {
+describe('Installer', () => {
     afterEach(() => {
         mockFs.restore();
         delete process.env['PARAM_AAA'];
