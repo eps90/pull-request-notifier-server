@@ -94,7 +94,7 @@ module.exports = function(grunt) {
     });
 
     grunt.shipit.on('fetched', function () {
-        grunt.task.run(['install:deps', 'typescript:build']);
+        grunt.task.run(['install:deps', 'ts:build']);
     });
 
     grunt.shipit.on('published', function () {
