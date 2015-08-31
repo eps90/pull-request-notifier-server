@@ -3,7 +3,7 @@
 import installer = require('./../lib/installer/installer');
 var colors = require('colors');
 
-var installScript = new installer.Installer();
+var installScript = new installer.Installer(true);
 try {
     installScript.install();
 } catch (e) {
