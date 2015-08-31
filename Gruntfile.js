@@ -66,8 +66,6 @@ module.exports = function(grunt) {
             dist: ['dist']
         },
 
-        // @todo Clean up unnecessary files
-        // @todo Clean up local node modules on deploy
         // @todo Stop/start supervisor program on deploy
         shipit: {
             options: {
