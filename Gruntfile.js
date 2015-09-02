@@ -91,7 +91,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('install:config', function() {
-        grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node dist/bin/install.js', this.async());
+        grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node bin/install.js', this.async());
     });
 
     grunt.shipit.on('fetched', function () {
