@@ -83,11 +83,11 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('install:deps', function () {
-        grunt.shipit.local('npm install', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+        grunt.shipit.local('npm install', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
     grunt.registerTask('ts:build', function () {
-        grunt.shipit.local('grunt dist', {cwd: '/tmp/bitbucket-notifier'}, this.async());
+        grunt.shipit.local('grunt dist', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
     grunt.registerTask('install:config', function() {
