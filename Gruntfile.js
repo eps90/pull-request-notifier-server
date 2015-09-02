@@ -5,6 +5,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-shipit');
     grunt.loadNpmTasks('shipit-deploy');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
     grunt.initConfig({
         typescript: {
@@ -65,6 +66,17 @@ module.exports = function(grunt) {
             build: ['build'],
             dist: ['dist']
         },
+        copy: {
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        src: ['node_modules/**', 'paramfile.json', 'config/*'],
+                        dest: 'dist/'
+                    }
+                ]
+            }
+        },
 
         // @todo Stop/start supervisor program on deploy
         shipit: {
@@ -104,5 +116,5 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', ['clean:build', 'typescript:build']);
     grunt.registerTask('test', ['clean:build', 'typescript:test', 'mochaTest:unit']);
-    grunt.registerTask('dist', ['clean:dist', 'typescript:dist', 'typescript:bin']);
+    grunt.registerTask('dist', ['clean:dist', 'typescript:dist', 'typescript:bin', 'copy:dist']);
 };
