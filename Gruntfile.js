@@ -71,6 +71,7 @@ module.exports = function(grunt) {
             options: {
                 workspace: '/tmp/bitbucket-notifier',
                 deployTo: '/tmp/bitbucket-notifier',
+                dirToCopy: 'dist',
                 repositoryUrl: 'git@bitbucket.org:dacsoftware/bitbucket-notifier.git',
                 ignores: ['.git'],
                 keepReleases: 3
