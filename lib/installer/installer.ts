@@ -76,7 +76,11 @@ export class Installer {
             if (paramfile.envMap.hasOwnProperty(configKey)) {
                 Logger.info('Searching for '.gray + paramfile.envMap[configKey].gray.bold + ' in environment variables'.gray);
                 if (process.env.hasOwnProperty(paramfile.envMap[configKey])) {
-                    destinationConfig[configKey] = process.env[paramfile.envMap[configKey]];
+                    if (process.env[paramfile.envMap[configKey]] == Number(process.env[paramfile.envMap[configKey]])) {
+                        destinationConfig[configKey] = Number(process.env[paramfile.envMap[configKey]]);
+                    } else {
+                        destinationConfig[configKey] = process.env[paramfile.envMap[configKey]];
+                    }
                 } else {
                     throw new Error('Environment variable '.red + paramfile.envMap[configKey].red.bold + ' not found!'.red);
                 }
