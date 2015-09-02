@@ -82,24 +82,24 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('install:deps', function () {
+    grunt.registerTask('deploy:install', function () {
         grunt.shipit.local('npm install', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
-    grunt.registerTask('ts:build', function () {
+    grunt.registerTask('deploy:build', function () {
         grunt.shipit.local('grunt dist', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
-    grunt.registerTask('install:config', function() {
+    grunt.registerTask('deploy:config', function() {
         grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node bin/install.js', this.async());
     });
 
     grunt.shipit.on('fetched', function () {
-        grunt.task.run(['install:deps', 'ts:build']);
+        grunt.task.run(['deploy:install', 'deploy:build']);
     });
 
     grunt.shipit.on('published', function () {
-        grunt.task.run('install:config');
+        grunt.task.run('deploy:config');
     });
 
     grunt.registerTask('default', ['clean:build', 'typescript:build']);
