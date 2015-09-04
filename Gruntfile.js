@@ -102,8 +102,20 @@ module.exports = function(grunt) {
         grunt.shipit.local('grunt dist', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
-    grunt.registerTask('deploy:config', function() {
+    grunt.registerTask('deploy:config', function () {
         grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node bin/install.js', this.async());
+    });
+
+    grunt.registerTask('supervisor:stop', function () {
+        grunt.shipit.remote('sudo supervisorctl stop bitbucket:* ');
+    });
+
+    grunt.registerTask('supervisor:start', function () {
+        grunt.shipit.remote('sudo supervisorctl start bitbucket:* ');
+    });
+
+    grunt.shipit.on('deploy', function () {
+        grunt.task.run(['supervisor:stop']);
     });
 
     grunt.shipit.on('fetched', function () {
@@ -111,7 +123,7 @@ module.exports = function(grunt) {
     });
 
     grunt.shipit.on('published', function () {
-        grunt.task.run('deploy:config');
+        grunt.task.run(['deploy:config', 'supervisor:start']);
     });
 
     grunt.registerTask('default', ['clean:build', 'typescript:build']);
