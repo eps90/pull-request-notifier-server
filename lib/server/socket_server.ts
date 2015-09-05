@@ -21,16 +21,16 @@ export class SocketServer {
         this.io.on('connection', (socket) => {
             logger.info('Client connected');
 
-            socket.on('client:introduce', (username: string) => {
+            socket.on(models.SocketClientEvent.INTRODUCE, (username: string) => {
                 logger.info('Client introduced');
                 socket.join(username);
 
                 var userPullRequests = new models.PullRequestEvent();
-                userPullRequests.sourceEvent = 'client:introduce';
+                userPullRequests.sourceEvent = models.SocketClientEvent.INTRODUCE;
                 userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(username);
 
                 logger.info("Emitting event 'server:introduced'");
-                this.io.to(username).emit('server:introduced', userPullRequests);
+                this.io.to(username).emit(models.SocketServerEvent.INTRODUCED, userPullRequests);
             });
         });
 
@@ -70,7 +70,7 @@ export class SocketServer {
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
         logger.info("Emitting event 'server:pullrequests:updated' to '" + author + "'");
-        SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
+        SocketServer.io.to(author).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
         var reviewers: Array<models.Reviewer> = pullRequest.reviewers || [];
 
@@ -84,7 +84,7 @@ export class SocketServer {
             reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
 
             logger.info("Emitting event 'server:pullrequests:updated' to '" + reviewerUsername + '"');
-            SocketServer.io.to(reviewerUsername).emit('server:pullrequests:updated', reviewerPr);
+            SocketServer.io.to(reviewerUsername).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
         }
     }
 }

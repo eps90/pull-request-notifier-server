@@ -52,3 +52,12 @@ export class WebhookEvent {
     static PULLREQUEST_FULFILLED: string = 'webhook:pullrequest:fulfilled';
     static PULLREQUEST_REJECTED: string = 'webhook:pullrequest:rejected';
 }
+
+export class SocketClientEvent {
+    static INTRODUCE: string = 'client:introduce';
+}
+
+export class SocketServerEvent {
+    static PULLREQUESTS_UPDATED: string = 'server:pullrequests:updated';
+    static INTRODUCED: string = 'server:introduced';
+}
