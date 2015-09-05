@@ -6,6 +6,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-shipit');
     grunt.loadNpmTasks('shipit-deploy');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-bump');
 
     grunt.initConfig({
         typescript: {
@@ -75,6 +76,15 @@ module.exports = function(grunt) {
                         dest: 'dist/'
                     }
                 ]
+            }
+        },
+        bump: {
+            options: {
+                files: ['package.json'],
+                commit: false,
+                push: false,
+                tagName: 'v%VERSION%',
+                tagMessage: 'Release version v%VERSION%'
             }
         },
 
