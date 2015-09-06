@@ -34,7 +34,7 @@ export class SocketServer {
                 this.io.to(username).emit(models.SocketServerEvent.INTRODUCED, userPullRequests);
             });
 
-            socket.on('client:remind', (pullRequest: models.PullRequest) => {
+            socket.on(models.SocketClientEvent.REMIND, (pullRequest: models.PullRequest) => {
                 logger.info('Reminder for pull request received');
                 var reviewersToRemind: string[] = _.map(
                     _.filter(pullRequest.reviewers, (reviewer: models.Reviewer) => {
@@ -48,7 +48,7 @@ export class SocketServer {
                 for (var reviewerIdx = 0, reviewersLen = reviewersToRemind.length; reviewerIdx < reviewersLen; reviewerIdx++) {
                     var reviewerUsername = reviewersToRemind[reviewerIdx];
                     logger.info('Sending a reminder to ' + reviewerUsername);
-                    this.io.to(reviewerUsername).emit('server:remind', pullRequest);
+                    this.io.to(reviewerUsername).emit(models.SocketServerEvent.REMIND, pullRequest);
                 }
             });
         });
