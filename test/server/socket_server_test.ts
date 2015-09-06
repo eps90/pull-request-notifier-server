@@ -87,6 +87,40 @@ describe('SocketServer', () => {
         client.emit('client:introduce', username);
     });
 
+    it('should notify reviewers who haven\'t approved the pull request yet on client:remind', (done) => {
+        var username = 'john.smith';
+
+        var pullRequest = new models.PullRequest();
+        pullRequest.id = 1;
+
+        var approvedReviewer = new models.Reviewer();
+        approvedReviewer.user.username = 'anna.kowalsky';
+        approvedReviewer.approved = true;
+
+        var unapprovedReviewer = new models.Reviewer();
+        unapprovedReviewer.user.username = username;
+        unapprovedReviewer.approved = false;
+
+        pullRequest.reviewers = [approvedReviewer, unapprovedReviewer];
+
+        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+            pullRequest
+        ];
+
+        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
+        client.on('server:introduced', () => {
+            client.on('server:remind', (pullRequestToRemind: models.PullRequest) => {
+                expect(pullRequestToRemind.id).to.eq(1);
+                client.disconnect();
+                done();
+            });
+
+            client.emit('client:remind', pullRequest);
+        });
+
+        client.emit('client:introduce', username);
+    });
+
     describe('Emitting pull requests via sockets to author', () => {
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 

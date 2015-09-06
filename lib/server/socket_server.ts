@@ -7,6 +7,7 @@ import factories = require('./../factories');
 import eventDispatcher = require('./../events/event_dispatcher');
 import logger = require('./../logger');
 import configModule = require('./../config');
+import _ = require('lodash');
 
 export class SocketServer {
     static io: SocketIO.Server;
@@ -31,6 +32,22 @@ export class SocketServer {
 
                 logger.info("Emitting event 'server:introduced'");
                 this.io.to(username).emit(models.SocketServerEvent.INTRODUCED, userPullRequests);
+            });
+
+            socket.on('client:remind', (pullRequest: models.PullRequest) => {
+                var reviewersToRemind: string[] = _.map(
+                    _.filter(pullRequest.reviewers, (reviewer: models.Reviewer) => {
+                        return !reviewer.approved;
+                    }),
+                    (reviewer: models.Reviewer) => {
+                        return reviewer.user.username;
+                    }
+                );
+
+                for (var reviewerIdx = 0, reviewersLen = reviewersToRemind.length; reviewerIdx < reviewersLen; reviewerIdx++) {
+                    var reviewerUsername = reviewersToRemind[reviewerIdx];
+                    this.io.to(reviewerUsername).emit('server:remind', pullRequest);
+                }
             });
         });
 
