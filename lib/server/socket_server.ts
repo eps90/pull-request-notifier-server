@@ -7,6 +7,7 @@ import factories = require('./../factories');
 import eventDispatcher = require('./../events/event_dispatcher');
 import logger = require('./../logger');
 import configModule = require('./../config');
+import _ = require('lodash');
 
 export class SocketServer {
     static io: SocketIO.Server;
@@ -21,36 +22,54 @@ export class SocketServer {
         this.io.on('connection', (socket) => {
             logger.info('Client connected');
 
-            socket.on('client:introduce', (username: string) => {
+            socket.on(models.SocketClientEvent.INTRODUCE, (username: string) => {
                 logger.info('Client introduced');
                 socket.join(username);
 
                 var userPullRequests = new models.PullRequestEvent();
-                userPullRequests.sourceEvent = 'client:introduce';
+                userPullRequests.sourceEvent = models.SocketClientEvent.INTRODUCE;
                 userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(username);
 
                 logger.info("Emitting event 'server:introduced'");
-                this.io.to(username).emit('server:introduced', userPullRequests);
+                this.io.to(username).emit(models.SocketServerEvent.INTRODUCED, userPullRequests);
+            });
+
+            socket.on(models.SocketClientEvent.REMIND, (pullRequest: models.PullRequest) => {
+                logger.info('Reminder for pull request received');
+                var reviewersToRemind: string[] = _.map(
+                    _.filter(pullRequest.reviewers, (reviewer: models.Reviewer) => {
+                        return !reviewer.approved;
+                    }),
+                    (reviewer: models.Reviewer) => {
+                        return reviewer.user.username;
+                    }
+                );
+
+                for (var reviewerIdx = 0, reviewersLen = reviewersToRemind.length; reviewerIdx < reviewersLen; reviewerIdx++) {
+                    var reviewerUsername = reviewersToRemind[reviewerIdx];
+                    logger.info('Sending a reminder to ' + reviewerUsername);
+                    this.io.to(reviewerUsername).emit(models.SocketServerEvent.REMIND, pullRequest);
+                }
             });
         });
 
-        dispatcher.on('webhook:pullrequest:created', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:created', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_CREATED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_CREATED, body.pullRequest, body.actor);
         });
-        dispatcher.on('webhook:pullrequest:updated', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:updated', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_UPDATED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_UPDATED, body.pullRequest, body.actor);
         });
-        dispatcher.on('webhook:pullrequest:approved', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:approved', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_APPROVED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_APPROVED, body.pullRequest, body.actor);
         });
-        dispatcher.on('webhook:pullrequest:unapproved', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:unapproved', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_UNAPPROVED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_UNAPPROVED, body.pullRequest, body.actor);
         });
-        dispatcher.on('webhook:pullrequest:fulfilled', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:fulfilled', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_FULFILLED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_FULFILLED, body.pullRequest, body.actor);
         });
-        dispatcher.on('webhook:pullrequest:rejected', (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent('webhook:pullrequest:rejected', body.pullRequest, body.actor);
+        dispatcher.on(models.WebhookEvent.PULLREQUEST_REJECTED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
+            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_REJECTED, body.pullRequest, body.actor);
         });
     }
 
@@ -70,7 +89,7 @@ export class SocketServer {
         userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
 
         logger.info("Emitting event 'server:pullrequests:updated' to '" + author + "'");
-        SocketServer.io.to(author).emit('server:pullrequests:updated', userPullRequests);
+        SocketServer.io.to(author).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
         var reviewers: Array<models.Reviewer> = pullRequest.reviewers || [];
 
@@ -84,7 +103,7 @@ export class SocketServer {
             reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
 
             logger.info("Emitting event 'server:pullrequests:updated' to '" + reviewerUsername + '"');
-            SocketServer.io.to(reviewerUsername).emit('server:pullrequests:updated', reviewerPr);
+            SocketServer.io.to(reviewerUsername).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
         }
     }
 }

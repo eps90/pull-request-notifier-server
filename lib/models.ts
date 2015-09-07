@@ -43,3 +43,23 @@ export class PullRequestEvent {
     context: PullRequest = new PullRequest();
     pullRequests: Array<PullRequest> = [];
 }
+
+export class WebhookEvent {
+    static PULLREQUEST_CREATED: string = 'webhook:pullrequest:created';
+    static PULLREQUEST_UPDATED: string = 'webhook:pullrequest:updated';
+    static PULLREQUEST_APPROVED: string = 'webhook:pullrequest:approved';
+    static PULLREQUEST_UNAPPROVED: string = 'webhook:pullrequest:unapproved';
+    static PULLREQUEST_FULFILLED: string = 'webhook:pullrequest:fulfilled';
+    static PULLREQUEST_REJECTED: string = 'webhook:pullrequest:rejected';
+}
+
+export class SocketClientEvent {
+    static INTRODUCE: string = 'client:introduce';
+    static REMIND: string = 'client:remind';
+}
+
+export class SocketServerEvent {
+    static PULLREQUESTS_UPDATED: string = 'server:pullrequests:updated';
+    static INTRODUCED: string = 'server:introduced';
+    static REMIND: string = 'server:remind';
+}
