@@ -720,6 +720,27 @@ describe("Repositories", () => {
             expect(pullRequests.length).to.eq(0);
         });
 
+        it('should remove a pull request if its status is not OPEN', () => {
+            var existentPullRequest = new models.PullRequest();
+            existentPullRequest.id = 1;
+            existentPullRequest.title = 'This is some title';
+            existentPullRequest.description = 'This is a description';
+            existentPullRequest.targetRepository.fullName = 'team_name/repo_name';
+            existentPullRequest.state = models.PullRequestState.Open;
+
+            var newPullRequest = new models.PullRequest();
+            newPullRequest.id = 1;
+            newPullRequest.title = 'This is new title';
+            newPullRequest.targetRepository.fullName = 'team_name/repo_name';
+            newPullRequest.state = models.PullRequestState.Merged;
+
+            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [existentPullRequest];
+            repositories.PullRequestRepository.update(newPullRequest);
+
+            var pullRequests = repositories.PullRequestRepository.findAll();
+            expect(pullRequests.length).to.eq(0);
+        });
+
         it('should be able to remove given pull request', () => {
             var sampleProject = new models.Project();
             sampleProject.fullName = 'team_name/repo_name';
