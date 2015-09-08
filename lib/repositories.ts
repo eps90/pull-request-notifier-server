@@ -204,6 +204,10 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     static update(pullRequest: models.PullRequest): void {
+        if (pullRequest.state !== models.PullRequestState.Open) {
+            return;
+        }
+
         var projectName = pullRequest.targetRepository.fullName;
         var projectPrs = this.pullRequests[projectName] || [];
         for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {

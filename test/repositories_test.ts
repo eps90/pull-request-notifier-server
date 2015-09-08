@@ -676,6 +676,7 @@ describe("Repositories", () => {
             newPullRequest.id = 1;
             newPullRequest.title = 'This is new title';
             newPullRequest.targetRepository = sampleProject;
+            newPullRequest.state = models.PullRequestState.Open;
 
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [existentPullRequest];
             repositories.PullRequestRepository.update(newPullRequest);
@@ -695,6 +696,7 @@ describe("Repositories", () => {
             newPullRequest.id = 1;
             newPullRequest.title = 'This is new title';
             newPullRequest.targetRepository = sampleProject;
+            newPullRequest.state = models.PullRequestState.Open;
 
             repositories.PullRequestRepository.update(newPullRequest);
 
@@ -702,6 +704,20 @@ describe("Repositories", () => {
             expect(pullRequests.length).to.eq(1);
             expect(pullRequests[0].id).to.eq(1);
             expect(pullRequests[0].title).to.eq('This is new title');
+        });
+
+        it('should update a PullRequest only when its status is OPEN', () => {
+            var incomingPr = new models.PullRequest();
+            incomingPr.id = 1;
+            incomingPr.title = 'This is new title';
+            incomingPr.targetRepository.fullName = 'team_name/repo_name';
+            incomingPr.state = models.PullRequestState.Merged;
+
+            repositories.PullRequestRepository.pullRequests = {};
+            repositories.PullRequestRepository.update(incomingPr);
+
+            var pullRequests = repositories.PullRequestRepository.findAll();
+            expect(pullRequests.length).to.eq(0);
         });
 
         it('should be able to remove given pull request', () => {
