@@ -34,11 +34,9 @@ export class WebhookListener {
                     }
                 });
             } else {
-                req.on('end', () => {
-                    logger.logUnsupportedRequestMethod(req.method);
-                    res.writeHead(405, 'Method not allowed');
-                    res.end();
-                });
+                logger.logUnsupportedRequestMethod(req.method);
+                res.writeHead(405, 'Method not allowed');
+                res.end();
             }
         });
 
