@@ -103,20 +103,24 @@ class Logger {
         this.getLogger().info('Incoming HTTP request');
     }
 
-    static logRequestDecoded(): void {
-        this.getLogger().info('Request decoded');
+    static logRequestDecoded(request: string): void {
+        this.getLogger().info('HTTP request decoded', {request: JSON.parse(request)});
     }
 
     static logRequestWithPayload(event: string): void {
-        this.getLogger().info('Request with event payload', {event: event});
+        this.getLogger().info('Received HTTP request with event payload', {event: event});
     }
 
     static logHttpServerStartListening(port: string): void {
         this.getLogger().info('Http server starts listening', {port: port});
     }
 
-    static logRequestWithNoEvent(): void {
-        this.getLogger().warn("Request does not contain 'x-event-key' header");
+    static logRequestWithNoEvent(request: string): void {
+        this.getLogger().warn("The HTTP request does not contain 'x-event-key' header", {request: JSON.parse(request)});
+    }
+
+    static logUnsupportedRequestMethod(method: string): void {
+        this.getLogger().warn('Unsupported HTTP request method', {method: method});
     }
 
     private static initLogger(): void {

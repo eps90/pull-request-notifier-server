@@ -18,7 +18,7 @@ export class WebhookListener {
                 });
 
                 req.on('end', () => {
-                    logger.logRequestDecoded();
+                    logger.logRequestDecoded(reqBody);
 
                     if (req.headers.hasOwnProperty('x-event-key')) {
                         var eventType = req.headers['x-event-key'];
@@ -28,14 +28,15 @@ export class WebhookListener {
                             res.end();
                         });
                     } else {
-                        logger.logRequestWithNoEvent();
-                        res.writeHead(200, 'OK');
+                        logger.logRequestWithNoEvent(reqBody);
+                        res.writeHead(400, 'Bad request');
                         res.end();
                     }
                 });
             } else {
                 req.on('end', () => {
-                    res.writeHead(200, 'OK');
+                    logger.logUnsupportedRequestMethod(req.method);
+                    res.writeHead(405, 'Method not allowed');
                     res.end();
                 });
             }
