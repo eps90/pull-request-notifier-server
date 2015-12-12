@@ -2,28 +2,27 @@
 
 import fs = require('fs');
 import jsYaml = require('js-yaml');
-import _ = require('lodash');
-var colors = require('colors');
+/* tslint:disable */
+require('colors');
+/* tslint:enable */
 
 class Logger {
-    static logsEnabled = false;
+    static logsEnabled: boolean = false;
 
-    private static writeConsole(message:string, level: string = 'log') {
+    static log(msg: string): void {
+        this.writeConsole(msg, 'log');
+    }
+
+    static info(msg: string): void {
+        this.writeConsole(msg, 'info');
+    }
+
+    private static writeConsole(message: string, level: string = 'log'): void {
         if (this.logsEnabled) {
             console[level](message);
         }
     }
-
-    static log(msg: string) {
-        this.writeConsole(msg, 'log');
-    }
-
-    static info(msg: string) {
-        this.writeConsole(msg, 'info')
-    }
 }
-
-
 
 export class Paramfile {
     templatePath: string = '';
@@ -76,11 +75,13 @@ export class Installer {
             if (paramfile.envMap.hasOwnProperty(configKey)) {
                 Logger.info('Searching for '.gray + paramfile.envMap[configKey].gray.bold + ' in environment variables'.gray);
                 if (process.env.hasOwnProperty(paramfile.envMap[configKey])) {
+                    /* tslint:disable:triple-equals */
                     if (process.env[paramfile.envMap[configKey]] == Number(process.env[paramfile.envMap[configKey]])) {
                         destinationConfig[configKey] = Number(process.env[paramfile.envMap[configKey]]);
                     } else {
                         destinationConfig[configKey] = process.env[paramfile.envMap[configKey]];
                     }
+                    /* tslint:enable:triple-equals */
                 } else {
                     throw new Error('Environment variable '.red + paramfile.envMap[configKey].red.bold + ' not found!'.red);
                 }

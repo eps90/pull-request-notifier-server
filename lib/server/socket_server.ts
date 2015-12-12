@@ -3,7 +3,6 @@
 import Server = require('socket.io');
 import repositories = require('./../repositories');
 import models = require('./../models');
-import factories = require('./../factories');
 import eventDispatcher = require('./../events/event_dispatcher');
 import logger = require('./../logger');
 import configModule = require('./../config');

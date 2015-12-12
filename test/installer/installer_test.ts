@@ -7,6 +7,7 @@ import jsYaml = require('js-yaml');
 import fs = require('fs');
 import installerModule = require('./../../lib/installer/installer');
 
+/* tslint:disable:no-string-literal */
 describe('Installer', () => {
     afterEach(() => {
         mockFs.restore();
@@ -120,7 +121,6 @@ describe('Installer', () => {
         var aParam = 'PARAM_AAA';
         var aParamValue = 'SET PARAM_AAA';
         var bParam = 'PARAM_BBB';
-        var bParamValue = 'SET PARAM_BBB';
 
         var paramFile = {
             template: templatePath,
@@ -152,13 +152,14 @@ describe('Installer', () => {
         });
 
         var installer = new installerModule.Installer();
-        expect(() => { installer.install() }).to.throw();
+        expect(() => { installer.install(); }).to.throw();
     });
 
     it('should throw when paramfile.json does not exist', () => {
         mockFs({});
 
         var installer = new installerModule.Installer();
-        expect(() => { installer.install() }).to.throw();
+        expect(() => { installer.install(); }).to.throw();
     });
 });
+/* tslint:enable:no-string-literal */

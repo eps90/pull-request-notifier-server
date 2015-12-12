@@ -1,11 +1,16 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
 import winston = require('winston');
+/* tslint:disable */
 require('winston-loggly');
+/* tslint:enable */
 
-// Unfortunately, these things cannot be in config because it will cause circular reference errors
-var logglyToken = process.env['BBNOTIFIER_LOGGLY_TOKEN'];
-var logglySubdomain = process.env['BBNOTIFIER_LOGGLY_SUBDOMAIN'];
+// unfortunately, these things cannot be in config because it will cause circular reference errors
+
+var tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
+var subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
+var logglyToken = process.env[tokenEnvKey];
+var logglySubdomain = process.env[subdomainEnvKey];
 
 var logger: winston.LoggerInstance = new (winston.Logger)({
     transports: [
