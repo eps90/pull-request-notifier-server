@@ -7,14 +7,16 @@ require('winston-loggly');
 var logglyToken = process.env['BBNOTIFIER_LOGGLY_TOKEN'];
 var logglySubdomain = process.env['BBNOTIFIER_LOGGLY_SUBDOMAIN'];
 
-var logger = new (winston.Logger)({
+var logger: winston.LoggerInstance = new (winston.Logger)({
     transports: [
         new (winston.transports.Console)(),
         new (winston.transports.Loggly)({
             token: logglyToken,
             subdomain: logglySubdomain,
             tags: ["nodejs", "Bitbucket-Notifier"],
-            json: true
+            json: true,
+            handleExceptions: true,
+            humanReadableUnhandledException: true
         })
     ]
 });
