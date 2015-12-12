@@ -61,7 +61,7 @@ export class PullRequestHandler implements HandlerInterface {
                 });
                 break;
             default:
-                logger.info('Unhandled event payload: ' + type);
+                logger.info('Unhandled event payload', {event: type});
                 deferred.resolve(pullRequestWithActor);
                 return;
         }

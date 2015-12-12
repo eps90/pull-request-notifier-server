@@ -18,11 +18,11 @@ export class WebhookListener {
                 });
 
                 req.on('end', () => {
-                    logger.info('Request decoded.');
+                    logger.info('Request decoded');
 
                     if (req.headers.hasOwnProperty('x-event-key')) {
                         var eventType = req.headers['x-event-key'];
-                        logger.info("Request with event payload '%s'", eventType);
+                        logger.info("Request with event payload", {event: eventType});
                         eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
                             res.writeHead(200, 'OK');
                             res.end();
@@ -44,7 +44,7 @@ export class WebhookListener {
         var config = configModule.Config.getConfig();
         var webhookPort = config.webhook_port;
         server.listen(webhookPort);
-        logger.info('HTTP server starts listening on port ' + webhookPort);
+        logger.info('HTTP server starts listening', {port: webhookPort.toString()});
 
         return server;
     }

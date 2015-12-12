@@ -61,7 +61,7 @@ export class Config {
             throw errors.ConfigError.throwFileNotFound(this.configPath);
         }
 
-        logger.info('Loading config file: %s', this.configPath);
+        logger.info('Loading config file', {configFile: this.configPath});
 
         var config: any = yaml.safeLoad(fs.readFileSync(this.configPath, 'utf-8'));
         this.validateConfig(config, this.configMapping);

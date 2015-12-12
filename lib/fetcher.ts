@@ -19,8 +19,8 @@ export class Fetcher {
                 })
             ).done((values) => {
                 logger.info(
-                    'Pull request collection initialized. Found %d pull requests',
-                    repositories.PullRequestRepository.findAll().length
+                    'Pull request collection initialized',
+                    {pullRequestCount: repositories.PullRequestRepository.findAll().length}
                 );
                 deferred.resolve(null);
             });
