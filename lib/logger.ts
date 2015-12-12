@@ -104,7 +104,14 @@ class Logger {
     }
 
     static logRequestDecoded(request: string): void {
-        this.getLogger().info('HTTP request decoded', {request: JSON.parse(request)});
+        var requestMessage: any;
+        try {
+            requestMessage = JSON.parse(request);
+        } catch (e) {
+            requestMessage = request;
+        }
+
+        this.getLogger().info('HTTP request decoded', {request: requestMessage});
     }
 
     static logRequestWithPayload(event: string): void {
@@ -116,7 +123,14 @@ class Logger {
     }
 
     static logRequestWithNoEvent(request: string): void {
-        this.getLogger().warn("The HTTP request does not contain 'x-event-key' header", {request: JSON.parse(request)});
+        var requestMessage: any;
+        try {
+            requestMessage = JSON.parse(request);
+        } catch (e) {
+            requestMessage = request;
+        }
+
+        this.getLogger().warn("The HTTP request does not contain 'x-event-key' header", {request: requestMessage});
     }
 
     static logUnsupportedRequestMethod(method: string): void {
