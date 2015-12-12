@@ -61,7 +61,7 @@ export class PullRequestHandler implements HandlerInterface {
                 });
                 break;
             default:
-                logger.info('Unhandled event payload', {event: type});
+                logger.logUnhandledEventPayload(type);
                 deferred.resolve(pullRequestWithActor);
                 return;
         }
@@ -84,7 +84,7 @@ export class PullRequestHandler implements HandlerInterface {
 
     private onPullRequestCreated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
-        logger.info('Adding a pull request to the repository');
+        logger.logAddPullRequestToRepository();
         repositories.PullRequestRepository.add(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;
@@ -92,7 +92,7 @@ export class PullRequestHandler implements HandlerInterface {
 
     private onPullRequestUpdated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
-        logger.info('Updating a pull request');
+        logger.logUpdatingPullRequest();
         repositories.PullRequestRepository.update(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;
@@ -100,7 +100,7 @@ export class PullRequestHandler implements HandlerInterface {
 
     private onPullRequestClosed(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
-        logger.info('Closing a pull request');
+        logger.logClosingPullRequest();
         repositories.PullRequestRepository.remove(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;

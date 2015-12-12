@@ -11,7 +11,7 @@ export class EventDispatcher extends events.EventEmitter {
 
     static getInstance(): EventDispatcher {
         if (this.instance === undefined) {
-            logger.info('Creating new instance of EventDispatcher');
+            logger.logNewEventDispatcherInstance();
         }
         return this.instance || (this.instance = new EventDispatcher());
     }

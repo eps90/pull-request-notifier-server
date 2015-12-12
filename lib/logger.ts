@@ -4,30 +4,6 @@ import winston = require('winston');
 /* tslint:disable */
 require('winston-loggly');
 /* tslint:enable */
-//
-//// unfortunately, these things cannot be in config because it will cause circular reference errors
-//var tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
-//var subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
-//var logglyToken = process.env[tokenEnvKey] || 'token';
-//var logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
-//
-//var logger: winston.LoggerInstance = new (winston.Logger)({
-//    transports: [
-//        new (winston.transports.Console)(),
-//        new (winston.transports.Loggly)({
-//            token: logglyToken,
-//            subdomain: logglySubdomain,
-//            tags: ["nodejs", "Bitbucket-Notifier"],
-//            json: true,
-//            handleExceptions: true,
-//            humanReadableUnhandledException: true
-//        })
-//    ]
-//});
-//
-//logger.cli();
-//
-//export = logger;
 
 class Logger {
     private static logger: winston.LoggerInstance;
@@ -91,35 +67,35 @@ class Logger {
         this.getLogger().info('Closing a pull request');
     }
 
-    static logSocketServerStart(port: string) {
+    static logSocketServerStart(port: string): void {
         this.getLogger().info('Starting socket.io server', {port: port});
     }
 
-    static logClientConnected() {
+    static logClientConnected(): void {
         this.getLogger().info('Client connected');
     }
 
-    static logClientIntroduced(username: string) {
+    static logClientIntroduced(username: string): void {
         this.getLogger().info('Client introduced', {username: username});
     }
 
-    static logEmittingEventToUser(event: string, username: string) {
+    static logEmittingEventToUser(event: string, username: string): void {
         this.getLogger().info('Emitting event', {event: event, username: username});
     }
 
-    static logReminderReceived() {
+    static logReminderReceived(): void {
         this.getLogger().info('Reminder for a pull request received');
     }
 
-    static logSendingReminderToUser(username: string) {
+    static logSendingReminderToUser(username: string): void {
         this.getLogger().info('Sending a reminder', {username: username});
     }
 
-    static logWebhookEventReceived(event: string) {
+    static logWebhookEventReceived(event: string): void {
         this.getLogger().info('Webhook event received', {event: event});
     }
 
-    static logHttpServerStart() {
+    static logHttpServerStart(): void {
         this.getLogger().info('Creating HTTP server');
     }
 
@@ -143,12 +119,12 @@ class Logger {
         this.getLogger().warn("Request does not contain 'x-event-key' header");
     }
 
-    private static initLogger() {
+    private static initLogger(): void {
         // unfortunately, these things cannot be in config because it will cause circular reference errors
         var tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
         var subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
-        var logglyToken = process.env[tokenEnvKey];
-        var logglySubdomain = process.env[subdomainEnvKey];
+        var logglyToken = process.env[tokenEnvKey] || 'token';
+        var logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
 
         var logger: winston.LoggerInstance = new (winston.Logger)({
             transports: [

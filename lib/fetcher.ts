@@ -8,7 +8,7 @@ import logger = require('./logger');
 
 export class Fetcher {
     static initPullRequestCollection(): q.Promise<any> {
-        logger.info('Initializing pull requests');
+        logger.logInitializingPullRequests();
 
         var deferred = q.defer();
 
@@ -18,14 +18,11 @@ export class Fetcher {
                     return repositories.PullRequestRepository.fetchByProject(project);
                 })
             ).done((values) => {
-                logger.info(
-                    'Pull request collection initialized',
-                    {pullRequestCount: repositories.PullRequestRepository.findAll().length}
-                );
+                logger.logPullRequestsInitialized(repositories.PullRequestRepository.findAll().length);
                 deferred.resolve(null);
             });
         }).catch((error) => {
-            logger.error('Initialization failed.');
+            logger.logInitializationFailed();
             deferred.reject(error);
         });
 
