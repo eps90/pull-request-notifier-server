@@ -1,6 +1,7 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
 import winston = require('winston');
+import {TransportOptions} from "winston";
 /* tslint:disable */
 require('winston-loggly');
 /* tslint:enable */
@@ -147,7 +148,7 @@ class Logger {
         var logger: winston.LoggerInstance = new (winston.Logger)({
             transports: [
                 new (winston.transports.Console)(),
-                new (winston.transports.Loggly)({
+                new (winston.transports.Loggly)(<TransportOptions>{
                     token: logglyToken,
                     subdomain: logglySubdomain,
                     tags: ["nodejs", "Bitbucket-Notifier"],

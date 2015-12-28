@@ -85,7 +85,12 @@ declare module "nock" {
             restore(): void;
             pendingMocks(): Object[];
 
-            basicAuth({user: string, pass: string}): Scope;
+            basicAuth(opts: BasicAuthOptions): Scope;
+        }
+
+        interface BasicAuthOptions {
+            user: string;
+            pass: string;
         }
 
         export interface Recorder {
