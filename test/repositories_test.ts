@@ -7,10 +7,15 @@ import nock = require('nock');
 import chai = require('chai');
 import chaiAsPromised = require('chai-as-promised');
 import configModule = require('./../lib/config');
+import fakeModels = require('./faker/model_faker');
 
 chai.use(chaiAsPromised);
 
 var expect = chai.expect;
+
+var prFaker = new fakeModels.PullRequestFaker();
+var reviewerFaker = new fakeModels.ReviewerFaker();
+var projectFaker = new fakeModels.ProjectFaker();
 
 describe("Repositories", () => {
     before(() => {
@@ -520,198 +525,117 @@ describe("Repositories", () => {
         });
 
         it('should find pull requests assigned to user by its username', () => {
-            var userOne = new models.User();
-            userOne.username = 'john.smith';
+            var reviewerUserName = 'john.smith';
+            var reviewer = reviewerFaker.fake({user: {username: reviewerUserName}});
 
-            var userTwo = new models.User();
-            userTwo.username = 'anna.kowalsky';
-
-            var reviewerOne = new models.Reviewer();
-            reviewerOne.user = userOne;
-
-            var reviewerTwo = new models.Reviewer();
-            reviewerTwo.user = userTwo;
-
-            var prOne = new models.PullRequest();
-            prOne.reviewers.push(reviewerOne);
-
-            var prTwo = new models.PullRequest();
-            prTwo.reviewers.push(reviewerTwo);
+            var prOne = prFaker.fake({reviewers: [reviewer]});
+            var prTwo = prFaker.fake();
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByReviewer('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByReviewer(reviewerUserName);
+
             expect(pullRequests).to.have.length(1);
-            expect(pullRequests[0].reviewers[0].user).to.eq(userOne);
+            expect(pullRequests[0].reviewers[0].user.username).to.eq(reviewerUserName);
         });
 
         it('should find pull requests by their author', () => {
-            var authorOne = new models.User();
-            authorOne.username = 'john.smith';
-
-            var authorTwo = new models.User();
-            authorTwo.username = 'anna.kowalsky';
-
-            var prOne = new models.PullRequest();
-            prOne.author = authorOne;
-
-            var prTwo = new models.PullRequest();
-            prTwo.author = authorTwo;
+            var authorUsername = 'john.smith';
+            var prOne = prFaker.fake({author: {username: authorUsername}});
+            var prTwo = prFaker.fake();
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByAuthor('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByAuthor(authorUsername);
             expect(pullRequests).to.have.length(1);
-            expect(pullRequests[0].author).to.eq(authorOne);
+            expect(pullRequests[0].author.username).to.eq(authorUsername);
         });
 
         it('should find all pull requests belonging to user (assigned and authored)', () => {
-            var authorOne = new models.User();
-            authorOne.username = 'john.smith';
+            var userName = 'john.smith';
+            var prOne = prFaker.fake({author: {username: userName}});
 
-            var authorTwo = new models.User();
-            authorTwo.username = 'anna.kowalsky';
-
-            var authorAsReviewer = new models.Reviewer();
-            authorAsReviewer.user = authorOne;
-            authorAsReviewer.approved = true;
-
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
-
-            var prOne = new models.PullRequest();
-            prOne.id = 1;
-            prOne.targetRepository = project;
-            prOne.author = authorOne;
-
-            var prTwo = new models.PullRequest();
-            prTwo.id = 2;
-            prTwo.author = authorTwo;
-            prTwo.targetRepository = project;
-            prTwo.reviewers.push(authorAsReviewer);
+            var reviewer = reviewerFaker.fake({user: {username: userName}});
+            var prTwo = prFaker.fake({reviewers: [reviewer]});
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByUser('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByUser(userName);
             expect(pullRequests).to.have.length(2);
-            expect(pullRequests[0].author.username).to.eq('john.smith');
-            expect(pullRequests[1].reviewers[0].user.username).to.eq('john.smith');
+            expect(pullRequests[0].author.username).to.eq(userName);
+            expect(pullRequests[1].reviewers[0].user.username).to.eq(userName);
         });
 
         it('should not return duplicated pull requests when requesting for user pull requests', () => {
-            var authorOne = new models.User();
-            authorOne.username = 'john.smith';
-
-            var authorTwo = new models.User();
-            authorTwo.username = 'anna.kowalsky';
-
-            var authorAsReviewer = new models.Reviewer();
-            authorAsReviewer.user = authorOne;
-            authorAsReviewer.approved = true;
-
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
-
-            var anotherProject = new models.Project();
-            project.fullName = 'team_name/another_repo_name';
-
-            var prOne = new models.PullRequest();
-            prOne.id = 1;
-            prOne.targetRepository = project;
-            prOne.author = authorOne;
-            prOne.reviewers.push(authorAsReviewer);
-
-            var prTwo = new models.PullRequest();
-            prTwo.id = 1;
-            prTwo.targetRepository = anotherProject;
-            prTwo.author = authorTwo;
-            prTwo.reviewers.push(authorAsReviewer);
+            var userName = 'john.smith';
+            var reviewer = reviewerFaker.fake({user: {username: userName }});
+            var prOne = prFaker.fake({author: {username: userName}, reviewers: [reviewer]});
+            var prTwo = prFaker.fake({author: {username: userName}, reviewers: [reviewer]});
 
             repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByUser('john.smith');
+            var pullRequests = repositories.PullRequestRepository.findByUser(userName);
             expect(pullRequests).to.have.length(2);
         });
 
         it('should allow to add new pull request', () => {
-            var project = new models.Project();
-            project.fullName = 'aaa/bbb';
-
-            var pullRequest = new models.PullRequest();
-            pullRequest.title = 'This is some title';
-            pullRequest.targetRepository = project;
+            var pullRequest = prFaker.fake();
 
             repositories.PullRequestRepository.add(pullRequest);
 
-            var actualPullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
-            expect(actualPullRequests).to.have.length(1);
+            var actualPullRequests: models.PullRequest[] = repositories.PullRequestRepository.findAll();
 
+            expect(actualPullRequests).to.have.length(1);
             expect(actualPullRequests[0]).to.eq(pullRequest);
-            expect(repositories.PullRequestRepository.pullRequests['aaa/bbb'][0]).to.eq(pullRequest);
         });
 
         it('should allow to update a pull request', () => {
-            var sampleProject = new models.Project();
-            sampleProject.fullName = 'team_name/repo_name';
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var existentPullRequest = new models.PullRequest();
-            existentPullRequest.id = 1;
-            existentPullRequest.title = 'This is some title';
-            existentPullRequest.description = 'This is a description';
-            existentPullRequest.targetRepository = sampleProject;
+            var prId = 1;
 
-            var newPullRequest = new models.PullRequest();
-            newPullRequest.id = 1;
-            newPullRequest.title = 'This is new title';
-            newPullRequest.targetRepository = sampleProject;
-            newPullRequest.state = models.PullRequestState.Open;
+            var existentPullRequest = prFaker.fake({id: prId, targetRepository: project});
+            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
 
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [existentPullRequest];
+            repositories.PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
             repositories.PullRequestRepository.update(newPullRequest);
 
             var pullRequests = repositories.PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(1);
-            expect(pullRequests[0].id).to.eq(1);
-            expect(pullRequests[0].title).to.eq('This is new title');
-            expect(pullRequests[0].description).to.be.undefined;
+            expect(pullRequests[0].id).to.eq(prId);
         });
 
         it('should add a new pull request on update if it doesn\'t exist', () => {
-            var sampleProject = new models.Project();
-            sampleProject.fullName = 'team_name/repo_name';
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var newPullRequest = new models.PullRequest();
-            newPullRequest.id = 1;
-            newPullRequest.title = 'This is new title';
-            newPullRequest.targetRepository = sampleProject;
-            newPullRequest.state = models.PullRequestState.Open;
+            var prId = 1;
+            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
+
+            expect(repositories.PullRequestRepository.findAll().length).to.eq(0);
 
             repositories.PullRequestRepository.update(newPullRequest);
 
             var pullRequests = repositories.PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(1);
-            expect(pullRequests[0].id).to.eq(1);
-            expect(pullRequests[0].title).to.eq('This is new title');
+            expect(pullRequests[0].id).to.eq(prId);
         });
 
         it('should update a PullRequest only when its status is OPEN', () => {
-            var incomingPr = new models.PullRequest();
-            incomingPr.id = 1;
-            incomingPr.title = 'This is new title';
-            incomingPr.targetRepository.fullName = 'team_name/repo_name';
-            incomingPr.state = models.PullRequestState.Merged;
+            var incomingPr = prFaker.fake({state: models.PullRequestState.Merged});
 
             repositories.PullRequestRepository.pullRequests = {};
             repositories.PullRequestRepository.update(incomingPr);
@@ -721,34 +645,28 @@ describe("Repositories", () => {
         });
 
         it('should remove a pull request if its status is not OPEN', () => {
-            var existentPullRequest = new models.PullRequest();
-            existentPullRequest.id = 1;
-            existentPullRequest.title = 'This is some title';
-            existentPullRequest.description = 'This is a description';
-            existentPullRequest.targetRepository.fullName = 'team_name/repo_name';
-            existentPullRequest.state = models.PullRequestState.Open;
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var newPullRequest = new models.PullRequest();
-            newPullRequest.id = 1;
-            newPullRequest.title = 'This is new title';
-            newPullRequest.targetRepository.fullName = 'team_name/repo_name';
-            newPullRequest.state = models.PullRequestState.Merged;
+            var prId = 1;
 
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [existentPullRequest];
-            repositories.PullRequestRepository.update(newPullRequest);
+            var existentPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
+            var incomingPr = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Merged});
+
+            repositories.PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
+            repositories.PullRequestRepository.update(incomingPr);
 
             var pullRequests = repositories.PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(0);
         });
 
         it('should be able to remove given pull request', () => {
-            var sampleProject = new models.Project();
-            sampleProject.fullName = 'team_name/repo_name';
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var pullRequest = new models.PullRequest();
-            pullRequest.id = 1;
-            pullRequest.title = 'This is new title';
-            pullRequest.targetRepository = sampleProject;
+            var prId = 1;
+
+            var pullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
 
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [pullRequest];
 
