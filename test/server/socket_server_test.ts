@@ -9,6 +9,12 @@ import models = require('./../../lib/models');
 import eventDispatcher = require('./../../lib/events/event_dispatcher');
 import configModule = require('./../../lib/config');
 import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
+import modelFaker = require('./../faker/model_faker');
+
+var prFaker = new modelFaker.PullRequestFaker();
+var reviewerFaker = new modelFaker.ReviewerFaker();
+var projectFaker = new modelFaker.ProjectFaker();
+var userFaker = new modelFaker.UserFaker();
 
 describe('SocketServer', () => {
     var options = {
@@ -46,26 +52,14 @@ describe('SocketServer', () => {
     });
 
     it("should emit intro message with user's pull requests and assigned pull requests", (done) => {
-        var project = new models.Project();
-        project.fullName = 'team_name/repo_name';
+        var projectName = 'team_name/repo_name';
+        var project = projectFaker.fake({fullName: projectName});
 
         var username = 'john.smith';
-        var user = new models.User();
-        user.username = username;
+        var reviewer = reviewerFaker.fake({user: {username: username}});
 
-        var authoredPullRequest = new models.PullRequest();
-        authoredPullRequest.id = 1;
-        authoredPullRequest.title = 'Authored pull request';
-        authoredPullRequest.author = user;
-        authoredPullRequest.targetRepository = project;
-
-        var userAsReviewer = new models.Reviewer();
-        userAsReviewer.user = user;
-
-        var assignedPullRequest = new models.PullRequest();
-        assignedPullRequest.title = 'Assigned pull request';
-        assignedPullRequest.reviewers.push(userAsReviewer);
-        assignedPullRequest.targetRepository = project;
+        var authoredPullRequest = prFaker.fake({targetRepository: project, author: {username: username}});
+        var assignedPullRequest = prFaker.fake({targetRepository: project, reviewers: [reviewer]});
 
         repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
             authoredPullRequest,
@@ -77,8 +71,8 @@ describe('SocketServer', () => {
             expect(pullRequests.sourceEvent).to.eq('client:introduce');
             expect(pullRequests.pullRequests.length).to.eq(2);
 
-            expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');
-            expect(pullRequests.pullRequests[1].title).to.eq('Assigned pull request');
+            expect(pullRequests.pullRequests[0].id).to.eq(authoredPullRequest.id);
+            expect(pullRequests.pullRequests[1].id).to.eq(assignedPullRequest.id);
 
             client.disconnect();
             done();
@@ -88,20 +82,10 @@ describe('SocketServer', () => {
     });
 
     it('should notify reviewers who haven\'t approved the pull request yet on client:remind', (done) => {
-        var username = 'john.smith';
+        var approvedReviewer = reviewerFaker.fake({approved: true});
+        var unapprovedReviewer = reviewerFaker.fake({approved: false});
 
-        var pullRequest = new models.PullRequest();
-        pullRequest.id = 1;
-
-        var approvedReviewer = new models.Reviewer();
-        approvedReviewer.user.username = 'anna.kowalsky';
-        approvedReviewer.approved = true;
-
-        var unapprovedReviewer = new models.Reviewer();
-        unapprovedReviewer.user.username = username;
-        unapprovedReviewer.approved = false;
-
-        pullRequest.reviewers = [approvedReviewer, unapprovedReviewer];
+        var pullRequest = prFaker.fake({reviewers: [approvedReviewer, unapprovedReviewer]});
 
         repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
             pullRequest
@@ -110,7 +94,7 @@ describe('SocketServer', () => {
         var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', () => {
             client.on('server:remind', (pullRequestToRemind: models.PullRequest) => {
-                expect(pullRequestToRemind.id).to.eq(1);
+                expect(pullRequestToRemind.id).to.eq(pullRequest.id);
                 client.disconnect();
                 done();
             });
@@ -118,48 +102,26 @@ describe('SocketServer', () => {
             client.emit('client:remind', pullRequest);
         });
 
-        client.emit('client:introduce', username);
+        client.emit('client:introduce', unapprovedReviewer.user.username);
     });
 
     describe('Emitting pull requests via sockets to author', () => {
         var dispatcher = eventDispatcher.EventDispatcher.getInstance();
 
         function testEmittingEventViaSocket(inputEvent: string, done): void {
-            var authorUsername = 'john.smith';
-            var reviewerUsername = 'anna.kowalsky';
+            var username = 'john.smith';
 
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var user = new models.User();
-            user.username = authorUsername;
+            var reviewer = reviewerFaker.fake({user: {username: username}});
 
-            var pullRequest = new models.PullRequest();
-            pullRequest.id = 1;
-            pullRequest.title = "Title of pull request";
-            pullRequest.author = user;
+            var authoredPullRequest = prFaker.fake({author: {username: username}, targetRepository: project});
+            var assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
             var payload = new eventPayloadHandler.PullRequestWithActor();
-            payload.pullRequest = pullRequest;
-            payload.actor = user;
-
-            var anotherUser = new models.User();
-            anotherUser.username = reviewerUsername;
-
-            var authoredPullRequest = new models.PullRequest();
-            authoredPullRequest.id = 1;
-            authoredPullRequest.title = 'Authored pull request';
-            authoredPullRequest.author = user;
-            authoredPullRequest.targetRepository = project;
-
-            var userAsReviewer = new models.Reviewer();
-            userAsReviewer.user = user;
-
-            var assignedPullRequest = new models.PullRequest();
-            assignedPullRequest.id = 2;
-            assignedPullRequest.title = 'Assigned pull request';
-            assignedPullRequest.reviewers.push(userAsReviewer);
-            assignedPullRequest.targetRepository = project;
+            payload.pullRequest = authoredPullRequest;
+            payload.actor = userFaker.fake();
 
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
@@ -167,21 +129,18 @@ describe('SocketServer', () => {
             ];
 
             var client = socketIoClient.connect('http://localhost:' + socketPort, options);
-            client.emit('client:introduce', authorUsername);
+            client.emit('client:introduce', username);
 
-            var reviwererClient = socketIoClient.connect('http://localhost:' + socketPort, options);
-            reviwererClient.emit('client:introduce');
+            var reviewerClient = socketIoClient.connect('http://localhost:' + socketPort, options);
+            reviewerClient.emit('client:introduce');
 
             client.on('server:introduced', () => {
                 client.on('server:pullrequests:updated', (pullRequestEvent: models.PullRequestEvent) => {
                     expect(pullRequestEvent.sourceEvent).to.eq(inputEvent);
-                    expect(pullRequestEvent.context.id).to.eq(1);
-                    expect(pullRequestEvent.context.title).to.eq('Title of pull request');
-                    expect(pullRequestEvent.actor.username).to.eq(user.username);
-
+                    expect(pullRequestEvent.context.id).to.eq(authoredPullRequest.id);
+                    expect(pullRequestEvent.context.title).to.eq(authoredPullRequest.title);
+                    expect(pullRequestEvent.actor.username).to.eq(payload.actor.username);
                     expect(pullRequestEvent.pullRequests.length).to.eq(2);
-
-                    expect(pullRequestEvent.pullRequests[0].title).to.eq('Authored pull request');
 
                     client.disconnect();
                     done();
@@ -228,42 +187,17 @@ describe('SocketServer', () => {
         function testEmittingEventViaSocket(inputEvent: string, done): void {
             var reviewerUsername = 'anna.kowalsky';
 
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
+            var projectName = 'team_name/repo_name';
+            var project = projectFaker.fake({fullName: projectName});
 
-            var user = new models.User();
-            user.username = 'john.smith';
+            var reviewer = reviewerFaker.fake({user: {username: reviewerUsername}});
 
-            var anotherUser = new models.User();
-            anotherUser.username = reviewerUsername;
-
-            var userAsReviewer = new models.Reviewer();
-            userAsReviewer.user = user;
-
-            var reviewer = new models.Reviewer();
-            reviewer.user = anotherUser;
-
-            var payloadPr = new models.PullRequest();
-            payloadPr.id = 1;
-            payloadPr.title = 'Title of pull request';
-            payloadPr.author = user;
-            payloadPr.reviewers.push(reviewer);
+            var authoredPullRequest = prFaker.fake({author: {username: reviewerUsername}, targetRepository: project});
+            var assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
             var payload = new eventPayloadHandler.PullRequestWithActor();
-            payload.pullRequest = payloadPr;
-            payload.actor = user;
-
-            var authoredPullRequest = new models.PullRequest();
-            authoredPullRequest.id = 1;
-            authoredPullRequest.title = 'Authored pull request';
-            authoredPullRequest.author = user;
-            authoredPullRequest.targetRepository = project;
-
-            var assignedPullRequest = new models.PullRequest();
-            assignedPullRequest.id = 2;
-            assignedPullRequest.title = 'Assigned pull request';
-            assignedPullRequest.reviewers.push(userAsReviewer, reviewer);
-            assignedPullRequest.targetRepository = project;
+            payload.pullRequest = assignedPullRequest;
+            payload.actor = userFaker.fake();
 
             repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
@@ -278,12 +212,10 @@ describe('SocketServer', () => {
                 client.on('server:introduced', () => {
                     client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
                         expect(pullRequests.sourceEvent).to.eq(inputEvent);
-                        expect(pullRequests.context.id).to.eq(1);
-                        expect(pullRequests.context.title).to.eq('Title of pull request');
-                        expect(pullRequests.actor.username).to.eq(user.username);
+                        expect(pullRequests.context.id).to.eq(assignedPullRequest.id);
+                        expect(pullRequests.actor.username).to.eq(payload.actor.username);
 
-                        expect(pullRequests.pullRequests.length).to.eq(1);
-                        expect(pullRequests.pullRequests[0].title).to.eq('Assigned pull request');
+                        expect(pullRequests.pullRequests.length).to.eq(2);
 
                         client.disconnect();
                         done();
@@ -294,7 +226,6 @@ describe('SocketServer', () => {
             } catch (e) {
                 done(e);
             }
-
         }
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
