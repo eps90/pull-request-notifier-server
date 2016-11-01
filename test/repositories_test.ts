@@ -221,7 +221,7 @@ describe("Repositories", () => {
             var pullRequests: any = {
                 size: 19,
                 pagelen: 10,
-                next: 'http://example.com/bitbucket/bitbucket/pullrequests?page=2',
+                next: 'http://example.com/bitbucket/bitbucket/pullrequests?page=2&state=OPEN',
                 values: [
                     {
                         links: {
