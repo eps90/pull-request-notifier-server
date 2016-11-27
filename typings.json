@@ -1,0 +1,19 @@
+{
+  "name": "bitbucket-notifier",
+  "globalDependencies": {
+    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#00e7f3fede5f2df55b56c72f40a144824f0f0bfa",
+    "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#71abea754c81fd0677ecaaad3601da446280035c",
+    "chai": "github:DefinitelyTyped/DefinitelyTyped/chai/chai.d.ts#71abea754c81fd0677ecaaad3601da446280035c",
+    "request": "github:DefinitelyTyped/DefinitelyTyped/request/request.d.ts#76e1dedf0bada455c0b75abeec3206d3aa5bd892",
+    "form-data": "github:DefinitelyTyped/DefinitelyTyped/form-data/form-data.d.ts#76e1dedf0bada455c0b75abeec3206d3aa5bd892",
+    "Q": "github:DefinitelyTyped/DefinitelyTyped/q/Q.d.ts#c0fdc8f774149840e99e45656be3013143f31309",
+    "js-yaml": "github:DefinitelyTyped/DefinitelyTyped/js-yaml/js-yaml.d.ts#f7d47e35f7f29c151889286e8b8bf2bd31317490",
+    "mock-fs": "github:DefinitelyTyped/DefinitelyTyped/mock-fs/mock-fs.d.ts#99942cab1446292c79c4328218abd37621505112",
+    "chai-as-promised": "github:DefinitelyTyped/DefinitelyTyped/chai-as-promised/chai-as-promised.d.ts#99942cab1446292c79c4328218abd37621505112",
+    "winston": "github:DefinitelyTyped/DefinitelyTyped/winston/winston.d.ts#f6c8ca47193fb67947944a3170912672ac3e908e",
+    "socket.io": "github:DefinitelyTyped/DefinitelyTyped/socket.io/socket.io.d.ts#983126e131a2b81739053d60e4bbdbb46d6577b7",
+    "socket.io-client": "github:DefinitelyTyped/DefinitelyTyped/socket.io-client/socket.io-client.d.ts#983126e131a2b81739053d60e4bbdbb46d6577b7",
+    "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#5109e1269d6ab8e8e73b1a5e85d8ceb836d3099f",
+    "colors": "github:DefinitelyTyped/DefinitelyTyped/colors/colors.d.ts#67605e10f6eb01c9d4a0d13719d804d6dea9e1cb"
+  }
+}
