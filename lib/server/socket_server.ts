@@ -14,12 +14,12 @@ import _ = require('lodash');
 export class SocketServer {
     static io: SocketIO.Server;
     static startSocketServer(): void {
-        var config = Config.getConfig();
-        var socketPort = config.socket_port;
+        const config = Config.getConfig();
+        const socketPort = config.socket_port;
 
         logger.logSocketServerStart(socketPort.toString());
         this.io = Server(socketPort);
-        var dispatcher = EventDispatcher.getInstance();
+        const dispatcher = EventDispatcher.getInstance();
 
         this.io.on('connection', (socket) => {
             logger.logClientConnected();
@@ -28,7 +28,7 @@ export class SocketServer {
                 logger.logClientIntroduced(username);
                 socket.join(username);
 
-                var userPullRequests = new PullRequestEvent();
+                const userPullRequests = new PullRequestEvent();
                 userPullRequests.sourceEvent = SocketClientEvent.INTRODUCE;
                 userPullRequests.pullRequests = PullRequestRepository.findByUser(username);
 
@@ -38,7 +38,7 @@ export class SocketServer {
 
             socket.on(SocketClientEvent.REMIND, (pullRequest: PullRequest) => {
                 logger.logReminderReceived();
-                var reviewersToRemind: string[] = _.map(
+                const reviewersToRemind: string[] = _.map(
                     _.filter(pullRequest.reviewers, (reviewer: Reviewer) => {
                         return !reviewer.approved;
                     }),
@@ -47,8 +47,9 @@ export class SocketServer {
                     }
                 );
 
-                for (var reviewerIdx = 0, reviewersLen = reviewersToRemind.length; reviewerIdx < reviewersLen; reviewerIdx++) {
-                    var reviewerUsername = reviewersToRemind[reviewerIdx];
+                let reviewerIdx = 0, reviewersLen = reviewersToRemind.length;
+                for (; reviewerIdx < reviewersLen; reviewerIdx++) {
+                    const reviewerUsername = reviewersToRemind[reviewerIdx];
                     logger.logSendingReminderToUser(reviewerUsername);
                     this.io.to(reviewerUsername).emit(SocketServerEvent.REMIND, pullRequest);
                 }
@@ -81,9 +82,9 @@ export class SocketServer {
 
     private static onWebhookEvent(eventName: string, pullRequest: PullRequest, actor: User): void {
         logger.logWebhookEventReceived(eventName);
-        var author = pullRequest.author.username;
+        const author = pullRequest.author.username;
 
-        var userPullRequests = new PullRequestEvent();
+        const userPullRequests = new PullRequestEvent();
         userPullRequests.actor = actor;
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
@@ -93,11 +94,12 @@ export class SocketServer {
         logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, author);
         SocketServer.io.to(author).emit(SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
-        var reviewers: Array<Reviewer> = pullRequest.reviewers || [];
+        const reviewers: Array<Reviewer> = pullRequest.reviewers || [];
 
-        for (var reviewerIdx = 0, reviewersLength = reviewers.length; reviewerIdx < reviewersLength; reviewerIdx++) {
-            var reviewerUsername = reviewers[reviewerIdx].user.username;
-            var reviewerPr = new PullRequestEvent();
+        let reviewerIdx = 0, reviewersLength = reviewers.length;
+        for (; reviewerIdx < reviewersLength; reviewerIdx++) {
+            const reviewerUsername = reviewers[reviewerIdx].user.username;
+            const reviewerPr = new PullRequestEvent();
             reviewerPr.sourceEvent = eventName;
             reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
