@@ -21,17 +21,17 @@ class AbstractRepository {
             return [];
         }
 
-        var urlList: Array<string> = [];
+        const urlList: Array<string> = [];
 
-        var nextPageUrlParams: url.Url = url.parse(response.next, true);
+        const nextPageUrlParams: url.Url = url.parse(response.next, true);
         delete nextPageUrlParams.search;
 
-        var pageNum: number = Math.ceil(response.size / response.pagelen);
+        const pageNum: number = Math.ceil(response.size / response.pagelen);
 
-        var nextPageNum: number = nextPageUrlParams.query.page;
-        for (var pageIndex = nextPageNum; pageIndex <= pageNum; pageIndex++) {
+        const nextPageNum: number = nextPageUrlParams.query.page;
+        for (let pageIndex = nextPageNum; pageIndex <= pageNum; pageIndex++) {
             nextPageUrlParams.query.page = pageIndex;
-            var newUrl = url.format(nextPageUrlParams);
+            const newUrl = url.format(nextPageUrlParams);
             urlList.push(newUrl);
         }
 
@@ -39,12 +39,12 @@ class AbstractRepository {
     }
 
     static getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
-        var promises: Array<q.Promise<any>> = [];
+        const promises: Array<q.Promise<any>> = [];
 
         for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-            var promise: () => q.Promise<any> = () => {
-                var resourceUrl: string = urls[urlIndex];
-                var deferred = q.defer();
+            const promise: () => q.Promise<any> = () => {
+                const resourceUrl: string = urls[urlIndex];
+                const deferred = q.defer();
 
                 logger.logHttpRequestAttempt(resourceUrl);
                 request(resourceUrl, authConfig, (error, res: http.IncomingMessage, body) => {
@@ -53,7 +53,7 @@ class AbstractRepository {
                         return deferred.reject(HttpRequestError.throwError(resourceUrl, res, body));
                     }
                     logger.logHttpRequestSucceed(resourceUrl);
-                    var response: any = JSON.parse(body);
+                    const response: any = JSON.parse(body);
                     deferred.resolve(response.values);
                 });
 
@@ -67,10 +67,10 @@ class AbstractRepository {
     }
 
     static getCollection<T extends ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
-        var result: Array<T> = [];
+        const result: Array<T> = [];
 
-        for (var repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
-            var repo = type.create(repoObjects[repoIndex]);
+        for (let repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
+            const repo = type.create(repoObjects[repoIndex]);
             result.push(repo);
         }
 
@@ -86,17 +86,17 @@ export class ProjectRepository extends AbstractRepository {
     }
 
     static fetchAll(): q.Promise<Array<Project>> {
-        var config = Config.getConfig();
+        const config = Config.getConfig();
 
-        var resourceUrl: string = config.baseUrl + '/repositories/' + config.teamName;
-        var requestConfig = {
+        const resourceUrl: string = config.baseUrl + '/repositories/' + config.teamName;
+        const requestConfig = {
             auth: {
                 username: config.user,
                 password: config.password
             }
         };
 
-        var defer = q.defer<Array<Project>>();
+        const defer = q.defer<Array<Project>>();
 
         logger.logHttpRequestAttempt(resourceUrl);
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
@@ -106,15 +106,15 @@ export class ProjectRepository extends AbstractRepository {
             }
 
             logger.logHttpRequestSucceed(resourceUrl);
-            var response: any = JSON.parse(body);
-            var repos: any = response.values;
-            var result: Array<Project> = AbstractRepository.getCollection<Project>(ProjectFactory, repos);
+            const response: any = JSON.parse(body);
+            const repos: any = response.values;
+            let result: Array<Project> = AbstractRepository.getCollection<Project>(ProjectFactory, repos);
 
-            var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
+            const rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
             q.all(rest).done(
                 (results: Array<any>) => {
-                    for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                        var resultRepos: any = results[resultIndex];
+                    for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                        const resultRepos: any = results[resultIndex];
                         result = result.concat(this.getCollection<Project>(ProjectFactory, resultRepos));
                     }
 
@@ -140,8 +140,8 @@ export class PullRequestRepository extends AbstractRepository {
     static pullRequests: PullRequestSet = {};
 
     static findAll(): Array<PullRequest> {
-        var foundPullRequests: Array<PullRequest> = [];
-        for (var repositoryName in PullRequestRepository.pullRequests) {
+        let foundPullRequests: Array<PullRequest> = [];
+        for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 foundPullRequests = foundPullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
             }
@@ -151,13 +151,13 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     static findByReviewer(username: string): Array<PullRequest> {
-        var foundPullRequests: Array<PullRequest> = [];
-        for (var repositoryName in PullRequestRepository.pullRequests) {
+        let foundPullRequests: Array<PullRequest> = [];
+        for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
-                    var reviewers = pr.reviewers;
-                    for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
-                        var reviewer = reviewers[reviewerIndex];
+                const prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
+                    const reviewers = pr.reviewers;
+                    for (let reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
+                        const reviewer = reviewers[reviewerIndex];
                         if (reviewer.user.username === username) {
                             return true;
                         }
@@ -174,10 +174,10 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     static findByAuthor(username: string): Array<PullRequest> {
-        var foundPullRequests: Array<PullRequest> = [];
-        for (var repositoryName in PullRequestRepository.pullRequests) {
+        let foundPullRequests: Array<PullRequest> = [];
+        for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
+                const prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
                     return pr.hasOwnProperty('author') && pr.author.username === username;
                 });
                 foundPullRequests = foundPullRequests.concat(prs);
@@ -188,16 +188,14 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     static findByUser(username: string): Array<PullRequest> {
-        var result = this.findByAuthor(username).concat(this.findByReviewer(username));
-        var pullRequests = _.uniq(result, (element: PullRequest) => {
+        const result = this.findByAuthor(username).concat(this.findByReviewer(username));
+        return _.uniq(result, (element: PullRequest) => {
             return element.targetRepository.fullName + '#' + element.id;
         });
-
-        return pullRequests;
     }
 
     static add(pullRequest: PullRequest): void {
-        var repositoryName = pullRequest.targetRepository.fullName;
+        const repositoryName = pullRequest.targetRepository.fullName;
         if (!PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
             PullRequestRepository.pullRequests[repositoryName] = [];
         }
@@ -209,10 +207,10 @@ export class PullRequestRepository extends AbstractRepository {
             return this.remove(pullRequest);
         }
 
-        var projectName = pullRequest.targetRepository.fullName;
-        var projectPrs = this.pullRequests[projectName] || [];
-        for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {
-            var currentPullRequest: PullRequest = projectPrs[prIndex];
+        const projectName = pullRequest.targetRepository.fullName;
+        const projectPrs = this.pullRequests[projectName] || [];
+        for (let prIndex = 0; prIndex < projectPrs.length; prIndex++) {
+            const currentPullRequest: PullRequest = projectPrs[prIndex];
             if (currentPullRequest.id === pullRequest.id) {
                 this.pullRequests[projectName].splice(prIndex, 1, pullRequest);
                 return;
@@ -223,10 +221,10 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     static remove(pullRequest: PullRequest): void {
-        var projectName = pullRequest.targetRepository.fullName;
-        var projectPrs = this.pullRequests[projectName] || [];
-        for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {
-            var currentPullRequest: PullRequest = projectPrs[prIndex];
+        const projectName = pullRequest.targetRepository.fullName;
+        const projectPrs = this.pullRequests[projectName] || [];
+        for (let prIndex = 0; prIndex < projectPrs.length; prIndex++) {
+            const currentPullRequest: PullRequest = projectPrs[prIndex];
             if (currentPullRequest.id === pullRequest.id) {
                 this.pullRequests[projectName].splice(prIndex, 1);
                 return;
@@ -236,10 +234,10 @@ export class PullRequestRepository extends AbstractRepository {
 
     // @todo to refactor
     static fetchByProject(project: Project): q.Promise<Array<PullRequest>> {
-        var parsedUrl = url.parse(project.pullRequestsUrl);
-        var config = Config.getConfig();
+        const parsedUrl = url.parse(project.pullRequestsUrl);
+        const config = Config.getConfig();
 
-        var requestConfig = {
+        const requestConfig = {
             auth: {
                 username: config.user,
                 password: config.password
@@ -250,9 +248,9 @@ export class PullRequestRepository extends AbstractRepository {
         parsedUrl.query = {
             state: 'OPEN'
         };
-        var pullRequestsUrl = url.format(parsedUrl);
+        const pullRequestsUrl = url.format(parsedUrl);
 
-        var defer = q.defer<Array<PullRequest>>();
+        const defer = q.defer<Array<PullRequest>>();
 
         logger.logHttpRequestAttempt(pullRequestsUrl);
         request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
@@ -262,14 +260,14 @@ export class PullRequestRepository extends AbstractRepository {
             }
             logger.logHttpRequestSucceed(pullRequestsUrl);
 
-            var response: any = JSON.parse(body);
-            var pullRequests: Array<any> = response.values;
-            var result: Array<PullRequest> =
+            const response: any = JSON.parse(body);
+            const pullRequests: Array<any> = response.values;
+            let result: Array<PullRequest> =
                 AbstractRepository.getCollection<PullRequest>(PullRequestFactory, pullRequests);
 
             q.all(
                 result.map((pr: PullRequest) => {
-                    var deferred = q.defer();
+                    const deferred = q.defer();
 
                     logger.logHttpRequestAttempt(pr.links.self);
                     request(pr.links.self, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
@@ -279,7 +277,7 @@ export class PullRequestRepository extends AbstractRepository {
                         }
 
                         logger.logHttpRequestSucceed(pr.links.self);
-                        var innerResponse = JSON.parse(innerBody);
+                        const innerResponse = JSON.parse(innerBody);
                         deferred.resolve(PullRequestFactory.create(innerResponse));
                     });
 
@@ -287,10 +285,10 @@ export class PullRequestRepository extends AbstractRepository {
                 })
             ).then((prs: Array<PullRequest>) => {
                     result = prs;
-                    var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
+                    const rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
                     q.all(rest).done((results: Array<any>) => {
-                        for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                            var resultPrs: any = results[resultIndex];
+                        for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
+                            const resultPrs: any = results[resultIndex];
                             result = result.concat(this.getCollection<PullRequest>(PullRequestFactory, resultPrs));
                         }
 
@@ -307,9 +305,9 @@ export class PullRequestRepository extends AbstractRepository {
     static fetchOne(project: Project, prId: number): q.Promise<PullRequest>;
 
     static fetchOne(projectOrUrl: any, prId?: number): q.Promise<PullRequest> {
-        var deferred = q.defer<PullRequest>();
-        var config = Config.getConfig();
-        var prUrl = '';
+        const deferred = q.defer<PullRequest>();
+        const config = Config.getConfig();
+        let prUrl = '';
 
         if (typeof projectOrUrl === 'string') {
             prUrl = projectOrUrl;
@@ -317,7 +315,7 @@ export class PullRequestRepository extends AbstractRepository {
             prUrl = config.baseUrl + '/repositories/' + projectOrUrl.fullName + '/pullrequests/' + prId;
         }
 
-        var requestConfig = {
+        const requestConfig = {
             auth: {
                 username: config.user,
                 password: config.password
@@ -332,8 +330,8 @@ export class PullRequestRepository extends AbstractRepository {
             }
             logger.logHttpRequestSucceed(prUrl);
 
-            var response: any = JSON.parse(body);
-            var pullRequest = PullRequestFactory.create(response);
+            const response: any = JSON.parse(body);
+            const pullRequest = PullRequestFactory.create(response);
             deferred.resolve(pullRequest);
         });
 
