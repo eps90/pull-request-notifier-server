@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "grunt test",
-    "postinstall": "tsd install",
+    "postinstall": "typings install",
     "start": "grunt dist && node dist/index.js"
   },
   "repository": {
