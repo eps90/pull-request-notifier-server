@@ -1,12 +1,12 @@
 ///<reference path="../typings/index.d.ts"/>
 
-import models = require('./../lib/models');
+import {Project, User, Reviewer, PullRequest, PullRequestLinks, PullRequestState} from './models';
 
 export interface FactoryInterface {}
 
 export class ProjectFactory implements FactoryInterface {
-    static create(rawObject: any): models.Project {
-        var project = new models.Project();
+    static create(rawObject: any): Project {
+        var project = new Project();
 
         if (rawObject.hasOwnProperty('name')) {
             project.name = rawObject.name;
@@ -28,8 +28,8 @@ export class ProjectFactory implements FactoryInterface {
 }
 
 export class UserFactory implements FactoryInterface {
-    static create(rawObject: any): models.User {
-        var user = new models.User();
+    static create(rawObject: any): User {
+        var user = new User();
 
         if (rawObject.hasOwnProperty('username')) {
             user.username = rawObject.username;
@@ -44,8 +44,8 @@ export class UserFactory implements FactoryInterface {
 }
 
 export class ReviewerFactory implements FactoryInterface {
-    static create(rawObject: any): models.Reviewer {
-        var reviewer = new models.Reviewer();
+    static create(rawObject: any): Reviewer {
+        var reviewer = new Reviewer();
 
         if (rawObject.hasOwnProperty('approved')) {
             reviewer.approved = rawObject.approved;
@@ -60,8 +60,8 @@ export class ReviewerFactory implements FactoryInterface {
 }
 
 export class PullRequestLinksFactory implements FactoryInterface {
-    static create(rawObject: any): models.PullRequestLinks {
-        var links = new models.PullRequestLinks();
+    static create(rawObject: any): PullRequestLinks {
+        var links = new PullRequestLinks();
 
         if (rawObject.hasOwnProperty('self') && rawObject.self.hasOwnProperty('href')) {
             links.self = rawObject.self.href;
@@ -76,8 +76,8 @@ export class PullRequestLinksFactory implements FactoryInterface {
 }
 
 export class PullRequestFactory implements FactoryInterface {
-    static create(rawObject: any): models.PullRequest {
-        var pullRequest = new models.PullRequest();
+    static create(rawObject: any): PullRequest {
+        var pullRequest = new PullRequest();
 
         if (rawObject.hasOwnProperty('id')) {
             pullRequest.id = rawObject.id;
@@ -126,17 +126,17 @@ export class PullRequestFactory implements FactoryInterface {
         return pullRequest;
     }
 
-    private static getPullRequestState(prState: string): models.PullRequestState {
-        var state: models.PullRequestState;
+    private static getPullRequestState(prState: string): PullRequestState {
+        var state: PullRequestState;
         switch (prState.toUpperCase()) {
             case 'OPEN':
-                state = models.PullRequestState.Open;
+                state = PullRequestState.Open;
                 break;
             case 'MERGED':
-                state = models.PullRequestState.Merged;
+                state = PullRequestState.Merged;
                 break;
             case 'DECLINED':
-                state = models.PullRequestState.Declined;
+                state = PullRequestState.Declined;
                 break;
             default:
                 throw new Error('Invalid pull request state');
