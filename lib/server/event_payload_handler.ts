@@ -1,4 +1,4 @@
-///<reference path="../../typings/tsd.d.ts"/>
+///<reference path="../../typings/index.d.ts"/>
 // @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
 import repositories = require('./../repositories');

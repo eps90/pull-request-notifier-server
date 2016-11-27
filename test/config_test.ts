@@ -1,4 +1,4 @@
-///<reference path="../typings/tsd.d.ts"/>
+///<reference path="../typings/index.d.ts"/>
 
 import configModule = require('./../lib/config');
 import mockFs = require('mock-fs');

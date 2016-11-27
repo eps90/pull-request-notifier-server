@@ -1,4 +1,4 @@
-///<reference path="../typings/tsd.d.ts"/>
+///<reference path="../typings/index.d.ts"/>
 
 import {ModelInterface, PullRequest, Project, PullRequestState} from './models';
 import {ProjectFactory, PullRequestFactory} from './factories';

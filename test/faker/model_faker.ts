@@ -1,4 +1,4 @@
-///<reference path="../../typings/tsd.d.ts"/>
+///<reference path="../../typings/index.d.ts"/>
 ///<reference path="../../custom_typings/faker.d.ts"/>
 
 import faker = require('faker');

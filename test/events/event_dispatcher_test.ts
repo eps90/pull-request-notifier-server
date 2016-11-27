@@ -1,4 +1,4 @@
-///<reference path="../../typings/tsd.d.ts"/>
+///<reference path="../../typings/index.d.ts"/>
 
 import chai = require('chai');
 import dispatcher = require('./../../lib/events/event_dispatcher');

@@ -1,4 +1,4 @@
-///<reference path="../typings/tsd.d.ts"/>
+///<reference path="../typings/index.d.ts"/>
 
 import chai = require('chai');
 import chaiAsPromised = require('chai-as-promised');
