@@ -1,9 +1,10 @@
 ///<reference path="../typings/tsd.d.ts"/>
 
-import models = require('./models');
-import factories = require('./factories');
-import configModule = require('./config');
-import errors = require('./errors');
+import {ModelInterface, PullRequest, Project, PullRequestState} from './models';
+import {ProjectFactory, PullRequestFactory} from './factories';
+import {Config} from "./config";
+import {HttpRequestError} from "./errors";
+// @todo Change to default export
 import logger = require('./logger');
 
 import request = require('request');
@@ -49,7 +50,7 @@ class AbstractRepository {
                 request(resourceUrl, authConfig, (error, res: http.IncomingMessage, body) => {
                     if (error || res.statusCode !== 200) {
                         logger.logHttpRequestFailed(resourceUrl);
-                        return deferred.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
+                        return deferred.reject(HttpRequestError.throwError(resourceUrl, res, body));
                     }
                     logger.logHttpRequestSucceed(resourceUrl);
                     var response: any = JSON.parse(body);
@@ -65,7 +66,7 @@ class AbstractRepository {
         return promises;
     }
 
-    static getCollection<T extends models.ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
+    static getCollection<T extends ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
         var result: Array<T> = [];
 
         for (var repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
@@ -78,14 +79,14 @@ class AbstractRepository {
 }
 
 export class ProjectRepository extends AbstractRepository {
-    static repositories: Array<models.Project> = [];
+    static repositories: Array<Project> = [];
 
-    static findAll(): Array<models.Project> {
+    static findAll(): Array<Project> {
         return ProjectRepository.repositories;
     }
 
-    static fetchAll(): q.Promise<Array<models.Project>> {
-        var config = configModule.Config.getConfig();
+    static fetchAll(): q.Promise<Array<Project>> {
+        var config = Config.getConfig();
 
         var resourceUrl: string = config.baseUrl + '/repositories/' + config.teamName;
         var requestConfig = {
@@ -95,26 +96,26 @@ export class ProjectRepository extends AbstractRepository {
             }
         };
 
-        var defer = q.defer<Array<models.Project>>();
+        var defer = q.defer<Array<Project>>();
 
         logger.logHttpRequestAttempt(resourceUrl);
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
                 logger.logHttpRequestFailed(resourceUrl);
-                return defer.reject(errors.HttpRequestError.throwError(resourceUrl, res, body));
+                return defer.reject(HttpRequestError.throwError(resourceUrl, res, body));
             }
 
             logger.logHttpRequestSucceed(resourceUrl);
             var response: any = JSON.parse(body);
             var repos: any = response.values;
-            var result: Array<models.Project> = AbstractRepository.getCollection<models.Project>(factories.ProjectFactory, repos);
+            var result: Array<Project> = AbstractRepository.getCollection<Project>(ProjectFactory, repos);
 
             var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
             q.all(rest).done(
                 (results: Array<any>) => {
                     for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                         var resultRepos: any = results[resultIndex];
-                        result = result.concat(this.getCollection<models.Project>(factories.ProjectFactory, resultRepos));
+                        result = result.concat(this.getCollection<Project>(ProjectFactory, resultRepos));
                     }
 
                     ProjectRepository.repositories = result;
@@ -132,14 +133,14 @@ export class ProjectRepository extends AbstractRepository {
 }
 
 interface PullRequestSet {
-    [repositoryName: string]: Array<models.PullRequest>;
+    [repositoryName: string]: Array<PullRequest>;
 }
 
 export class PullRequestRepository extends AbstractRepository {
     static pullRequests: PullRequestSet = {};
 
-    static findAll(): Array<models.PullRequest> {
-        var foundPullRequests: Array<models.PullRequest> = [];
+    static findAll(): Array<PullRequest> {
+        var foundPullRequests: Array<PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 foundPullRequests = foundPullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
@@ -149,11 +150,11 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByReviewer(username: string): Array<models.PullRequest> {
-        var foundPullRequests: Array<models.PullRequest> = [];
+    static findByReviewer(username: string): Array<PullRequest> {
+        var foundPullRequests: Array<PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: models.PullRequest) => {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
                     var reviewers = pr.reviewers;
                     for (var reviewerIndex = 0; reviewerIndex < reviewers.length; reviewerIndex++) {
                         var reviewer = reviewers[reviewerIndex];
@@ -172,11 +173,11 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByAuthor(username: string): Array<models.PullRequest> {
-        var foundPullRequests: Array<models.PullRequest> = [];
+    static findByAuthor(username: string): Array<PullRequest> {
+        var foundPullRequests: Array<PullRequest> = [];
         for (var repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
-                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: models.PullRequest) => {
+                var prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
                     return pr.hasOwnProperty('author') && pr.author.username === username;
                 });
                 foundPullRequests = foundPullRequests.concat(prs);
@@ -186,16 +187,16 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByUser(username: string): Array<models.PullRequest> {
+    static findByUser(username: string): Array<PullRequest> {
         var result = this.findByAuthor(username).concat(this.findByReviewer(username));
-        var pullRequests = _.uniq(result, (element: models.PullRequest) => {
+        var pullRequests = _.uniq(result, (element: PullRequest) => {
             return element.targetRepository.fullName + '#' + element.id;
         });
 
         return pullRequests;
     }
 
-    static add(pullRequest: models.PullRequest): void {
+    static add(pullRequest: PullRequest): void {
         var repositoryName = pullRequest.targetRepository.fullName;
         if (!PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
             PullRequestRepository.pullRequests[repositoryName] = [];
@@ -203,15 +204,15 @@ export class PullRequestRepository extends AbstractRepository {
         PullRequestRepository.pullRequests[repositoryName].push(pullRequest);
     }
 
-    static update(pullRequest: models.PullRequest): void {
-        if (pullRequest.state !== models.PullRequestState.Open) {
+    static update(pullRequest: PullRequest): void {
+        if (pullRequest.state !== PullRequestState.Open) {
             return this.remove(pullRequest);
         }
 
         var projectName = pullRequest.targetRepository.fullName;
         var projectPrs = this.pullRequests[projectName] || [];
         for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {
-            var currentPullRequest: models.PullRequest = projectPrs[prIndex];
+            var currentPullRequest: PullRequest = projectPrs[prIndex];
             if (currentPullRequest.id === pullRequest.id) {
                 this.pullRequests[projectName].splice(prIndex, 1, pullRequest);
                 return;
@@ -221,11 +222,11 @@ export class PullRequestRepository extends AbstractRepository {
         this.add(pullRequest);
     }
 
-    static remove(pullRequest: models.PullRequest): void {
+    static remove(pullRequest: PullRequest): void {
         var projectName = pullRequest.targetRepository.fullName;
         var projectPrs = this.pullRequests[projectName] || [];
         for (var prIndex = 0; prIndex < projectPrs.length; prIndex++) {
-            var currentPullRequest: models.PullRequest = projectPrs[prIndex];
+            var currentPullRequest: PullRequest = projectPrs[prIndex];
             if (currentPullRequest.id === pullRequest.id) {
                 this.pullRequests[projectName].splice(prIndex, 1);
                 return;
@@ -234,9 +235,9 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     // @todo to refactor
-    static fetchByProject(project: models.Project): q.Promise<Array<models.PullRequest>> {
+    static fetchByProject(project: Project): q.Promise<Array<PullRequest>> {
         var parsedUrl = url.parse(project.pullRequestsUrl);
-        var config = configModule.Config.getConfig();
+        var config = Config.getConfig();
 
         var requestConfig = {
             auth: {
@@ -251,46 +252,46 @@ export class PullRequestRepository extends AbstractRepository {
         };
         var pullRequestsUrl = url.format(parsedUrl);
 
-        var defer = q.defer<Array<models.PullRequest>>();
+        var defer = q.defer<Array<PullRequest>>();
 
         logger.logHttpRequestAttempt(pullRequestsUrl);
         request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
                 logger.logHttpRequestFailed(pullRequestsUrl);
-                return defer.reject(errors.HttpRequestError.throwError(pullRequestsUrl, res, body));
+                return defer.reject(HttpRequestError.throwError(pullRequestsUrl, res, body));
             }
             logger.logHttpRequestSucceed(pullRequestsUrl);
 
             var response: any = JSON.parse(body);
             var pullRequests: Array<any> = response.values;
-            var result: Array<models.PullRequest> =
-                AbstractRepository.getCollection<models.PullRequest>(factories.PullRequestFactory, pullRequests);
+            var result: Array<PullRequest> =
+                AbstractRepository.getCollection<PullRequest>(PullRequestFactory, pullRequests);
 
             q.all(
-                result.map((pr: models.PullRequest) => {
+                result.map((pr: PullRequest) => {
                     var deferred = q.defer();
 
                     logger.logHttpRequestAttempt(pr.links.self);
                     request(pr.links.self, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
                         if (error || httpRes.statusCode !== 200) {
                             logger.logHttpRequestFailed(pr.links.self);
-                            return deferred.reject(errors.HttpRequestError.throwError(pr.links.self, httpRes, innerBody));
+                            return deferred.reject(HttpRequestError.throwError(pr.links.self, httpRes, innerBody));
                         }
 
                         logger.logHttpRequestSucceed(pr.links.self);
                         var innerResponse = JSON.parse(innerBody);
-                        deferred.resolve(factories.PullRequestFactory.create(innerResponse));
+                        deferred.resolve(PullRequestFactory.create(innerResponse));
                     });
 
                     return deferred.promise;
                 })
-            ).then((prs: Array<models.PullRequest>) => {
+            ).then((prs: Array<PullRequest>) => {
                     result = prs;
                     var rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
                     q.all(rest).done((results: Array<any>) => {
                         for (var resultIndex = 0; resultIndex < results.length; resultIndex++) {
                             var resultPrs: any = results[resultIndex];
-                            result = result.concat(this.getCollection<models.PullRequest>(factories.PullRequestFactory, resultPrs));
+                            result = result.concat(this.getCollection<PullRequest>(PullRequestFactory, resultPrs));
                         }
 
                         PullRequestRepository.pullRequests[project.fullName] = result;
@@ -302,12 +303,12 @@ export class PullRequestRepository extends AbstractRepository {
         return defer.promise;
     }
 
-    static fetchOne(pullRequestUrl: string): q.Promise<models.PullRequest>;
-    static fetchOne(project: models.Project, prId: number): q.Promise<models.PullRequest>;
+    static fetchOne(pullRequestUrl: string): q.Promise<PullRequest>;
+    static fetchOne(project: Project, prId: number): q.Promise<PullRequest>;
 
-    static fetchOne(projectOrUrl: any, prId?: number): q.Promise<models.PullRequest> {
-        var deferred = q.defer<models.PullRequest>();
-        var config = configModule.Config.getConfig();
+    static fetchOne(projectOrUrl: any, prId?: number): q.Promise<PullRequest> {
+        var deferred = q.defer<PullRequest>();
+        var config = Config.getConfig();
         var prUrl = '';
 
         if (typeof projectOrUrl === 'string') {
@@ -327,12 +328,12 @@ export class PullRequestRepository extends AbstractRepository {
         request(prUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
             if (error || res.statusCode !== 200) {
                 logger.logHttpRequestFailed(prUrl);
-                return deferred.reject(errors.HttpRequestError.throwError(prUrl, res, body));
+                return deferred.reject(HttpRequestError.throwError(prUrl, res, body));
             }
             logger.logHttpRequestSucceed(prUrl);
 
             var response: any = JSON.parse(body);
-            var pullRequest = factories.PullRequestFactory.create(response);
+            var pullRequest = PullRequestFactory.create(response);
             deferred.resolve(pullRequest);
         });
 
