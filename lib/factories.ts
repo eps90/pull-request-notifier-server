@@ -6,7 +6,7 @@ export interface FactoryInterface {}
 
 export class ProjectFactory implements FactoryInterface {
     static create(rawObject: any): Project {
-        var project = new Project();
+        const project = new Project();
 
         if (rawObject.hasOwnProperty('name')) {
             project.name = rawObject.name;
@@ -17,7 +17,7 @@ export class ProjectFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('links')) {
-            var links = rawObject.links;
+            const links = rawObject.links;
             if (links.hasOwnProperty('pullrequests')) {
                 project.pullRequestsUrl = rawObject.links.pullrequests.href;
             }
@@ -29,7 +29,7 @@ export class ProjectFactory implements FactoryInterface {
 
 export class UserFactory implements FactoryInterface {
     static create(rawObject: any): User {
-        var user = new User();
+        const user = new User();
 
         if (rawObject.hasOwnProperty('username')) {
             user.username = rawObject.username;
@@ -45,7 +45,7 @@ export class UserFactory implements FactoryInterface {
 
 export class ReviewerFactory implements FactoryInterface {
     static create(rawObject: any): Reviewer {
-        var reviewer = new Reviewer();
+        const reviewer = new Reviewer();
 
         if (rawObject.hasOwnProperty('approved')) {
             reviewer.approved = rawObject.approved;
@@ -61,7 +61,7 @@ export class ReviewerFactory implements FactoryInterface {
 
 export class PullRequestLinksFactory implements FactoryInterface {
     static create(rawObject: any): PullRequestLinks {
-        var links = new PullRequestLinks();
+        const links = new PullRequestLinks();
 
         if (rawObject.hasOwnProperty('self') && rawObject.self.hasOwnProperty('href')) {
             links.self = rawObject.self.href;
@@ -77,7 +77,7 @@ export class PullRequestLinksFactory implements FactoryInterface {
 
 export class PullRequestFactory implements FactoryInterface {
     static create(rawObject: any): PullRequest {
-        var pullRequest = new PullRequest();
+        const pullRequest = new PullRequest();
 
         if (rawObject.hasOwnProperty('id')) {
             pullRequest.id = rawObject.id;
@@ -96,7 +96,7 @@ export class PullRequestFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('destination')) {
-            var destinationObj = rawObject.destination;
+            const destinationObj = rawObject.destination;
             if (destinationObj.hasOwnProperty('repository')) {
                 pullRequest.targetRepository = ProjectFactory.create(destinationObj.repository);
             }
@@ -111,8 +111,8 @@ export class PullRequestFactory implements FactoryInterface {
         }
 
         if (rawObject.hasOwnProperty('participants')) {
-            for (var participantIndex: number = 0; participantIndex < rawObject.participants.length; participantIndex++) {
-                var participant: any = rawObject.participants[participantIndex];
+            for (let participantIndex: number = 0; participantIndex < rawObject.participants.length; participantIndex++) {
+                const participant: any = rawObject.participants[participantIndex];
                 if (participant.role === 'REVIEWER') {
                     pullRequest.reviewers.push(ReviewerFactory.create(participant));
                 }
@@ -127,7 +127,7 @@ export class PullRequestFactory implements FactoryInterface {
     }
 
     private static getPullRequestState(prState: string): PullRequestState {
-        var state: PullRequestState;
+        let state: PullRequestState;
         switch (prState.toUpperCase()) {
             case 'OPEN':
                 state = PullRequestState.Open;
