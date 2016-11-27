@@ -2,23 +2,23 @@
 
 import q = require('q');
 
-import models = require('./models');
-import repositories = require('./repositories');
+import {Project} from './models';
+import {ProjectRepository, PullRequestRepository} from './repositories';
 import logger = require('./logger');
 
 export class Fetcher {
     static initPullRequestCollection(): q.Promise<any> {
         logger.logInitializingPullRequests();
 
-        var deferred = q.defer();
+        const deferred = q.defer();
 
-        repositories.ProjectRepository.fetchAll().then((projects: Array<models.Project>) => {
+        ProjectRepository.fetchAll().then((projects: Project[]) => {
             q.all(
-                projects.map((project: models.Project) => {
-                    return repositories.PullRequestRepository.fetchByProject(project);
+                projects.map((project: Project) => {
+                    return PullRequestRepository.fetchByProject(project);
                 })
-            ).done((values) => {
-                logger.logPullRequestsInitialized(repositories.PullRequestRepository.findAll().length);
+            ).done((_) => {
+                logger.logPullRequestsInitialized(PullRequestRepository.findAll().length);
                 deferred.resolve(null);
             });
         }).catch((error) => {
