@@ -16,12 +16,12 @@ import http = require('http');
 
 // @todo Get rid of AbstractRepository and make its methods simple functions
 class AbstractRepository {
-    static getPagesList(response: any): Array<string> {
+    static getPagesList(response: any): string[] {
         if (!response.hasOwnProperty('next')) {
             return [];
         }
 
-        const urlList: Array<string> = [];
+        const urlList: string[] = [];
 
         const nextPageUrlParams: url.Url = url.parse(response.next, true);
         delete nextPageUrlParams.search;
@@ -38,8 +38,8 @@ class AbstractRepository {
         return urlList;
     }
 
-    static getRequestPromises(urls: Array<string>, authConfig: any): Array<q.Promise<any>> {
-        const promises: Array<q.Promise<any>> = [];
+    static getRequestPromises(urls: string[], authConfig: any): q.Promise<any>[] {
+        const promises: q.Promise<any>[] = [];
 
         for (var urlIndex = 0; urlIndex < urls.length; urlIndex++) {
             const promise: () => q.Promise<any> = () => {
@@ -66,8 +66,8 @@ class AbstractRepository {
         return promises;
     }
 
-    static getCollection<T extends ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: Array<any>): Array<T> {
-        const result: Array<T> = [];
+    static getCollection<T extends ModelInterface>(type: {create: (rawObject: any) => T}, repoObjects: any[]): T[] {
+        const result: T[] = [];
 
         for (let repoIndex: number = 0; repoIndex < repoObjects.length; repoIndex++) {
             const repo = type.create(repoObjects[repoIndex]);
@@ -79,13 +79,13 @@ class AbstractRepository {
 }
 
 export class ProjectRepository extends AbstractRepository {
-    static repositories: Array<Project> = [];
+    static repositories: Project[] = [];
 
-    static findAll(): Array<Project> {
+    static findAll(): Project[] {
         return ProjectRepository.repositories;
     }
 
-    static fetchAll(): q.Promise<Array<Project>> {
+    static fetchAll(): q.Promise<Project[]> {
         const config = Config.getConfig();
 
         const resourceUrl: string = config.baseUrl + '/repositories/' + config.teamName;
@@ -96,7 +96,7 @@ export class ProjectRepository extends AbstractRepository {
             }
         };
 
-        const defer = q.defer<Array<Project>>();
+        const defer = q.defer<Project[]>();
 
         logger.logHttpRequestAttempt(resourceUrl);
         request(resourceUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
@@ -108,11 +108,11 @@ export class ProjectRepository extends AbstractRepository {
             logger.logHttpRequestSucceed(resourceUrl);
             const response: any = JSON.parse(body);
             const repos: any = response.values;
-            let result: Array<Project> = AbstractRepository.getCollection<Project>(ProjectFactory, repos);
+            let result: Project[] = AbstractRepository.getCollection<Project>(ProjectFactory, repos);
 
             const rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
             q.all(rest).done(
-                (results: Array<any>) => {
+                (results: any[]) => {
                     for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
                         const resultRepos: any = results[resultIndex];
                         result = result.concat(this.getCollection<Project>(ProjectFactory, resultRepos));
@@ -133,14 +133,14 @@ export class ProjectRepository extends AbstractRepository {
 }
 
 interface PullRequestSet {
-    [repositoryName: string]: Array<PullRequest>;
+    [repositoryName: string]: PullRequest[];
 }
 
 export class PullRequestRepository extends AbstractRepository {
     static pullRequests: PullRequestSet = {};
 
-    static findAll(): Array<PullRequest> {
-        let foundPullRequests: Array<PullRequest> = [];
+    static findAll(): PullRequest[] {
+        let foundPullRequests: PullRequest[] = [];
         for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 foundPullRequests = foundPullRequests.concat(PullRequestRepository.pullRequests[repositoryName]);
@@ -150,8 +150,8 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByReviewer(username: string): Array<PullRequest> {
-        let foundPullRequests: Array<PullRequest> = [];
+    static findByReviewer(username: string): PullRequest[] {
+        let foundPullRequests: PullRequest[] = [];
         for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 const prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
@@ -173,8 +173,8 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByAuthor(username: string): Array<PullRequest> {
-        let foundPullRequests: Array<PullRequest> = [];
+    static findByAuthor(username: string): PullRequest[] {
+        let foundPullRequests: PullRequest[] = [];
         for (let repositoryName in PullRequestRepository.pullRequests) {
             if (PullRequestRepository.pullRequests.hasOwnProperty(repositoryName)) {
                 const prs = PullRequestRepository.pullRequests[repositoryName].filter((pr: PullRequest) => {
@@ -187,7 +187,7 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByUser(username: string): Array<PullRequest> {
+    static findByUser(username: string): PullRequest[] {
         const result = this.findByAuthor(username).concat(this.findByReviewer(username));
         return _.uniq(result, (element: PullRequest) => {
             return element.targetRepository.fullName + '#' + element.id;
@@ -233,7 +233,7 @@ export class PullRequestRepository extends AbstractRepository {
     }
 
     // @todo to refactor
-    static fetchByProject(project: Project): q.Promise<Array<PullRequest>> {
+    static fetchByProject(project: Project): q.Promise<PullRequest[]> {
         const parsedUrl = url.parse(project.pullRequestsUrl);
         const config = Config.getConfig();
 
@@ -250,7 +250,7 @@ export class PullRequestRepository extends AbstractRepository {
         };
         const pullRequestsUrl = url.format(parsedUrl);
 
-        const defer = q.defer<Array<PullRequest>>();
+        const defer = q.defer<PullRequest[]>();
 
         logger.logHttpRequestAttempt(pullRequestsUrl);
         request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
@@ -261,9 +261,8 @@ export class PullRequestRepository extends AbstractRepository {
             logger.logHttpRequestSucceed(pullRequestsUrl);
 
             const response: any = JSON.parse(body);
-            const pullRequests: Array<any> = response.values;
-            let result: Array<PullRequest> =
-                AbstractRepository.getCollection<PullRequest>(PullRequestFactory, pullRequests);
+            const pullRequests: any[] = response.values;
+            let result: PullRequest[] = AbstractRepository.getCollection<PullRequest>(PullRequestFactory, pullRequests);
 
             q.all(
                 result.map((pr: PullRequest) => {
@@ -283,10 +282,10 @@ export class PullRequestRepository extends AbstractRepository {
 
                     return deferred.promise;
                 })
-            ).then((prs: Array<PullRequest>) => {
+            ).then((prs: PullRequest[]) => {
                     result = prs;
                     const rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
-                    q.all(rest).done((results: Array<any>) => {
+                    q.all(rest).done((results: any[]) => {
                         for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
                             const resultPrs: any = results[resultIndex];
                             result = result.concat(this.getCollection<PullRequest>(PullRequestFactory, resultPrs));
