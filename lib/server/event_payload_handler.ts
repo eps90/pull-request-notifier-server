@@ -39,7 +39,7 @@ export class PullRequestHandler implements HandlerInterface {
     private PULLREQUEST_UNAPPROVED: string = 'pullrequest:unapproved';
 
     handlePayload(type: string, pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
-        var deferred = q.defer<PullRequestWithActor>();
+        const deferred = q.defer<PullRequestWithActor>();
 
         switch (type) {
             case this.PULLREQUEST_CREATED:
@@ -70,11 +70,11 @@ export class PullRequestHandler implements HandlerInterface {
     }
 
     prepareBody(bodyDecoded): q.Promise<PullRequestWithActor> {
-        var deferred = q.defer<PullRequestWithActor>();
-        var dummyPr = PullRequestFactory.create(bodyDecoded.pullrequest);
-        var actor = UserFactory.create(bodyDecoded.actor);
+        const deferred = q.defer<PullRequestWithActor>();
+        const dummyPr = PullRequestFactory.create(bodyDecoded.pullrequest);
+        const actor = UserFactory.create(bodyDecoded.actor);
         PullRequestRepository.fetchOne(dummyPr.links.self).then((pullRequest: PullRequest) => {
-            var prWithActor = new PullRequestWithActor();
+            const prWithActor = new PullRequestWithActor();
             prWithActor.pullRequest = pullRequest;
             prWithActor.actor = actor;
             deferred.resolve(prWithActor);
@@ -83,7 +83,7 @@ export class PullRequestHandler implements HandlerInterface {
     }
 
     private onPullRequestCreated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
-        var deferred = q.defer<PullRequestWithActor>();
+        const deferred = q.defer<PullRequestWithActor>();
         logger.logAddPullRequestToRepository();
         PullRequestRepository.add(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
@@ -91,7 +91,7 @@ export class PullRequestHandler implements HandlerInterface {
     }
 
     private onPullRequestUpdated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
-        var deferred = q.defer<PullRequestWithActor>();
+        const deferred = q.defer<PullRequestWithActor>();
         logger.logUpdatingPullRequest();
         PullRequestRepository.update(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
@@ -99,7 +99,7 @@ export class PullRequestHandler implements HandlerInterface {
     }
 
     private onPullRequestClosed(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
-        var deferred = q.defer<PullRequestWithActor>();
+        const deferred = q.defer<PullRequestWithActor>();
         logger.logClosingPullRequest();
         PullRequestRepository.remove(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
@@ -113,15 +113,15 @@ export class EventPayloadHandler {
     ];
 
     static handlePayload(type: string, bodyEncoded: string): q.Promise<any> {
-        var bodyDecoded = JSON.parse(bodyEncoded);
-        var deferred = q.defer();
-        var handlers: Array<HandlerInterface> = this.handlers.filter((handler: HandlerInterface) => {
-             return handler.supportedEvents.indexOf(type) !== -1;
+        const bodyDecoded = JSON.parse(bodyEncoded);
+        const deferred = q.defer();
+        const handlers: Array<HandlerInterface> = this.handlers.filter((handler: HandlerInterface) => {
+            return handler.supportedEvents.indexOf(type) !== -1;
         });
 
         q.all(
             handlers.map((handler: HandlerInterface) => {
-                var handlerDefer = q.defer();
+                const handlerDefer = q.defer();
 
                 handler.prepareBody(bodyDecoded).then((preparedBody) => {
                     handler.handlePayload(type, preparedBody).then(() => {
@@ -140,7 +140,7 @@ export class EventPayloadHandler {
     }
 
     private static triggerEvent(payloadType: string, contents: any = {}): void {
-        var eventName = 'webhook:' + payloadType;
+        const eventName = 'webhook:' + payloadType;
         EventDispatcher.getInstance().emit(eventName, contents);
     }
 }
