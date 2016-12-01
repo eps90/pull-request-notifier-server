@@ -1,16 +1,12 @@
-///<reference path="typings/tsd.d.ts"/>
+import {PullRequestRepository} from './lib/repositories';
+import {Fetcher} from './lib/fetcher';
+import {WebhookListener} from './lib/server/webhook_listener';
+import {SocketServer} from './lib/server/socket_server';
 
-import repositories = require('./lib/repositories');
-import fetcher = require('./lib/fetcher');
-import webhook = require('./lib/server/webhook_listener');
-import socketServer = require('./lib/server/socket_server');
-
-import q = require('q');
-
-fetcher.Fetcher.initPullRequestCollection().then(() => {
-    console.log(repositories.PullRequestRepository.findAll());
-    webhook.WebhookListener.createServer();
-    socketServer.SocketServer.startSocketServer();
+Fetcher.initPullRequestCollection().then(() => {
+    console.log(PullRequestRepository.findAll());
+    WebhookListener.createServer();
+    SocketServer.startSocketServer();
 }).catch((error) => {
    console.error(error);
 });

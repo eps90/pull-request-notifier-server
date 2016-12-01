@@ -1,5 +1,3 @@
-///<reference path="../typings/index.d.ts"/>
-
 import {Project, User, Reviewer, PullRequest, PullRequestLinks, PullRequestState} from './models';
 
 export interface FactoryInterface {}

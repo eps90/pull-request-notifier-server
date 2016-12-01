@@ -1,6 +1,4 @@
-///<reference path="../../typings/index.d.ts"/>
-
-import Server = require('socket.io');
+import * as Server from 'socket.io';
 import {PullRequestRepository} from '../repositories';
 import {
     SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent,
@@ -9,7 +7,7 @@ import {
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
 import {Config} from '../config';
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 export class SocketServer {
     static io: SocketIO.Server;

@@ -1,9 +1,7 @@
-///<reference path="../../typings/index.d.ts"/>
-
-import http = require('http');
 import logger = require('./../logger');
-import eventPayloadHandler = require('./event_payload_handler');
-import configModule = require('./../config');
+import * as http from 'http';
+import {EventPayloadHandler} from './event_payload_handler';
+import {Config} from '../config';
 
 export class WebhookListener {
     static createServer(): http.Server {
@@ -23,7 +21,7 @@ export class WebhookListener {
                     if (req.headers.hasOwnProperty('x-event-key')) {
                         var eventType = req.headers['x-event-key'];
                         logger.logRequestWithPayload(eventType);
-                        eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
+                        EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
                             res.writeHead(200, 'OK');
                             res.end();
                         });
@@ -40,7 +38,7 @@ export class WebhookListener {
             }
         });
 
-        var config = configModule.Config.getConfig();
+        var config = Config.getConfig();
         var webhookPort = config.webhook_port;
         server.listen(webhookPort);
         logger.logHttpServerStartListening(webhookPort.toString());

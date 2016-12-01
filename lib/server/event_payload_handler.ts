@@ -1,4 +1,3 @@
-///<reference path="../../typings/index.d.ts"/>
 // @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
 import {PullRequestRepository} from '../repositories';
@@ -6,7 +5,7 @@ import {PullRequestFactory, UserFactory} from '../factories';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
 import {PullRequest, User} from '../models';
-import q = require('q');
+import * as q from 'q';
 
 export interface HandlerInterface {
     supportedEvents: Array<string>;

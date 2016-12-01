@@ -1,7 +1,5 @@
-///<reference path="../../typings/index.d.ts"/>
-
-import events = require('events');
-import util = require('util');
+import * as events from 'events';
+import * as util from 'util';
 import logger = require('./../logger');
 
 var EventEmitter = events.EventEmitter;

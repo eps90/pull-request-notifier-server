@@ -1,5 +1,3 @@
-///<reference path="../typings/index.d.ts"/>
-
 class BaseError {
     constructor() {
         Error.apply(this, arguments);

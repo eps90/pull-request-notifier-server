@@ -1,7 +1,4 @@
-///<reference path="../typings/index.d.ts"/>
-
-import q = require('q');
-
+import * as q from 'q';
 import {Project} from './models';
 import {ProjectRepository, PullRequestRepository} from './repositories';
 import logger = require('./logger');

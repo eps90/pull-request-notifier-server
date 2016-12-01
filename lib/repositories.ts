@@ -1,18 +1,16 @@
-///<reference path="../typings/index.d.ts"/>
-
 import {ModelInterface, PullRequest, Project, PullRequestState} from './models';
 import {ProjectFactory, PullRequestFactory} from './factories';
 import {Config} from "./config";
 import {HttpRequestError} from "./errors";
+
 // @todo Change to default export
 import logger = require('./logger');
 
-import request = require('request');
-import q = require('q');
-import _ = require('lodash');
-
-import url = require('url');
-import http = require('http');
+import * as request from 'request';
+import * as q from 'q';
+import * as _ from 'lodash';
+import * as url from 'url';
+import * as http from 'http';
 
 // @todo Get rid of AbstractRepository and make its methods simple functions
 class AbstractRepository {
