@@ -16,7 +16,8 @@ module.exports = function(grunt) {
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node"
                 }
             },
             test: {
@@ -25,7 +26,8 @@ module.exports = function(grunt) {
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node"
                 }
             },
             dist: {
@@ -34,7 +36,8 @@ module.exports = function(grunt) {
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node"
                 }
             },
             bin: {
@@ -42,7 +45,8 @@ module.exports = function(grunt) {
                 dest: 'dist',
                 options: {
                     module: "commonjs",
-                    target: "es5"
+                    target: "es5",
+                    moduleResolution: "node"
                 }
             }
         },
