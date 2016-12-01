@@ -1,11 +1,10 @@
-///<reference path="../../typings/index.d.ts"/>
+import * as chai from 'chai';
+import * as mockFs from 'mock-fs';
+import * as jsYaml from 'js-yaml';
+import * as fs from 'fs';
+import {Installer} from './../../lib/installer/installer';
 
-import chai = require('chai');
 var expect = chai.expect;
-import mockFs = require('mock-fs');
-import jsYaml = require('js-yaml');
-import fs = require('fs');
-import installerModule = require('./../../lib/installer/installer');
 
 /* tslint:disable:no-string-literal */
 describe('Installer', () => {
@@ -53,7 +52,7 @@ describe('Installer', () => {
             }
         });
 
-        var installer = new installerModule.Installer();
+        var installer = new Installer();
         installer.install();
 
         var actualConfig = jsYaml.safeLoad(fs.readFileSync(configPath, {encoding: 'utf8'}));
@@ -107,7 +106,7 @@ describe('Installer', () => {
             }
         });
 
-        var installer = new installerModule.Installer();
+        var installer = new Installer();
         installer.install();
 
         var actualConfig = jsYaml.safeLoad(fs.readFileSync(configPath, {encoding: 'utf8'}));
@@ -151,14 +150,14 @@ describe('Installer', () => {
             }
         });
 
-        var installer = new installerModule.Installer();
+        var installer = new Installer();
         expect(() => { installer.install(); }).to.throw();
     });
 
     it('should throw when paramfile.json does not exist', () => {
         mockFs({});
 
-        var installer = new installerModule.Installer();
+        var installer = new Installer();
         expect(() => { installer.install(); }).to.throw();
     });
 });

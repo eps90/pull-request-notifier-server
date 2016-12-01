@@ -1,14 +1,12 @@
-///<reference path="../typings/index.d.ts"/>
-
-import chai = require('chai');
+import * as chai from 'chai';
+import * as nock from 'nock';
+import {Fetcher} from '../lib/fetcher';
+import {PullRequestRepository} from '../lib/repositories';
+import {Config} from '../lib/config';
 import chaiAsPromised = require('chai-as-promised');
-chai.use(chaiAsPromised);
-var expect = chai.expect;
-import nock = require('nock');
 
-import fetcher = require('./../lib/fetcher');
-import repositories = require('./../lib/repositories');
-import configModule = require('./../lib/config');
+var expect = chai.expect;
+chai.use(chaiAsPromised);
 
 // @todo If possible, mock repositories to prevent mocking http resposes (in TS is quite difficult...)
 describe('Fetcher', () => {
@@ -27,11 +25,11 @@ describe('Fetcher', () => {
     };
 
     before(() => {
-        configModule.Config.setUp({config: appConfig});
+        Config.setUp({config: appConfig});
     });
 
     after(() => {
-        configModule.Config.reset();
+        Config.reset();
     });
 
     afterEach(() => {
@@ -103,8 +101,8 @@ describe('Fetcher', () => {
             .basicAuth(basicAuth)
             .reply(200, JSON.stringify(pullRequestTwo));
 
-        fetcher.Fetcher.initPullRequestCollection().then(() => {
-            var foundPullRequests = repositories.PullRequestRepository.findAll();
+        Fetcher.initPullRequestCollection().then(() => {
+            var foundPullRequests = PullRequestRepository.findAll();
             expect(foundPullRequests).to.have.length(2);
             expect(foundPullRequests[0].title).to.eq('Pull request one');
             expect(foundPullRequests[1].title).to.eq('Pull request two');

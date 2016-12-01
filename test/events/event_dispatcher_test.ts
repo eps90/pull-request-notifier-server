@@ -1,20 +1,18 @@
-///<reference path="../../typings/index.d.ts"/>
-
-import chai = require('chai');
-import dispatcher = require('./../../lib/events/event_dispatcher');
+import * as chai from 'chai';
+import {EventDispatcher} from './../../lib/events/event_dispatcher';
 var expect = chai.expect;
 
 describe('EventDispatcher', () => {
     it('should always return the same instance', () => {
-        var emitterOne = dispatcher.EventDispatcher.getInstance();
-        var emitterTwo = dispatcher.EventDispatcher.getInstance();
+        var emitterOne = EventDispatcher.getInstance();
+        var emitterTwo = EventDispatcher.getInstance();
 
         expect(emitterTwo).to.eq(emitterOne);
     });
 
     it('should share events', () => {
-        var emitterOne = dispatcher.EventDispatcher.getInstance();
-        var emitterTwo = dispatcher.EventDispatcher.getInstance();
+        var emitterOne = EventDispatcher.getInstance();
+        var emitterTwo = EventDispatcher.getInstance();
 
         var i = 0;
 

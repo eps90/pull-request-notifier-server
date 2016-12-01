@@ -1,21 +1,18 @@
-///<reference path="../typings/index.d.ts"/>
-///<reference path="../custom_typings/nock.d.ts"/>
+import {Project, PullRequest, User, PullRequestState} from './../lib/models';
+import {PullRequestRepository, ProjectRepository} from './../lib/repositories';
+import * as nock from 'nock';
+import * as chai from 'chai';
+import {Config} from '../lib/config';
+import {ProjectFaker, PullRequestFaker, ReviewerFaker} from './faker/model_faker';
 
-import models = require('./../lib/models');
-import repositories = require('./../lib/repositories');
-import nock = require('nock');
-import chai = require('chai');
-import chaiAsPromised = require('chai-as-promised');
-import configModule = require('./../lib/config');
-import fakeModels = require('./faker/model_faker');
-
+import chaiAsPromised  = require('chai-as-promised');
 chai.use(chaiAsPromised);
 
 var expect = chai.expect;
 
-var prFaker = new fakeModels.PullRequestFaker();
-var reviewerFaker = new fakeModels.ReviewerFaker();
-var projectFaker = new fakeModels.ProjectFaker();
+var prFaker = new PullRequestFaker();
+var reviewerFaker = new ReviewerFaker();
+var projectFaker = new ProjectFaker();
 
 describe("Repositories", () => {
     before(() => {
@@ -28,11 +25,11 @@ describe("Repositories", () => {
             socket_port: 4321
         };
 
-        configModule.Config.setUp({config: appConfig});
+        Config.setUp({config: appConfig});
     });
 
     after(() => {
-        configModule.Config.reset();
+        Config.reset();
     });
 
     var basicAuth = {
@@ -42,7 +39,7 @@ describe("Repositories", () => {
 
     describe("ProjectRepository", () => {
         beforeEach(() => {
-            repositories.ProjectRepository.repositories = [];
+            ProjectRepository.repositories = [];
         });
 
         afterEach(() => {
@@ -97,25 +94,25 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(thirdPage));
 
-            repositories.ProjectRepository.fetchAll()
-                .then((repos: Array<models.Project>) => {
+            ProjectRepository.fetchAll()
+                .then((repos: Array<Project>) => {
                     expect(repos).to.have.length(3);
-                    var repository: models.Project = repos[0];
-                    expect(repository).to.be.instanceOf(models.Project);
+                    var repository: Project = repos[0];
+                    expect(repository).to.be.instanceOf(Project);
                     expect(repository.name).to.eq('my_repo');
                     expect(repository.fullName).to.eq('org/my_repo');
 
-                    var anotherRepository: models.Project = repos[1];
-                    expect(anotherRepository).to.be.instanceOf(models.Project);
+                    var anotherRepository: Project = repos[1];
+                    expect(anotherRepository).to.be.instanceOf(Project);
                     expect(anotherRepository.name).to.eq('another_repo');
                     expect(anotherRepository.fullName).to.eq('org/another_repo');
 
-                    var thirdRepository: models.Project = repos[2];
-                    expect(thirdRepository).to.be.instanceOf(models.Project);
+                    var thirdRepository: Project = repos[2];
+                    expect(thirdRepository).to.be.instanceOf(Project);
                     expect(thirdRepository.name).to.eq('aaaa');
                     expect(thirdRepository.fullName).to.eq('bbbb');
 
-                    expect(repositories.ProjectRepository.repositories).to.eq(repos);
+                    expect(ProjectRepository.repositories).to.eq(repos);
 
                     done();
                 })
@@ -130,7 +127,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
-            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should thrown an error when one of subrequests failed', (done) => {
@@ -157,7 +154,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
-            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when request has returned non-successful response code', (done) => {
@@ -166,7 +163,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(403, 'Forbidden');
 
-            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when on of subrequests has return non-successful response code', (done) => {
@@ -193,20 +190,20 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(400, 'something went wrong');
 
-            expect(repositories.ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
+            expect(ProjectRepository.fetchAll()).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should find all known repositories', () => {
-            var projects = [new models.Project(), new models.Project()];
-            repositories.ProjectRepository.repositories = projects;
-            var foundRepos = repositories.ProjectRepository.findAll();
+            var projects = [new Project(), new Project()];
+            ProjectRepository.repositories = projects;
+            var foundRepos = ProjectRepository.findAll();
             expect(foundRepos).to.equal(projects);
         });
     });
 
     describe("PullRequestRepository", () => {
         beforeEach(() => {
-            repositories.PullRequestRepository.pullRequests = {};
+            PullRequestRepository.pullRequests = {};
         });
 
         afterEach(() => {
@@ -214,7 +211,7 @@ describe("Repositories", () => {
         });
 
         it('should fetch open pull requests by requesting for them', (done) => {
-            var project = new models.Project();
+            var project = new Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
@@ -343,15 +340,15 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(pullRequestTwo));
 
-            repositories.PullRequestRepository.fetchByProject(project).then((prs: Array<models.PullRequest>) => {
+            PullRequestRepository.fetchByProject(project).then((prs: Array<PullRequest>) => {
                 expect(prs).to.have.length(2);
                 var pullRequest = prs[0];
-                expect(pullRequest).to.be.instanceOf(models.PullRequest);
-                expect(pullRequest.author).to.be.instanceOf(models.User);
-                expect(pullRequest.state).to.eq(models.PullRequestState.Open);
+                expect(pullRequest).to.be.instanceOf(PullRequest);
+                expect(pullRequest.author).to.be.instanceOf(User);
+                expect(pullRequest.state).to.eq(PullRequestState.Open);
                 expect(pullRequest.reviewers).to.be.lengthOf(1);
 
-                expect(repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket']).to.eq(prs);
+                expect(PullRequestRepository.pullRequests['bitbucket/bitbucket']).to.eq(prs);
 
                 done();
             }).catch((error) => {
@@ -365,11 +362,11 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .replyWithError('something wrong happened');
 
-            var project = new models.Project();
+            var project = new Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
-            expect(repositories.PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
+            expect(PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should throw an error when authorization data is incorrect', (done) => {
@@ -378,16 +375,16 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(403, 'Forbidden');
 
-            var project = new models.Project();
+            var project = new Project();
             project.fullName = 'bitbucket/bitbucket';
             project.pullRequestsUrl = 'http://example.com/bitbucket/bitbucket/pullrequests';
 
-            expect(repositories.PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
+            expect(PullRequestRepository.fetchByProject(project)).to.be.rejectedWith(Error).and.notify(done);
         });
 
         it('should fetch single pull request by its project and id', (done) => {
             var pullRequestId = 1;
-            var project = new models.Project();
+            var project = new Project();
             project.fullName = 'bitbucket/bitbucket';
 
             var prEncoded = {
@@ -435,7 +432,7 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            repositories.PullRequestRepository.fetchOne(project, pullRequestId).then((pr: models.PullRequest) => {
+            PullRequestRepository.fetchOne(project, pullRequestId).then((pr: PullRequest) => {
                 expect(pr.id).to.eq(pullRequestId);
                 done();
             }).catch((e) => {
@@ -489,8 +486,8 @@ describe("Repositories", () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            repositories.PullRequestRepository.fetchOne('http://example.com/repositories/bitbucket/bitbucket/pullrequests/1')
-                .then((pr: models.PullRequest) => {
+            PullRequestRepository.fetchOne('http://example.com/repositories/bitbucket/bitbucket/pullrequests/1')
+                .then((pr: PullRequest) => {
                     expect(pr.id).to.eq(1);
                     expect(pr.title).to.eq('Fixed bugs');
                     done();
@@ -500,27 +497,27 @@ describe("Repositories", () => {
         });
 
         it('should find all known pull requests', () => {
-            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
-                new models.PullRequest(),
-                new models.PullRequest()
+            PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+                new PullRequest(),
+                new PullRequest()
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findAll();
+            var pullRequests = PullRequestRepository.findAll();
             expect(pullRequests).to.have.length(2);
         });
 
         it('should find all known pull requests even if they are from different repositories', () => {
-            repositories.PullRequestRepository.pullRequests['aaa/bbb'] = [
-                new models.PullRequest(),
-                new models.PullRequest()
+            PullRequestRepository.pullRequests['aaa/bbb'] = [
+                new PullRequest(),
+                new PullRequest()
             ];
 
-            repositories.PullRequestRepository.pullRequests['ccc/ddd'] = [
-                new models.PullRequest(),
-                new models.PullRequest()
+            PullRequestRepository.pullRequests['ccc/ddd'] = [
+                new PullRequest(),
+                new PullRequest()
             ];
 
-            var prs = repositories.PullRequestRepository.findAll();
+            var prs = PullRequestRepository.findAll();
             expect(prs).to.have.length(4);
         });
 
@@ -531,12 +528,12 @@ describe("Repositories", () => {
             var prOne = prFaker.fake({reviewers: [reviewer]});
             var prTwo = prFaker.fake();
 
-            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+            PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByReviewer(reviewerUserName);
+            var pullRequests = PullRequestRepository.findByReviewer(reviewerUserName);
 
             expect(pullRequests).to.have.length(1);
             expect(pullRequests[0].reviewers[0].user.username).to.eq(reviewerUserName);
@@ -547,12 +544,12 @@ describe("Repositories", () => {
             var prOne = prFaker.fake({author: {username: authorUsername}});
             var prTwo = prFaker.fake();
 
-            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+            PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByAuthor(authorUsername);
+            var pullRequests = PullRequestRepository.findByAuthor(authorUsername);
             expect(pullRequests).to.have.length(1);
             expect(pullRequests[0].author.username).to.eq(authorUsername);
         });
@@ -564,12 +561,12 @@ describe("Repositories", () => {
             var reviewer = reviewerFaker.fake({user: {username: userName}});
             var prTwo = prFaker.fake({reviewers: [reviewer]});
 
-            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+            PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByUser(userName);
+            var pullRequests = PullRequestRepository.findByUser(userName);
             expect(pullRequests).to.have.length(2);
             expect(pullRequests[0].author.username).to.eq(userName);
             expect(pullRequests[1].reviewers[0].user.username).to.eq(userName);
@@ -581,21 +578,21 @@ describe("Repositories", () => {
             var prOne = prFaker.fake({author: {username: userName}, reviewers: [reviewer]});
             var prTwo = prFaker.fake({author: {username: userName}, reviewers: [reviewer]});
 
-            repositories.PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
+            PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
                 prOne,
                 prTwo
             ];
 
-            var pullRequests = repositories.PullRequestRepository.findByUser(userName);
+            var pullRequests = PullRequestRepository.findByUser(userName);
             expect(pullRequests).to.have.length(2);
         });
 
         it('should allow to add new pull request', () => {
             var pullRequest = prFaker.fake();
 
-            repositories.PullRequestRepository.add(pullRequest);
+            PullRequestRepository.add(pullRequest);
 
-            var actualPullRequests: models.PullRequest[] = repositories.PullRequestRepository.findAll();
+            var actualPullRequests: PullRequest[] = PullRequestRepository.findAll();
 
             expect(actualPullRequests).to.have.length(1);
             expect(actualPullRequests[0]).to.eq(pullRequest);
@@ -608,12 +605,12 @@ describe("Repositories", () => {
             var prId = 1;
 
             var existentPullRequest = prFaker.fake({id: prId, targetRepository: project});
-            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
+            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: PullRequestState.Open});
 
-            repositories.PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
-            repositories.PullRequestRepository.update(newPullRequest);
+            PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
+            PullRequestRepository.update(newPullRequest);
 
-            var pullRequests = repositories.PullRequestRepository.findAll();
+            var pullRequests = PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(1);
             expect(pullRequests[0].id).to.eq(prId);
         });
@@ -623,24 +620,24 @@ describe("Repositories", () => {
             var project = projectFaker.fake({fullName: projectName});
 
             var prId = 1;
-            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
+            var newPullRequest = prFaker.fake({id: prId, targetRepository: project, state: PullRequestState.Open});
 
-            expect(repositories.PullRequestRepository.findAll().length).to.eq(0);
+            expect(PullRequestRepository.findAll().length).to.eq(0);
 
-            repositories.PullRequestRepository.update(newPullRequest);
+            PullRequestRepository.update(newPullRequest);
 
-            var pullRequests = repositories.PullRequestRepository.findAll();
+            var pullRequests = PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(1);
             expect(pullRequests[0].id).to.eq(prId);
         });
 
         it('should update a PullRequest only when its status is OPEN', () => {
-            var incomingPr = prFaker.fake({state: models.PullRequestState.Merged});
+            var incomingPr = prFaker.fake({state: PullRequestState.Merged});
 
-            repositories.PullRequestRepository.pullRequests = {};
-            repositories.PullRequestRepository.update(incomingPr);
+            PullRequestRepository.pullRequests = {};
+            PullRequestRepository.update(incomingPr);
 
-            var pullRequests = repositories.PullRequestRepository.findAll();
+            var pullRequests = PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(0);
         });
 
@@ -650,13 +647,13 @@ describe("Repositories", () => {
 
             var prId = 1;
 
-            var existentPullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
-            var incomingPr = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Merged});
+            var existentPullRequest = prFaker.fake({id: prId, targetRepository: project, state: PullRequestState.Open});
+            var incomingPr = prFaker.fake({id: prId, targetRepository: project, state: PullRequestState.Merged});
 
-            repositories.PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
-            repositories.PullRequestRepository.update(incomingPr);
+            PullRequestRepository.pullRequests[projectName] = [existentPullRequest];
+            PullRequestRepository.update(incomingPr);
 
-            var pullRequests = repositories.PullRequestRepository.findAll();
+            var pullRequests = PullRequestRepository.findAll();
             expect(pullRequests.length).to.eq(0);
         });
 
@@ -666,13 +663,13 @@ describe("Repositories", () => {
 
             var prId = 1;
 
-            var pullRequest = prFaker.fake({id: prId, targetRepository: project, state: models.PullRequestState.Open});
+            var pullRequest = prFaker.fake({id: prId, targetRepository: project, state: PullRequestState.Open});
 
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [pullRequest];
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [pullRequest];
 
-            repositories.PullRequestRepository.remove(pullRequest);
+            PullRequestRepository.remove(pullRequest);
 
-            expect(repositories.PullRequestRepository.findAll().length).to.eq(0);
+            expect(PullRequestRepository.findAll().length).to.eq(0);
         });
     });
 });

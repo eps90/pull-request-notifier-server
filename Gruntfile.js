@@ -21,7 +21,7 @@ module.exports = function(grunt) {
                 }
             },
             test: {
-                src: ["typings/index.d.ts", 'test/**/*.ts'],
+                src: ["typings/index.d.ts", "custom_typings/*.d.ts", 'test/**/*.ts'],
                 dest: 'build',
                 options: {
                     module: "commonjs",

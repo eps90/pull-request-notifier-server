@@ -1,16 +1,12 @@
-///<reference path="../../typings/index.d.ts"/>
-///<reference path="../../custom_typings/nock.d.ts"/>
+import * as chai from 'chai';
+import {PullRequest, Project, PullRequestState} from '../../lib/models';
+import {PullRequestRepository} from '../../lib/repositories';
+import {EventPayloadHandler, PullRequestWithActor} from '../../lib/server/event_payload_handler';
+import {EventDispatcher} from '../../lib/events/event_dispatcher';
+import * as nock from 'nock';
+import {Config} from '../../lib/config';
 
-
-import chai = require('chai');
 var expect = chai.expect;
-
-import models = require('./../../lib/models');
-import repositories = require('./../../lib/repositories');
-import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
-import eventDispatcher = require('./../../lib/events/event_dispatcher');
-import nock = require('nock');
-import configModule = require('./../../lib/config');
 
 describe('EventPayloadHandler', () => {
     var basicAuth = {
@@ -28,16 +24,16 @@ describe('EventPayloadHandler', () => {
             socket_port: 4321
         };
 
-        configModule.Config.setUp({config: appConfig});
+        Config.setUp({config: appConfig});
     });
 
     afterEach(() => {
-        configModule.Config.reset();
+        Config.reset();
     });
 
     describe('PullRequestHandler', () => {
         beforeEach(() => {
-            repositories.PullRequestRepository.pullRequests = {};
+            PullRequestRepository.pullRequests = {};
         });
 
         it('should create add new pull request to repository on pullrequest:created', (done) => {
@@ -82,8 +78,8 @@ describe('EventPayloadHandler', () => {
                 .reply(200, JSON.stringify(prEncoded));
 
             var payloadString = JSON.stringify(payload);
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
-                var pullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
+            EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
+                var pullRequests: Array<PullRequest> = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(1);
                 expect(pullRequests[0].author.username).to.eq('emmap1');
                 expect(pullRequests[0].author.displayName).to.eq('Emma');
@@ -136,21 +132,21 @@ describe('EventPayloadHandler', () => {
 
             var payloadString = JSON.stringify(payload);
 
-            var sampleProject = new models.Project();
+            var sampleProject = new Project();
             sampleProject.fullName = 'team_name/repo_name';
 
-            var samplePr = new models.PullRequest();
+            var samplePr = new PullRequest();
             samplePr.id = 1;
             samplePr.title = 'This is sample title';
-            samplePr.state = models.PullRequestState.Declined;
+            samplePr.state = PullRequestState.Declined;
             samplePr.targetRepository = sampleProject;
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
-                var pullRequests = repositories.PullRequestRepository.findAll();
+            EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                var pullRequests = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(1);
                 expect(pullRequests[0].title).to.eq('Title of pull request');
-                expect(pullRequests[0].state).to.eq(models.PullRequestState.Open);
+                expect(pullRequests[0].state).to.eq(PullRequestState.Open);
                 done();
             });
         }
@@ -212,16 +208,16 @@ describe('EventPayloadHandler', () => {
 
             var payloadString = JSON.stringify(payload);
 
-            var sampleProject = new models.Project();
+            var sampleProject = new Project();
             sampleProject.fullName = 'team_name/repo_name';
 
-            var samplePr = new models.PullRequest();
+            var samplePr = new PullRequest();
             samplePr.id = 1;
             samplePr.targetRepository = sampleProject;
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
-                var pullRequests = repositories.PullRequestRepository.findAll();
+            EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                var pullRequests = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(0);
                 done();
             });
@@ -239,7 +235,7 @@ describe('EventPayloadHandler', () => {
     });
 
     describe('Emitting events', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        var dispatcher = EventDispatcher.getInstance();
 
         beforeEach(() => {
             dispatcher.removeAllListeners();
@@ -287,14 +283,14 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            dispatcher.once(expectedEventType, (pullRequestPayload: eventPayloadHandler.PullRequestWithActor) => {
+            dispatcher.once(expectedEventType, (pullRequestPayload: PullRequestWithActor) => {
                 expect(pullRequestPayload.pullRequest.id).to.eq(payload.pullrequest.id);
                 expect(pullRequestPayload.actor.username).to.eq('john.smith');
                 done();
             });
 
             var payloadString = JSON.stringify(payload);
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString);
+            EventPayloadHandler.handlePayload(eventType, payloadString);
         }
 
         it('should emit webhook:pullrequest:created on pullrequest:created event payload', (done) => {

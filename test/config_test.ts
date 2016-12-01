@@ -1,14 +1,12 @@
-///<reference path="../typings/index.d.ts"/>
-
-import configModule = require('./../lib/config');
-import mockFs = require('mock-fs');
-import chai = require('chai');
+import {Config} from '../lib/config';
+import * as mockFs from 'mock-fs';
+import * as chai from 'chai';
+import * as jsYaml from 'js-yaml';
 var expect = chai.expect;
-import jsYaml = require('js-yaml');
 
 describe('Config', () => {
     beforeEach(() => {
-        configModule.Config.reset();
+        Config.reset();
     });
 
     afterEach(() => {
@@ -35,7 +33,7 @@ describe('Config', () => {
             }
         });
 
-        var config = configModule.Config.getConfig();
+        var config = Config.getConfig();
 
         expect(config).to.have.property('baseUrl', 'http://example.com');
         expect(config).to.have.property('teamName', 'aaaa');
@@ -51,7 +49,7 @@ describe('Config', () => {
         });
 
         /* tslint:disable */
-        expect(() => {configModule.Config.getConfig()}).to.throw(Error);
+        expect(() => {Config.getConfig()}).to.throw(Error);
         /* tslint:enable */
     });
 
@@ -84,8 +82,8 @@ describe('Config', () => {
             }
         });
 
-        configModule.Config.setUp({config: cachedConfig});
-        var config = configModule.Config.getConfig();
+        Config.setUp({config: cachedConfig});
+        var config = Config.getConfig();
 
         expect(config).to.have.property('baseUrl', 'http://example.com');
         expect(config).to.have.property('teamName', 'aaaa');
@@ -126,8 +124,8 @@ describe('Config', () => {
             }
         });
 
-        configModule.Config.setUp({path: 'config/another_config.yml'});
-        var config = configModule.Config.getConfig();
+        Config.setUp({path: 'config/another_config.yml'});
+        var config = Config.getConfig();
 
         expect(config).to.have.property('baseUrl', 'http://example.fr');
         expect(config).to.have.property('teamName', 'bbbb');
@@ -165,7 +163,7 @@ describe('Config', () => {
             }
         });
 
-        configModule.Config.getConfig();
+        Config.getConfig();
 
         mockFs({
             'config': {
@@ -175,7 +173,7 @@ describe('Config', () => {
             }
         });
 
-        var config = configModule.Config.getConfig();
+        var config = Config.getConfig();
 
         expect(config).to.have.property('baseUrl', 'http://example.com');
         expect(config).to.have.property('teamName', 'aaaa');
@@ -202,7 +200,7 @@ describe('Config', () => {
             });
 
             /* tslint:disable */
-            expect(() => { configModule.Config.getConfig()}).to.throw(Error);
+            expect(() => { Config.getConfig()}).to.throw(Error);
             /* tslint:enable */
         });
 
@@ -225,7 +223,7 @@ describe('Config', () => {
             });
 
             /* tslint:disable */
-            expect(() => { configModule.Config.getConfig() }).to.throw(Error);
+            expect(() => { Config.getConfig() }).to.throw(Error);
             /* tslint:enable */
         });
 
@@ -248,7 +246,7 @@ describe('Config', () => {
                 }
             });
 
-            expect(() => { configModule.Config.getConfig(); }).to.throw(Error);
+            expect(() => { Config.getConfig(); }).to.throw(Error);
         });
     });
 });

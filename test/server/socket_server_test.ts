@@ -1,20 +1,19 @@
-///<reference path="../../typings/index.d.ts"/>
+import * as chai from 'chai';
+import * as socketIoClient from 'socket.io-client';
+import * as socketServer from './../../lib/server/socket_server';
+import {PullRequestRepository} from '../../lib/repositories';
+import {PullRequest, PullRequestEvent} from '../../lib/models';
+import {EventDispatcher} from '../../lib/events/event_dispatcher';
+import {Config} from '../../lib/config';
+import {PullRequestWithActor} from '../../lib/server/event_payload_handler';
+import {PullRequestFaker, ReviewerFaker, ProjectFaker, UserFaker} from '../faker/model_faker';
 
-import chai = require('chai');
 var expect = chai.expect;
-import socketIoClient = require('socket.io-client');
-import socketServer = require('./../../lib/server/socket_server');
-import repositories = require('./../../lib/repositories');
-import models = require('./../../lib/models');
-import eventDispatcher = require('./../../lib/events/event_dispatcher');
-import configModule = require('./../../lib/config');
-import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
-import modelFaker = require('./../faker/model_faker');
 
-var prFaker = new modelFaker.PullRequestFaker();
-var reviewerFaker = new modelFaker.ReviewerFaker();
-var projectFaker = new modelFaker.ProjectFaker();
-var userFaker = new modelFaker.UserFaker();
+var prFaker = new PullRequestFaker();
+var reviewerFaker = new ReviewerFaker();
+var projectFaker = new ProjectFaker();
+var userFaker = new UserFaker();
 
 describe('SocketServer', () => {
     var options = {
@@ -31,8 +30,8 @@ describe('SocketServer', () => {
             webhook_port: 1234,
             socket_port: socketPort
         };
-        configModule.Config.reset();
-        configModule.Config.setUp({config: config});
+        Config.reset();
+        Config.setUp({config: config});
 
         socketServer.SocketServer.startSocketServer();
     });
@@ -61,13 +60,13 @@ describe('SocketServer', () => {
         var authoredPullRequest = prFaker.fake({targetRepository: project, author: {username: username}});
         var assignedPullRequest = prFaker.fake({targetRepository: project, reviewers: [reviewer]});
 
-        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+        PullRequestRepository.pullRequests['team_name/repo_name'] = [
             authoredPullRequest,
             assignedPullRequest
         ];
 
         var client = socketIoClient.connect('http://localhost:' + socketPort, options);
-        client.on('server:introduced', (pullRequests: models.PullRequestEvent) => {
+        client.on('server:introduced', (pullRequests: PullRequestEvent) => {
             expect(pullRequests.sourceEvent).to.eq('client:introduce');
             expect(pullRequests.pullRequests.length).to.eq(2);
 
@@ -87,13 +86,13 @@ describe('SocketServer', () => {
 
         var pullRequest = prFaker.fake({reviewers: [approvedReviewer, unapprovedReviewer]});
 
-        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+        PullRequestRepository.pullRequests['team_name/repo_name'] = [
             pullRequest
         ];
 
         var client = socketIoClient.connect('http://localhost:' + socketPort, options);
         client.on('server:introduced', () => {
-            client.on('server:remind', (pullRequestToRemind: models.PullRequest) => {
+            client.on('server:remind', (pullRequestToRemind: PullRequest) => {
                 expect(pullRequestToRemind.id).to.eq(pullRequest.id);
                 client.disconnect();
                 done();
@@ -106,7 +105,7 @@ describe('SocketServer', () => {
     });
 
     describe('Emitting pull requests via sockets to author', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        var dispatcher = EventDispatcher.getInstance();
 
         function testEmittingEventViaSocket(inputEvent: string, done): void {
             var username = 'john.smith';
@@ -119,11 +118,11 @@ describe('SocketServer', () => {
             var authoredPullRequest = prFaker.fake({author: {username: username}, targetRepository: project});
             var assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
-            var payload = new eventPayloadHandler.PullRequestWithActor();
+            var payload = new PullRequestWithActor();
             payload.pullRequest = authoredPullRequest;
             payload.actor = userFaker.fake();
 
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
                 assignedPullRequest
             ];
@@ -135,7 +134,7 @@ describe('SocketServer', () => {
             reviewerClient.emit('client:introduce');
 
             client.on('server:introduced', () => {
-                client.on('server:pullrequests:updated', (pullRequestEvent: models.PullRequestEvent) => {
+                client.on('server:pullrequests:updated', (pullRequestEvent: PullRequestEvent) => {
                     expect(pullRequestEvent.sourceEvent).to.eq(inputEvent);
                     expect(pullRequestEvent.context.id).to.eq(authoredPullRequest.id);
                     expect(pullRequestEvent.context.title).to.eq(authoredPullRequest.title);
@@ -182,7 +181,7 @@ describe('SocketServer', () => {
     });
 
     describe('Emitting pull requests via sockets to reviewers', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        var dispatcher = EventDispatcher.getInstance();
 
         function testEmittingEventViaSocket(inputEvent: string, done): void {
             var reviewerUsername = 'anna.kowalsky';
@@ -195,11 +194,11 @@ describe('SocketServer', () => {
             var authoredPullRequest = prFaker.fake({author: {username: reviewerUsername}, targetRepository: project});
             var assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
-            var payload = new eventPayloadHandler.PullRequestWithActor();
+            var payload = new PullRequestWithActor();
             payload.pullRequest = assignedPullRequest;
             payload.actor = userFaker.fake();
 
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
                 assignedPullRequest
             ];
@@ -210,7 +209,7 @@ describe('SocketServer', () => {
                 client.emit('client:introduce', reviewerUsername);
 
                 client.on('server:introduced', () => {
-                    client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
+                    client.on('server:pullrequests:updated', (pullRequests: PullRequestEvent) => {
                         expect(pullRequests.sourceEvent).to.eq(inputEvent);
                         expect(pullRequests.context.id).to.eq(assignedPullRequest.id);
                         expect(pullRequests.actor.username).to.eq(payload.actor.username);

@@ -1,8 +1,5 @@
-///<reference path="../../typings/index.d.ts"/>
-///<reference path="../../custom_typings/faker.d.ts"/>
-
-import faker = require('faker');
-import models = require('./../../lib/models');
+import * as faker from 'faker';
+import * as models from './../../lib/models';
 
 abstract class AbstractFaker<T> {
     abstract getObject(): T;

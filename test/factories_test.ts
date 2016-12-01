@@ -1,9 +1,10 @@
-///<reference path="../typings/index.d.ts"/>
-
-import chai = require('chai');
+import * as chai from 'chai';
+import {
+    ProjectFactory, UserFactory, ReviewerFactory, PullRequestFactory,
+    PullRequestLinksFactory
+} from '../lib/factories';
+import {PullRequestState} from '../lib/models';
 var expect = chai.expect;
-import factories = require('./../lib/factories');
-import models = require('./../lib/models');
 
 describe('Factories', () => {
     describe('ProjectFactory', () => {
@@ -18,7 +19,7 @@ describe('Factories', () => {
                 }
             };
 
-            var project = factories.ProjectFactory.create(rawObject);
+            var project = ProjectFactory.create(rawObject);
 
             expect(project.fullName).to.eq('org/my_repo');
             expect(project.name).to.eq('my_repo');
@@ -33,7 +34,7 @@ describe('Factories', () => {
                 display_name: 'John Kowalsky'
             };
 
-            var user = factories.UserFactory.create(rawObject);
+            var user = UserFactory.create(rawObject);
 
             expect(user.username).to.equal('john.kowalsky');
             expect(user.displayName).to.equal('John Kowalsky');
@@ -51,7 +52,7 @@ describe('Factories', () => {
                 approved: false
             };
 
-            var reviewer = factories.ReviewerFactory.create(rawObject);
+            var reviewer = ReviewerFactory.create(rawObject);
 
             expect(reviewer.approved).to.eq(false);
             expect(reviewer.user.displayName).to.eq('John Smith');
@@ -104,7 +105,7 @@ describe('Factories', () => {
                 state: 'OPEN'
             };
 
-            var pullRequest = factories.PullRequestFactory.create(rawObject);
+            var pullRequest = PullRequestFactory.create(rawObject);
 
             expect(pullRequest.id).to.eq(1);
             expect(pullRequest.title).to.equal('Fixed bugs');
@@ -112,7 +113,7 @@ describe('Factories', () => {
             expect(pullRequest.targetRepository.fullName).to.eq('bitbucket/bitbucket');
             expect(pullRequest.targetRepository.name).to.eq('bitbucket');
             expect(pullRequest.targetBranch).to.eq('master');
-            expect(pullRequest.state).to.eq(models.PullRequestState.Open);
+            expect(pullRequest.state).to.eq(PullRequestState.Open);
             expect(pullRequest.author.displayName).to.eq('John Smith');
             expect(pullRequest.author.username).to.eq('john.smith');
 
@@ -131,7 +132,7 @@ describe('Factories', () => {
                 }
             };
 
-            var pullRequest = factories.PullRequestFactory.create(rawObject);
+            var pullRequest = PullRequestFactory.create(rawObject);
             expect(pullRequest.links.self).to.eq('http://example.com/pullrequest/1');
         });
     });
@@ -147,7 +148,7 @@ describe('Factories', () => {
                 }
             };
 
-            var prLinks = factories.PullRequestLinksFactory.create(rawObject);
+            var prLinks = PullRequestLinksFactory.create(rawObject);
             expect(prLinks.self).to.eq('http://example.com/aaa/bbb');
             expect(prLinks.html).to.eq('http://example.com/ccc/ddd');
         });
