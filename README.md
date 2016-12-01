@@ -78,8 +78,6 @@ ShipIt will create a `current` and `releases` directories, like **Capistrano**.
 
 * Little refactor :) Some things have been already marked as _@todo_ in code so keep an eye on it.
 * Migrate from Grunt to Gulp
-* Refactor code to use `import` statements instead of `require`
-* Use `node` as module resolution
 
 ## Additional featutes (TBD)
 
