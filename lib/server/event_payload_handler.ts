@@ -1,11 +1,11 @@
 ///<reference path="../../typings/index.d.ts"/>
 // @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
-import repositories = require('./../repositories');
-import factories = require('./../factories');
+import {PullRequestRepository} from '../repositories';
+import {PullRequestFactory, UserFactory} from '../factories';
+import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
-import eventDispatcher = require('./../events/event_dispatcher');
-import models = require('./../models');
+import {PullRequest, User} from '../models';
 import q = require('q');
 
 export interface HandlerInterface {
@@ -15,8 +15,8 @@ export interface HandlerInterface {
 }
 
 export class PullRequestWithActor {
-    pullRequest: models.PullRequest = new models.PullRequest();
-    actor: models.User = new models.User();
+    pullRequest: PullRequest = new PullRequest();
+    actor: User = new User();
 }
 
 export class PullRequestHandler implements HandlerInterface {
@@ -71,9 +71,9 @@ export class PullRequestHandler implements HandlerInterface {
 
     prepareBody(bodyDecoded): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
-        var dummyPr = factories.PullRequestFactory.create(bodyDecoded.pullrequest);
-        var actor = factories.UserFactory.create(bodyDecoded.actor);
-        repositories.PullRequestRepository.fetchOne(dummyPr.links.self).then((pullRequest: models.PullRequest) => {
+        var dummyPr = PullRequestFactory.create(bodyDecoded.pullrequest);
+        var actor = UserFactory.create(bodyDecoded.actor);
+        PullRequestRepository.fetchOne(dummyPr.links.self).then((pullRequest: PullRequest) => {
             var prWithActor = new PullRequestWithActor();
             prWithActor.pullRequest = pullRequest;
             prWithActor.actor = actor;
@@ -85,7 +85,7 @@ export class PullRequestHandler implements HandlerInterface {
     private onPullRequestCreated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
         logger.logAddPullRequestToRepository();
-        repositories.PullRequestRepository.add(pullRequestWithActor.pullRequest);
+        PullRequestRepository.add(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
@@ -93,7 +93,7 @@ export class PullRequestHandler implements HandlerInterface {
     private onPullRequestUpdated(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
         logger.logUpdatingPullRequest();
-        repositories.PullRequestRepository.update(pullRequestWithActor.pullRequest);
+        PullRequestRepository.update(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
@@ -101,7 +101,7 @@ export class PullRequestHandler implements HandlerInterface {
     private onPullRequestClosed(pullRequestWithActor: PullRequestWithActor): q.Promise<PullRequestWithActor> {
         var deferred = q.defer<PullRequestWithActor>();
         logger.logClosingPullRequest();
-        repositories.PullRequestRepository.remove(pullRequestWithActor.pullRequest);
+        PullRequestRepository.remove(pullRequestWithActor.pullRequest);
         deferred.resolve(pullRequestWithActor);
         return deferred.promise;
     }
@@ -141,6 +141,6 @@ export class EventPayloadHandler {
 
     private static triggerEvent(payloadType: string, contents: any = {}): void {
         var eventName = 'webhook:' + payloadType;
-        eventDispatcher.EventDispatcher.getInstance().emit(eventName, contents);
+        EventDispatcher.getInstance().emit(eventName, contents);
     }
 }
