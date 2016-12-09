@@ -1,7 +1,7 @@
 // @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
 import {PullRequestRepository} from '../repositories';
-import {PullRequestFactory, UserFactory} from '../factories';
+import {PullRequestFactory, UserFactory} from '../factory';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
 import {PullRequest, User} from '../model';

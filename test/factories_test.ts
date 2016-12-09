@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import {
     ProjectFactory, UserFactory, ReviewerFactory, PullRequestFactory,
     PullRequestLinksFactory
-} from '../lib/factories';
+} from '../lib/factory';
 import {PullRequestState} from '../lib/model';
 var expect = chai.expect;
 

@@ -1,77 +1,9 @@
-import {Project, User, Reviewer, PullRequest, PullRequestLinks, PullRequestState} from './model/index';
-
-export interface FactoryInterface {}
-
-export class ProjectFactory implements FactoryInterface {
-    static create(rawObject: any): Project {
-        const project = new Project();
-
-        if (rawObject.hasOwnProperty('name')) {
-            project.name = rawObject.name;
-        }
-
-        if (rawObject.hasOwnProperty('full_name')) {
-            project.fullName = rawObject.full_name;
-        }
-
-        if (rawObject.hasOwnProperty('links')) {
-            const links = rawObject.links;
-            if (links.hasOwnProperty('pullrequests')) {
-                project.pullRequestsUrl = rawObject.links.pullrequests.href;
-            }
-        }
-
-        return project;
-    }
-}
-
-export class UserFactory implements FactoryInterface {
-    static create(rawObject: any): User {
-        const user = new User();
-
-        if (rawObject.hasOwnProperty('username')) {
-            user.username = rawObject.username;
-        }
-
-        if (rawObject.hasOwnProperty('display_name')) {
-            user.displayName = rawObject.display_name;
-        }
-
-        return user;
-    }
-}
-
-export class ReviewerFactory implements FactoryInterface {
-    static create(rawObject: any): Reviewer {
-        const reviewer = new Reviewer();
-
-        if (rawObject.hasOwnProperty('approved')) {
-            reviewer.approved = rawObject.approved;
-        }
-
-        if (rawObject.hasOwnProperty('user')) {
-            reviewer.user = UserFactory.create(rawObject.user);
-        }
-
-        return reviewer;
-    }
-}
-
-export class PullRequestLinksFactory implements FactoryInterface {
-    static create(rawObject: any): PullRequestLinks {
-        const links = new PullRequestLinks();
-
-        if (rawObject.hasOwnProperty('self') && rawObject.self.hasOwnProperty('href')) {
-            links.self = rawObject.self.href;
-        }
-
-        if (rawObject.hasOwnProperty('html') && rawObject.html.hasOwnProperty('href')) {
-            links.html = rawObject.html.href;
-        }
-
-        return links;
-    }
-}
+import {FactoryInterface} from "./factory";
+import {PullRequest, PullRequestState} from "../model";
+import {UserFactory} from "./user";
+import {ReviewerFactory} from "./reviewer";
+import {PullRequestLinksFactory} from "./pull_request_links";
+import {ProjectFactory} from "./project";
 
 export class PullRequestFactory implements FactoryInterface {
     static create(rawObject: any): PullRequest {
