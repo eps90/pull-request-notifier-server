@@ -2,7 +2,7 @@ import * as events from 'events';
 import * as util from 'util';
 import logger = require('./../logger');
 
-var EventEmitter = events.EventEmitter;
+const EventEmitter = events.EventEmitter;
 
 export class EventDispatcher extends events.EventEmitter {
     private static instance: EventDispatcher;

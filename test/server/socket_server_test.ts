@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as socketIoClient from 'socket.io-client';
 import * as socketServer from './../../lib/server/socket_server';
-import {PullRequestRepository} from '../../lib/repositories';
+import {PullRequestRepository} from '../../lib/repository';
 import {PullRequest, PullRequestEvent} from '../../lib/model';
 import {EventDispatcher} from '../../lib/events/event_dispatcher';
 import {Config} from '../../lib/config';

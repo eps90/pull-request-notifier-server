@@ -1,6 +1,6 @@
 // @todo To review whole process - how it is consumed, does it need improvements, if so, which ones?
 
-import {PullRequestRepository} from '../repositories';
+import {PullRequestRepository} from '../repository';
 import {PullRequestFactory, UserFactory} from '../factory';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');

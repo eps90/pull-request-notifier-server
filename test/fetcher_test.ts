@@ -1,7 +1,7 @@
 import * as chai from 'chai';
 import * as nock from 'nock';
 import {Fetcher} from '../lib/fetcher';
-import {PullRequestRepository} from '../lib/repositories';
+import {PullRequestRepository} from '../lib/repository';
 import {Config} from '../lib/config';
 import chaiAsPromised = require('chai-as-promised');
 

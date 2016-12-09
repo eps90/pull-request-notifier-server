@@ -1,6 +1,6 @@
 import * as q from 'q';
 import {Project} from './model';
-import {ProjectRepository, PullRequestRepository} from './repositories';
+import {ProjectRepository, PullRequestRepository} from './repository';
 import logger = require('./logger');
 
 export class Fetcher {

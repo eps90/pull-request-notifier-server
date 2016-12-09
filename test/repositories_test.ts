@@ -1,5 +1,5 @@
 import {Project, PullRequest, User, PullRequestState} from './../lib/model';
-import {PullRequestRepository, ProjectRepository} from './../lib/repositories';
+import {PullRequestRepository, ProjectRepository} from './../lib/repository';
 import * as nock from 'nock';
 import * as chai from 'chai';
 import {Config} from '../lib/config';

@@ -1,5 +1,5 @@
 import * as Server from 'socket.io';
-import {PullRequestRepository} from '../repositories';
+import {PullRequestRepository} from '../repository';
 import {
     SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent,
     User
