@@ -1,4 +1,4 @@
-import {Project, User, Reviewer, PullRequest, PullRequestLinks, PullRequestState} from './models';
+import {Project, User, Reviewer, PullRequest, PullRequestLinks, PullRequestState} from './model/index';
 
 export interface FactoryInterface {}
 

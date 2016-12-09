@@ -1,5 +1,5 @@
 import * as q from 'q';
-import {Project} from './models';
+import {Project} from './model';
 import {ProjectRepository, PullRequestRepository} from './repositories';
 import logger = require('./logger');
 

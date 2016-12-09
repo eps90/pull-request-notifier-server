@@ -1,4 +1,4 @@
-import {ModelInterface, PullRequest, Project, PullRequestState} from './models';
+import {ModelInterface, PullRequest, Project, PullRequestState} from './model';
 import {ProjectFactory, PullRequestFactory} from './factories';
 import {Config} from "./config";
 import {HttpRequestError} from "./errors";

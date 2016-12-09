@@ -3,7 +3,7 @@ import {
     ProjectFactory, UserFactory, ReviewerFactory, PullRequestFactory,
     PullRequestLinksFactory
 } from '../lib/factories';
-import {PullRequestState} from '../lib/models';
+import {PullRequestState} from '../lib/model';
 var expect = chai.expect;
 
 describe('Factories', () => {

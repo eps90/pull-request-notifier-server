@@ -1,5 +1,5 @@
 import * as faker from 'faker';
-import * as models from './../../lib/models';
+import * as models from './../../lib/model';
 
 abstract class AbstractFaker<T> {
     abstract getObject(): T;

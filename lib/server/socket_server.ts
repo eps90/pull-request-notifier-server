@@ -3,7 +3,7 @@ import {PullRequestRepository} from '../repositories';
 import {
     SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent,
     User
-} from '../models';
+} from '../model';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
 import {Config} from '../config';

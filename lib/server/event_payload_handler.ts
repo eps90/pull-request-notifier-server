@@ -4,7 +4,7 @@ import {PullRequestRepository} from '../repositories';
 import {PullRequestFactory, UserFactory} from '../factories';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger = require('./../logger');
-import {PullRequest, User} from '../models';
+import {PullRequest, User} from '../model';
 import * as q from 'q';
 
 export interface HandlerInterface {

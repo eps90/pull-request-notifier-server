@@ -1,5 +1,5 @@
 import * as chai from 'chai';
-import {PullRequest, Project, PullRequestState} from '../../lib/models';
+import {PullRequest, Project, PullRequestState} from '../../lib/model';
 import {PullRequestRepository} from '../../lib/repositories';
 import {EventPayloadHandler, PullRequestWithActor} from '../../lib/server/event_payload_handler';
 import {EventDispatcher} from '../../lib/events/event_dispatcher';
