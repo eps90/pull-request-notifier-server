@@ -1,4 +1,4 @@
-import {PullRequestRepository} from './lib/repositories';
+import {PullRequestRepository} from './lib/repository';
 import {Fetcher} from './lib/fetcher';
 import {WebhookListener} from './lib/server/webhook_listener';
 import {SocketServer} from './lib/server/socket_server';
