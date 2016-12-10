@@ -5,7 +5,7 @@ abstract class AbstractFaker<T> {
     abstract getObject(): T;
 
     fake(defaultProperties: any = {}): T {
-        var model: T = this.getObject();
+        const model: T = this.getObject();
 
         function isObject(variable): boolean {
             return Object.prototype.toString.call(variable) === '[object Object]';
