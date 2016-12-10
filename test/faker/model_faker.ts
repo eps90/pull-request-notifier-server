@@ -12,7 +12,7 @@ abstract class AbstractFaker<T> {
         }
 
         function setProperties(properties, target) {
-            for (var prop in properties) {
+            for (let prop in properties) {
                 if (properties.hasOwnProperty(prop) && target.hasOwnProperty(prop)) {
                     if (isObject(properties[prop])) {
                         setProperties(properties[prop], target[prop])
@@ -29,7 +29,7 @@ abstract class AbstractFaker<T> {
     }
 
     fakeList(numberOfElements: number = 2): T[] {
-        var result: T[] = [];
+        const result: T[] = [];
 
         for (let i = 0; i < numberOfElements; i++) {
             result.push(this.getObject());
@@ -41,7 +41,7 @@ abstract class AbstractFaker<T> {
 
 export class ProjectFaker extends AbstractFaker<models.Project> {
     getObject(): models.Project {
-        var project = new models.Project();
+        const project = new models.Project();
         project.fullName = this.fullName;
         project.name = this.name;
         project.pullRequestsUrl = this.pullRequestsUrl;
@@ -53,8 +53,8 @@ export class ProjectFaker extends AbstractFaker<models.Project> {
         return faker.commerce.productName();
     }
     get fullName(): string {
-        var companyName = faker.helpers.slugify(faker.company.companyName()).toLowerCase();
-        var productName = faker.helpers.slugify(faker.commerce.productName()).toLowerCase();
+        const companyName = faker.helpers.slugify(faker.company.companyName()).toLowerCase();
+        const productName = faker.helpers.slugify(faker.commerce.productName()).toLowerCase();
 
         return `${companyName}/${productName}`;
     }
@@ -66,7 +66,7 @@ export class ProjectFaker extends AbstractFaker<models.Project> {
 
 export class UserFaker extends AbstractFaker<models.User> {
     getObject(): models.User {
-        var user = new models.User();
+        const user = new models.User();
         user.displayName = this.displayName;
         user.username = this.username;
 
@@ -78,8 +78,8 @@ export class UserFaker extends AbstractFaker<models.User> {
     }
 
     get displayName(): string {
-        var firstName = faker.name.firstName();
-        var lastName = faker.name.lastName();
+        const firstName = faker.name.firstName();
+        const lastName = faker.name.lastName();
 
         return `${firstName} ${lastName}`;
     }
@@ -87,7 +87,7 @@ export class UserFaker extends AbstractFaker<models.User> {
 
 export class ReviewerFaker extends AbstractFaker<models.Reviewer> {
     getObject(): models.Reviewer {
-        var reviewer = new models.Reviewer();
+        const reviewer = new models.Reviewer();
         reviewer.approved = this.approved;
         reviewer.user = this.user;
 
@@ -99,14 +99,14 @@ export class ReviewerFaker extends AbstractFaker<models.Reviewer> {
     }
 
     get user(): models.User {
-        var userFaker = new UserFaker();
+        const userFaker = new UserFaker();
         return userFaker.getObject();
     }
 }
 
 export class PullRequestStateFaker extends AbstractFaker<models.PullRequestState> {
     getObject(): models.PullRequestState {
-        var states: models.PullRequestState[] = [
+        const states: models.PullRequestState[] = [
             models.PullRequestState.Open,
             models.PullRequestState.Merged,
             models.PullRequestState.Declined
@@ -118,7 +118,7 @@ export class PullRequestStateFaker extends AbstractFaker<models.PullRequestState
 
 export class PullRequestLinksFaker extends AbstractFaker<models.PullRequestLinks> {
     getObject(): models.PullRequestLinks {
-        var links = new models.PullRequestLinks();
+        const links = new models.PullRequestLinks();
         links.self = this.self;
         links.html = this.html;
 
@@ -136,7 +136,7 @@ export class PullRequestLinksFaker extends AbstractFaker<models.PullRequestLinks
 
 export class PullRequestFaker extends AbstractFaker<models.PullRequest> {
     getObject(): models.PullRequest {
-        var pullRequest = new models.PullRequest();
+        const pullRequest = new models.PullRequest();
         pullRequest.id = this.id;
         pullRequest.title = this.title;
         pullRequest.description = this.description;
@@ -163,32 +163,32 @@ export class PullRequestFaker extends AbstractFaker<models.PullRequest> {
     }
 
     get author(): models.User {
-        var user = new UserFaker();
+        const user = new UserFaker();
         return user.getObject();
     }
 
     get targetRepository(): models.Project {
-        var project = new ProjectFaker();
+        const project = new ProjectFaker();
         return project.getObject();
     }
 
     get targetBranch(): string {
-        var branches = ['master', 'develop', 'new-branch'];
+        const branches = ['master', 'develop', 'new-branch'];
         return faker.helpers.randomize<string>(branches);
     }
 
     get reviewers(): models.Reviewer[] {
-        var reviewer = new ReviewerFaker();
+        const reviewer = new ReviewerFaker();
         return reviewer.fakeList();
     }
 
     get state(): models.PullRequestState {
-        var state = new PullRequestStateFaker();
+        const state = new PullRequestStateFaker();
         return state.getObject();
     }
 
     get links(): models.PullRequestLinks {
-        var links = new PullRequestLinksFaker();
+        const links = new PullRequestLinksFaker();
         return links.getObject();
     }
 }
