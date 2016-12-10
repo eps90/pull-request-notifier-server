@@ -35,8 +35,6 @@ describe("ProjectRepository", () => {
 
     it('should create list of projects by requesting them', (done) => {
         const config: any = {
-            size: 29,
-            pagelen: 10,
             next: 'http://example.com/repositories/bitbucket?page=2',
             values: [
                 {
@@ -47,6 +45,7 @@ describe("ProjectRepository", () => {
         };
 
         const configNextPage: any = {
+            next: 'http://example.com/repositories/bitbucket?page=3',
             values: [
                 {
                     'name': 'another_repo',
@@ -82,7 +81,7 @@ describe("ProjectRepository", () => {
             .reply(200, JSON.stringify(thirdPage));
 
         ProjectRepository.fetchAll()
-            .then((repos: Array<Project>) => {
+            .then((repos: Project[]) => {
                 expect(repos).to.have.length(3);
                 const repository: Project = repos[0];
                 expect(repository).to.be.instanceOf(Project);
