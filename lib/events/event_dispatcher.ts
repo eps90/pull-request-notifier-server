@@ -1,6 +1,6 @@
 import * as events from 'events';
 import * as util from 'util';
-import logger = require('./../logger');
+import logger from './../logger';
 
 const EventEmitter = events.EventEmitter;
 

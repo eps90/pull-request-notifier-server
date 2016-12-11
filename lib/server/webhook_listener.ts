@@ -1,4 +1,4 @@
-import logger = require('./../logger');
+import logger from './../logger';
 import * as http from 'http';
 import {EventPayloadHandler} from './event_payload_handler';
 import {Config} from '../config';

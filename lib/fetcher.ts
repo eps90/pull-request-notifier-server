@@ -1,7 +1,7 @@
 import * as q from 'q';
 import {Project} from './model';
 import {ProjectRepository, PullRequestRepository} from './repository';
-import logger = require('./logger');
+import logger from './logger';
 
 export class Fetcher {
     static initPullRequestCollection(): q.Promise<any> {

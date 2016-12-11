@@ -2,8 +2,7 @@ import * as url from 'url';
 import * as q from 'q';
 import * as http from 'http';
 import * as request from 'request';
-// @todo Change to default export
-import logger = require('./../logger');
+import logger from './../logger';
 import {Config} from '../config';
 import {HttpRequestError} from "../errors";
 import {ModelInterface} from "../model/model";

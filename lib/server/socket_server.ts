@@ -5,7 +5,7 @@ import {
     User
 } from '../model';
 import {EventDispatcher} from '../events/event_dispatcher';
-import logger = require('./../logger');
+import logger from './../logger';
 import {Config} from '../config';
 import * as _ from 'lodash';
 

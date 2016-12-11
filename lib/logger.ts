@@ -4,7 +4,7 @@ import {TransportOptions} from "winston";
 require('winston-loggly');
 /* tslint:enable */
 
-class Logger {
+export default class Logger {
     private static logger: winston.LoggerInstance;
 
     static getLogger(): winston.LoggerInstance {
@@ -161,5 +161,3 @@ class Logger {
         this.logger = logger;
     }
 }
-
-export = Logger;

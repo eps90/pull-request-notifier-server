@@ -3,7 +3,7 @@
 import {PullRequestRepository} from '../repository';
 import {PullRequestFactory, UserFactory} from '../factory';
 import {EventDispatcher} from '../events/event_dispatcher';
-import logger = require('./../logger');
+import logger from './../logger';
 import {PullRequest, User} from '../model';
 import * as q from 'q';
 

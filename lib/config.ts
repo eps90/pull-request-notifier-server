@@ -1,8 +1,7 @@
 import * as yaml from 'js-yaml';
 import * as fs from 'fs';
 import {ConfigError} from './errors';
-
-import logger = require('./logger');
+import logger from './logger';
 
 export interface ConfigInterface {
     baseUrl: string;

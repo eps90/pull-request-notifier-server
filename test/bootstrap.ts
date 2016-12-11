@@ -1,4 +1,4 @@
-import logger = require('./../lib/logger');
+import logger from './../lib/logger';
 import winston = require('winston');
 
 logger.getLogger().remove(winston.transports.Console);
