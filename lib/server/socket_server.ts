@@ -1,8 +1,7 @@
 import * as Server from 'socket.io';
 import {PullRequestRepository} from '../repository';
 import {
-    SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent,
-    User
+    SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent, PullRequestWithActor
 } from '../model';
 import {EventDispatcher} from '../events/event_dispatcher';
 import logger from './../logger';
@@ -54,23 +53,23 @@ export class SocketServer {
             });
         });
 
-        dispatcher.on(WebhookEvent.PULLREQUEST_CREATED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_CREATED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_CREATED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_CREATED, body);
         });
-        dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UPDATED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UPDATED, body);
         });
-        dispatcher.on(WebhookEvent.PULLREQUEST_APPROVED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_APPROVED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_APPROVED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_APPROVED, body);
         });
-        dispatcher.on(WebhookEvent.PULLREQUEST_UNAPPROVED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UNAPPROVED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_UNAPPROVED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UNAPPROVED, body);
         });
-        dispatcher.on(WebhookEvent.PULLREQUEST_FULFILLED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_FULFILLED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_FULFILLED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_FULFILLED, body);
         });
-        dispatcher.on(WebhookEvent.PULLREQUEST_REJECTED, (body: {pullRequest: PullRequest, actor: User}) => {
-            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_REJECTED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_REJECTED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_REJECTED, body);
         });
     }
 
@@ -78,8 +77,10 @@ export class SocketServer {
         this.io.close();
     }
 
-    private static onWebhookEvent(eventName: string, pullRequest: PullRequest, actor: User): void {
+    private static onWebhookEvent(eventName: string, pullRequestWithActor: PullRequestWithActor): void {
         logger.logWebhookEventReceived(eventName);
+        const pullRequest = pullRequestWithActor.pullRequest;
+        const actor = pullRequestWithActor.actor;
         const author = pullRequest.author.username;
 
         const userPullRequests = new PullRequestEvent();
@@ -92,7 +93,7 @@ export class SocketServer {
         logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, author);
         SocketServer.io.to(author).emit(SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
-        const reviewers: Array<Reviewer> = pullRequest.reviewers || [];
+        const reviewers: Reviewer[] = pullRequest.reviewers || [];
 
         let reviewerIdx = 0, reviewersLength = reviewers.length;
         for (; reviewerIdx < reviewersLength; reviewerIdx++) {
