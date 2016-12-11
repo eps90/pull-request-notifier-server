@@ -12,6 +12,7 @@ import {Config} from "../config";
 import {HttpRequestError} from "../errors";
 import * as request from 'request';
 import * as _ from 'lodash';
+import {PullRequestWithLinks} from "../model/pull_request_links";
 
 interface PullRequestSet {
     [repositoryName: string]: PullRequest[];
@@ -116,69 +117,23 @@ export class PullRequestRepository extends AbstractRepository {
     // @todo to refactor
     static fetchByProject(project: Project): q.Promise<PullRequest[]> {
         const parsedUrl = url.parse(project.pullRequestsUrl);
-        const config = Config.getConfig();
-
-        const requestConfig = {
-            auth: {
-                username: config.user,
-                password: config.password
-            }
-        };
-
         delete parsedUrl.search;
         parsedUrl.query = {
             state: 'OPEN'
         };
         const pullRequestsUrl = url.format(parsedUrl);
 
-        const defer = q.defer<PullRequest[]>();
-
-        logger.logHttpRequestAttempt(pullRequestsUrl);
-        request(pullRequestsUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
-            if (error || res.statusCode !== 200) {
-                logger.logHttpRequestFailed(pullRequestsUrl);
-                return defer.reject(HttpRequestError.throwError(pullRequestsUrl, res, body));
-            }
-            logger.logHttpRequestSucceed(pullRequestsUrl);
-
-            const response: any = JSON.parse(body);
-            const pullRequests: any[] = response.values;
-            let result: PullRequest[] = AbstractRepository.getCollection<PullRequest>(PullRequestFactory, pullRequests);
-
-            q.all(
-                result.map((pr: PullRequest) => {
-                    const deferred = q.defer();
-
-                    logger.logHttpRequestAttempt(pr.links.self);
-                    request(pr.links.self, requestConfig, (err, httpRes: http.IncomingMessage, innerBody) => {
-                        if (error || httpRes.statusCode !== 200) {
-                            logger.logHttpRequestFailed(pr.links.self);
-                            return deferred.reject(HttpRequestError.throwError(pr.links.self, httpRes, innerBody));
-                        }
-
-                        logger.logHttpRequestSucceed(pr.links.self);
-                        const innerResponse = JSON.parse(innerBody);
-                        deferred.resolve(PullRequestFactory.create(innerResponse));
-                    });
-
-                    return deferred.promise;
-                })
-            ).then((prs: PullRequest[]) => {
-                result = prs;
-                const rest = AbstractRepository.getRequestPromises(AbstractRepository.getPagesList(response), requestConfig);
-                q.all(rest).done((results: any[]) => {
-                    for (let resultIndex = 0; resultIndex < results.length; resultIndex++) {
-                        const resultPrs: any = results[resultIndex];
-                        result = result.concat(this.getCollection<PullRequest>(PullRequestFactory, resultPrs));
-                    }
-
-                    PullRequestRepository.pullRequests[project.fullName] = result;
-                    defer.resolve(result);
-                });
+        return this.requestForAll(pullRequestsUrl)
+            .then((values: PullRequestWithLinks[]) => {
+                return q.all(values.map(value => this.requestForOne(value.links.self.href)));
+            })
+            .then((prs) => {
+                return prs.map(pr => PullRequestFactory.create(pr));
+            })
+            .then((pullRequests: PullRequest[]) => {
+                this.pullRequests[project.fullName] = pullRequests;
+                return pullRequests;
             });
-        });
-
-        return defer.promise;
     }
 
     static fetchOne(pullRequestUrl: string): q.Promise<PullRequest>;

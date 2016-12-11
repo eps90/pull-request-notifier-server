@@ -40,7 +40,6 @@ describe('Fetcher', () => {
         var projects = {
             size: 1,
             pagelen: 10,
-            next: 'http://example.com/repositories/bitbucket?page=2',
             values: [
                 {
                     'name': 'my_repo',

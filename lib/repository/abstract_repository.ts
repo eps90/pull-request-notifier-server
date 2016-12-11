@@ -37,6 +37,21 @@ export abstract class AbstractRepository {
         });
     }
 
+    protected static requestForOne(requestUrl: string) {
+        const requestConfig = this.buildRequestOptions();
+        return q.Promise((resolve, reject) => {
+            logger.logHttpRequestAttempt(requestUrl);
+            request(requestUrl, requestConfig, (error, response, body) => {
+                if (error || response.statusCode !== 200) {
+                    logger.logHttpRequestFailed(requestUrl);
+                    return reject(HttpRequestError.throwError(requestUrl, response, body));
+                }
+                const responseDecoded = JSON.parse(body);
+                resolve(responseDecoded);
+            });
+        });
+    }
+
     private static buildFullUrl(path: string) {
         if (path.substr(0, 4) === 'http') {
             return path;

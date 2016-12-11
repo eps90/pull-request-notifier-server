@@ -166,7 +166,7 @@ describe("PullRequestRepository", () => {
             .basicAuth(basicAuth)
             .reply(200, JSON.stringify(pullRequestTwo));
 
-        PullRequestRepository.fetchByProject(project).then((prs: Array<PullRequest>) => {
+        PullRequestRepository.fetchByProject(project).then((prs: PullRequest[]) => {
             expect(prs).to.have.length(2);
             const pullRequest = prs[0];
             expect(pullRequest).to.be.instanceOf(PullRequest);
