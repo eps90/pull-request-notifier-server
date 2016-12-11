@@ -20,6 +20,8 @@ export abstract class AbstractRepository {
                     logger.logHttpRequestFailed(requestUrl);
                     return reject(HttpRequestError.throwError(requestUrl, response, body));
                 }
+
+                logger.logHttpRequestSucceed(requestUrl);
                 const responseDecoded = JSON.parse(body);
                 data = data.concat(responseDecoded.values);
 
@@ -45,6 +47,8 @@ export abstract class AbstractRepository {
                     logger.logHttpRequestFailed(requestUrl);
                     return reject(HttpRequestError.throwError(requestUrl, response, body));
                 }
+
+                logger.logHttpRequestSucceed(requestUrl);
                 const responseDecoded = JSON.parse(body);
                 resolve(responseDecoded);
             });
