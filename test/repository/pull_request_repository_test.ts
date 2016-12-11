@@ -322,6 +322,8 @@ describe("PullRequestRepository", () => {
         });
     });
 
+    xit('should throw on error during requesting');
+
     it('should find all known pull requests', () => {
         PullRequestRepository.pullRequests['bitbucket/bitbucket'] = [
             new PullRequest(),
