@@ -3,8 +3,6 @@ import {PullRequest} from "../model/pull_request";
 import {PullRequestState} from "../model/pull_request_state";
 import * as url from 'url';
 import * as q from 'q';
-// @todo Change to default export
-import logger = require("./../logger");
 import {PullRequestFactory} from "../factory/pull_request";
 import {Project} from "../model/project";
 import {Config} from "../config";
