@@ -5,12 +5,9 @@ import * as url from 'url';
 import * as q from 'q';
 // @todo Change to default export
 import logger = require("./../logger");
-import * as http from 'http';
 import {PullRequestFactory} from "../factory/pull_request";
 import {Project} from "../model/project";
 import {Config} from "../config";
-import {HttpRequestError} from "../errors";
-import * as request from 'request';
 import * as _ from 'lodash';
 import {PullRequestWithLinks} from "../model/pull_request_links";
 
@@ -140,7 +137,6 @@ export class PullRequestRepository extends AbstractRepository {
     static fetchOne(project: Project, prId: number): q.Promise<PullRequest>;
 
     static fetchOne(projectOrUrl: any, prId?: number): q.Promise<PullRequest> {
-        const deferred = q.defer<PullRequest>();
         const config = Config.getConfig();
         let prUrl = '';
 
@@ -150,26 +146,6 @@ export class PullRequestRepository extends AbstractRepository {
             prUrl = config.baseUrl + '/repositories/' + projectOrUrl.fullName + '/pullrequests/' + prId;
         }
 
-        const requestConfig = {
-            auth: {
-                username: config.user,
-                password: config.password
-            }
-        };
-
-        logger.logHttpRequestAttempt(prUrl);
-        request(prUrl, requestConfig, (error, res: http.IncomingMessage, body) => {
-            if (error || res.statusCode !== 200) {
-                logger.logHttpRequestFailed(prUrl);
-                return deferred.reject(HttpRequestError.throwError(prUrl, res, body));
-            }
-            logger.logHttpRequestSucceed(prUrl);
-
-            const response: any = JSON.parse(body);
-            const pullRequest = PullRequestFactory.create(response);
-            deferred.resolve(pullRequest);
-        });
-
-        return deferred.promise;
+        return this.requestForOne(prUrl).then(prDecoded => PullRequestFactory.create(prDecoded));
     }
 }
