@@ -11,7 +11,7 @@ interface CollectionResponse {
 }
 
 export abstract class AbstractRepository {
-    protected static requestForAll(requestUri: string, data: any[] = []) {
+    protected static requestForAll(requestUri: string, data: any[] = []): q.Promise<any> {
         const requestUrl = this.buildFullUrl(requestUri);
 
         return q.Promise((resolve, reject) => {
@@ -29,11 +29,11 @@ export abstract class AbstractRepository {
         });
     }
 
-    protected static requestForOne(requestUrl: string) {
+    protected static requestForOne(requestUrl: string): q.Promise<any> {
         return this.makeRequest(requestUrl);
     }
 
-    private static makeRequest(requestUrl) {
+    private static makeRequest(requestUrl): q.Promise<any> {
         const requestConfig = this.buildRequestOptions();
         return q.Promise((resolve, reject) => {
             logger.logHttpRequestAttempt(requestUrl);
@@ -50,7 +50,7 @@ export abstract class AbstractRepository {
         });
     }
 
-    private static buildFullUrl(path: string) {
+    private static buildFullUrl(path: string): string {
         if (path.substr(0, 4) === 'http') {
             return path;
         }
@@ -59,7 +59,7 @@ export abstract class AbstractRepository {
         return `${config.baseUrl}/${path}`;
     }
 
-    private static buildRequestOptions() {
+    private static buildRequestOptions(): any {
         const config = Config.getConfig();
         return {
             auth: {
