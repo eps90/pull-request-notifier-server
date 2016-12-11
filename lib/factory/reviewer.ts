@@ -1,8 +1,7 @@
-import {FactoryInterface} from "./factory";
 import {Reviewer} from "../model/reviewer";
 import {UserFactory} from "./user";
 
-export class ReviewerFactory implements FactoryInterface {
+export class ReviewerFactory {
     static create(rawObject: any): Reviewer {
         const reviewer = new Reviewer();
 

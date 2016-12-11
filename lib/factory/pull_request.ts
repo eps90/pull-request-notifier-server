@@ -1,11 +1,10 @@
-import {FactoryInterface} from "./factory";
 import {PullRequest, PullRequestState} from "../model";
 import {UserFactory} from "./user";
 import {ReviewerFactory} from "./reviewer";
 import {PullRequestLinksFactory} from "./pull_request_links";
 import {ProjectFactory} from "./project";
 
-export class PullRequestFactory implements FactoryInterface {
+export class PullRequestFactory {
     static create(rawObject: any): PullRequest {
         const pullRequest = new PullRequest();
 

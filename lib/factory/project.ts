@@ -1,7 +1,6 @@
-import {FactoryInterface} from "./factory";
 import {Project} from "../model/project";
 
-export class ProjectFactory implements FactoryInterface {
+export class ProjectFactory {
     static create(rawObject: any): Project {
         const project = new Project();
 

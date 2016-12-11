@@ -1,7 +1,6 @@
-import {FactoryInterface} from "./factory";
 import {User} from "../model/user";
 
-export class UserFactory implements FactoryInterface {
+export class UserFactory {
     static create(rawObject: any): User {
         const user = new User();
 

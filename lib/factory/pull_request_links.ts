@@ -1,7 +1,6 @@
-import {FactoryInterface} from "./factory";
 import {PullRequestLinks} from "../model/pull_request_links";
 
-export class PullRequestLinksFactory implements FactoryInterface {
+export class PullRequestLinksFactory {
     static create(rawObject: any): PullRequestLinks {
         const links = new PullRequestLinks();
 
