@@ -1,6 +1,4 @@
-import {ModelInterface} from "./model";
-
-export class User implements ModelInterface {
+export class User {
     username: string;
     displayName: string;
 }

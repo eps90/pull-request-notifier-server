@@ -1,6 +1,4 @@
-import {ModelInterface} from "./model";
-
-export class Project implements ModelInterface {
+export class Project {
     name: string;
     fullName: string;
     pullRequestsUrl: string;

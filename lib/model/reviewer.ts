@@ -1,7 +1,6 @@
-import {ModelInterface} from "./model";
 import {User} from "./user";
 
-export class Reviewer implements ModelInterface {
+export class Reviewer {
     approved: boolean;
     user: User = new User();
 }
