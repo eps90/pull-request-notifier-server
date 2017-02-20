@@ -5,6 +5,7 @@ import {expect} from 'chai';
 describe('PullRequestFactory', () => {
     it('should create PullRequests model from given object', () => {
         const rawObject: any = {
+            uuid: '{6b642f7d-050f-4367-b91f-bcce3c0ce946}',
             id: 1,
             author: {
                 username: 'john.smith',
@@ -49,6 +50,7 @@ describe('PullRequestFactory', () => {
 
         const pullRequest = PullRequestFactory.create(rawObject);
 
+        expect(pullRequest.uuid).to.eq('{6b642f7d-050f-4367-b91f-bcce3c0ce946}');
         expect(pullRequest.id).to.eq(1);
         expect(pullRequest.title).to.equal('Fixed bugs');
         expect(pullRequest.description).to.eq('This is a special pull request');

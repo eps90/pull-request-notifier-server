@@ -8,6 +8,10 @@ export class PullRequestFactory {
     static create(rawObject: any): PullRequest {
         const pullRequest = new PullRequest();
 
+        if (rawObject.hasOwnProperty('uuid')) {
+            pullRequest.uuid = rawObject.uuid;
+        }
+
         if (rawObject.hasOwnProperty('id')) {
             pullRequest.id = rawObject.id;
         }

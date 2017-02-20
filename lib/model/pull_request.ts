@@ -5,6 +5,7 @@ import {PullRequestState} from "./pull_request_state";
 import {PullRequestLinks} from "./pull_request_links";
 
 export class PullRequest {
+    uuid: string;
     id: number;
     title: string;
     description: string;
