@@ -3,6 +3,7 @@ import {UserFactory} from "../../factory/user";
 import {PullRequestRepository} from "../../repository/pull_request_repository";
 import {PullRequestWithActor} from "../../model/pull_request_with_actor";
 import logger from '../../logger';
+import {EventDispatcher} from "../../events/event_dispatcher";
 
 export class PullRequestCreationHandler implements HandlerInterface {
     private supportedEventName: string = 'pullrequest:created';
@@ -23,6 +24,10 @@ export class PullRequestCreationHandler implements HandlerInterface {
                 logger.logAddPullRequestToRepository();
                 PullRequestRepository.add(pullRequestWithActor.pullRequest);
                 return pullRequestWithActor;
+            })
+            .then((pullRequestWithActor: PullRequestWithActor) => {
+                const eventName = `webhook:${type}`;
+                EventDispatcher.getInstance().emit(eventName, pullRequestWithActor);
             });
     }
 

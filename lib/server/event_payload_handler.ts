@@ -18,19 +18,7 @@ export class EventPayloadHandler {
         const handlers: HandlerInterface[] = this.handlers.filter(handler => handler.supportsEvent(type));
 
         return q.all(
-            handlers.map((handler: HandlerInterface) => {
-                return q.Promise((resolve) => {
-                    handler.handlePayload(type, bodyDecoded).then((handleResult) => {
-                        this.triggerEvent(type, handleResult);
-                        resolve(null);
-                    });
-                });
-            })
+            handlers.map((handler: HandlerInterface) => handler.handlePayload(type, bodyDecoded))
         );
-    }
-
-    private static triggerEvent(payloadType: string, contents: any = {}): void {
-        const eventName = 'webhook:' + payloadType;
-        EventDispatcher.getInstance().emit(eventName, contents);
     }
 }
