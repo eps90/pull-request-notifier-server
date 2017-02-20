@@ -4,6 +4,10 @@ export class ProjectFactory {
     static create(rawObject: any): Project {
         const project = new Project();
 
+        if (rawObject.hasOwnProperty('uuid')) {
+            project.uuid = rawObject.uuid;
+        }
+
         if (rawObject.hasOwnProperty('name')) {
             project.name = rawObject.name;
         }
