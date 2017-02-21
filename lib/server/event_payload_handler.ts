@@ -1,9 +1,9 @@
 import {EventDispatcher} from '../events/event_dispatcher';
 import * as q from 'q';
-import {HandlerInterface} from "./handler/handler";
-import {AddPullRequestHandler} from "./handler/add_pull_request_handler";
-import {UpdatePullRequestHandler} from "./handler/update_pull_request_handler";
-import {ClosePullRequestHandler} from "./handler/close_pull_request_handler";
+import {HandlerInterface} from "./webhook_handler/handler";
+import {AddPullRequestHandler} from "./webhook_handler/add_pull_request_handler";
+import {UpdatePullRequestHandler} from "./webhook_handler/update_pull_request_handler";
+import {ClosePullRequestHandler} from "./webhook_handler/close_pull_request_handler";
 
 export class EventPayloadHandler {
     // @todo Allow to, somehow, inject handlers
