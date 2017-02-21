@@ -1,5 +1,6 @@
 import winston = require('winston');
 import {TransportOptions} from "winston";
+import {PullRequest} from "./model/pull_request";
 /* tslint:disable */
 require('winston-loggly');
 /* tslint:enable */
@@ -134,6 +135,14 @@ export default class Logger {
 
     static logUnsupportedRequestMethod(method: string): void {
         this.getLogger().warn('Unsupported HTTP request method', {method: method});
+    }
+
+    static logSinglePullRequestUpdated(pullRequest: PullRequest) {
+        this.getLogger().info(`Pull request ${pullRequest.title} updated`, {pullRequest: pullRequest});
+    }
+
+    static logSendingUpdateNotification(pullRequest: PullRequest, receipient: string) {
+        this.getLogger().info(`Sending update notification for ${pullRequest.title} to ${receipient}`);
     }
 
     private static initLogger(): void {

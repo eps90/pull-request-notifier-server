@@ -113,16 +113,14 @@ export class SocketServer {
         }
     }
 
-    /**
-     * @todo Add logger
-     * @param pullRequestWithActor
-     */
     private static onWebhookPullRequestUpdated(pullRequestWithActor: PullRequestWithActor) {
         const pullRequest = pullRequestWithActor.pullRequest;
+        logger.logSinglePullRequestUpdated(pullRequest);
 
         const reviewers = pullRequest.reviewers || [];
         for (const reviewer of reviewers) {
             const reviewerUsername = reviewer.user.username;
+            logger.logSendingUpdateNotification(pullRequest, reviewerUsername);
             SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
         }
     }
