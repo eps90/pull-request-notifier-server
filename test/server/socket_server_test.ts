@@ -259,5 +259,29 @@ describe('SocketServer', () => {
             const expectedEvent = 'server:pullrequests:updated';
             testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
+
+        it('should emit server:pullrequest:updated on webhook:pullrequest:updated', (done) => {
+            const inputEvent = 'webhook:pullrequest:updated';
+            const expectedEvent = 'server:pullrequest:updated';
+
+            const reviewer = reviewerFaker.fake({approved: true});
+            const pullRequest = prFaker.fake({reviewers: [reviewer]});
+            const payload = new PullRequestWithActor();
+            payload.pullRequest = pullRequest;
+            payload.actor = userFaker.fake();
+
+            const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
+            client.on('server:introduced', () => {
+                client.on(expectedEvent, (updatedPullRequest: PullRequest) => {
+                    expect(updatedPullRequest.id).to.eq(pullRequest.id);
+                    client.disconnect();
+                    done();
+                });
+
+                dispatcher.emit(inputEvent, payload);
+            });
+
+            client.emit('client:introduce', reviewer.user.username);
+        });
     });
 });

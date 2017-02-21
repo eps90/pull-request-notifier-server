@@ -59,6 +59,9 @@ export class SocketServer {
         dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, (body: PullRequestWithActor) => {
             SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UPDATED, body);
         });
+
+        dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, SocketServer.onWebhookPullRequestUpdated);
+
         dispatcher.on(WebhookEvent.PULLREQUEST_APPROVED, (body: PullRequestWithActor) => {
             SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_APPROVED, body);
         });
@@ -107,6 +110,20 @@ export class SocketServer {
 
             logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUsername);
             SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
+        }
+    }
+
+    /**
+     * @todo Add logger
+     * @param pullRequestWithActor
+     */
+    private static onWebhookPullRequestUpdated(pullRequestWithActor: PullRequestWithActor) {
+        const pullRequest = pullRequestWithActor.pullRequest;
+
+        const reviewers = pullRequest.reviewers || [];
+        for (const reviewer of reviewers) {
+            const reviewerUsername = reviewer.user.username;
+            SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
         }
     }
 }
