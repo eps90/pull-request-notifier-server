@@ -180,7 +180,7 @@ describe('SocketServer', () => {
     describe('Emitting pull requests via sockets to reviewers', () => {
         const dispatcher = EventDispatcher.getInstance();
 
-        function testEmittingEventViaSocket(inputEvent: string, done): void {
+        function testEmittingEventViaSocket(inputEvent: string, expectedEvent: string, done): void {
             const reviewerUsername = 'anna.kowalsky';
 
             const projectName = 'team_name/repo_name';
@@ -206,7 +206,7 @@ describe('SocketServer', () => {
                 client.emit('client:introduce', reviewerUsername);
 
                 client.on('server:introduced', () => {
-                    client.on('server:pullrequests:updated', (pullRequests: PullRequestEvent) => {
+                    client.on(expectedEvent, (pullRequests: PullRequestEvent) => {
                         expect(pullRequests.sourceEvent).to.eq(inputEvent);
                         expect(pullRequests.context.id).to.eq(assignedPullRequest.id);
                         expect(pullRequests.actor.username).to.eq(payload.actor.username);
@@ -226,32 +226,38 @@ describe('SocketServer', () => {
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
             const inputEvent = 'webhook:pullrequest:created';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:updated', (done) => {
             const inputEvent = 'webhook:pullrequest:updated';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:approved', (done) => {
             const inputEvent = 'webhook:pullrequest:approved';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:unapproved', (done) => {
             const inputEvent = 'webhook:pullrequest:unapproved';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:fulfilled', (done) => {
             const inputEvent = 'webhook:pullrequest:fulfilled';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:rejected', (done) => {
             const inputEvent = 'webhook:pullrequest:rejected';
-            testEmittingEventViaSocket(inputEvent, done);
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
     });
 });
