@@ -122,7 +122,7 @@ export default class Logger {
     }
 
     static logRequestWithNoEvent(request: string): void {
-        var requestMessage: any;
+        let requestMessage: any;
         try {
             requestMessage = JSON.parse(request);
         } catch (e) {
@@ -138,12 +138,12 @@ export default class Logger {
 
     private static initLogger(): void {
         // unfortunately, these things cannot be in config because it will cause circular reference errors
-        var tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
-        var subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
-        var logglyToken = process.env[tokenEnvKey] || 'token';
-        var logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
+        const tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
+        const subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
+        const logglyToken = process.env[tokenEnvKey] || 'token';
+        const logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
 
-        var logger: winston.LoggerInstance = new (winston.Logger)({
+        const logger: winston.LoggerInstance = new (winston.Logger)({
             transports: [
                 new (winston.transports.Console)(),
                 new (winston.transports.Loggly)(<TransportOptions>{
