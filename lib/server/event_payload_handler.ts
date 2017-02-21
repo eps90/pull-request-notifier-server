@@ -1,4 +1,3 @@
-import {EventDispatcher} from '../events/event_dispatcher';
 import * as q from 'q';
 import {HandlerInterface} from "./webhook_handler/handler";
 import {AddPullRequestHandler} from "./webhook_handler/add_pull_request_handler";
