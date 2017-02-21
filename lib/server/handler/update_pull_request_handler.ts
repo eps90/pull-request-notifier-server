@@ -5,7 +5,7 @@ import {PullRequestWithActor} from "../../model/pull_request_with_actor";
 import logger from '../../logger';
 import {EventDispatcher} from "../../events/event_dispatcher";
 
-export class PullRequestUpdateHandler implements HandlerInterface {
+export class UpdatePullRequestHandler implements HandlerInterface {
     private supportedEvents: string[] = [
         'pullrequest:updated',
         'pullrequest:approved',

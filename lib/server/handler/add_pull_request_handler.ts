@@ -2,14 +2,11 @@ import {HandlerInterface} from "./handler";
 import {UserFactory} from "../../factory/user";
 import {PullRequestRepository} from "../../repository/pull_request_repository";
 import {PullRequestWithActor} from "../../model/pull_request_with_actor";
-import logger from "../../logger";
+import logger from '../../logger';
 import {EventDispatcher} from "../../events/event_dispatcher";
 
-export class PullRequestCloseHandler implements HandlerInterface {
-    private supportedEvents: string[] = [
-        'pullrequest:fulfilled',
-        'pullrequest:rejected'
-    ];
+export class AddPullRequestHandler implements HandlerInterface {
+    private supportedEventName: string = 'pullrequest:created';
 
     handlePayload(type: string, bodyDecoded: any): Q.Promise<any> {
         const prLink = bodyDecoded.pullrequest.links.self.href;
@@ -24,8 +21,8 @@ export class PullRequestCloseHandler implements HandlerInterface {
                 return prWithActor;
             })
             .then((pullRequestWithActor: PullRequestWithActor) => {
-                logger.logClosingPullRequest();
-                PullRequestRepository.remove(pullRequestWithActor.pullRequest);
+                logger.logAddPullRequestToRepository();
+                PullRequestRepository.add(pullRequestWithActor.pullRequest);
                 return pullRequestWithActor;
             })
             .then((pullRequestWithActor: PullRequestWithActor) => {
@@ -35,6 +32,6 @@ export class PullRequestCloseHandler implements HandlerInterface {
     }
 
     supportsEvent(eventType: string): boolean {
-        return this.supportedEvents.indexOf(eventType) !== -1;
+        return eventType === this.supportedEventName;
     }
 }

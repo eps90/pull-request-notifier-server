@@ -1,16 +1,16 @@
 import {EventDispatcher} from '../events/event_dispatcher';
 import * as q from 'q';
 import {HandlerInterface} from "./handler/handler";
-import {PullRequestCreationHandler} from "./handler/pull_request_creation_handler";
-import {PullRequestUpdateHandler} from "./handler/pull_request_update_handler";
-import {PullRequestCloseHandler} from "./handler/pull_request_close_handler";
+import {AddPullRequestHandler} from "./handler/add_pull_request_handler";
+import {UpdatePullRequestHandler} from "./handler/update_pull_request_handler";
+import {ClosePullRequestHandler} from "./handler/close_pull_request_handler";
 
 export class EventPayloadHandler {
     // @todo Allow to, somehow, inject handlers
     private static handlers: HandlerInterface[] = [
-        new PullRequestCreationHandler(),
-        new PullRequestUpdateHandler(),
-        new PullRequestCloseHandler()
+        new AddPullRequestHandler(),
+        new UpdatePullRequestHandler(),
+        new ClosePullRequestHandler()
     ];
 
     static handlePayload(type: string, bodyEncoded: string): q.Promise<any> {
