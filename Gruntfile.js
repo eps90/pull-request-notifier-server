@@ -28,6 +28,7 @@ module.exports = function(grunt) {
                     target: "es5",
                     basepath: ".",
                     moduleResolution: "node",
+                    sourceMap: true,
                     files: [
                         "typings/index.d.ts"
                     ]
