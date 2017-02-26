@@ -7,6 +7,7 @@ import {EventDispatcher} from '../../lib/events/event_dispatcher';
 import {Config} from '../../lib/config';
 import {PullRequestFaker, ReviewerFaker, ProjectFaker, UserFaker, CommentFaker} from '../faker/model_faker';
 import {PullRequestWithComment} from "../../lib/model/pull_request_with_comment";
+import {SocketServerEvent} from "../../lib/model/event/socket_server_event";
 
 describe('SocketServer', () => {
     const prFaker = new PullRequestFaker();
@@ -293,7 +294,7 @@ describe('SocketServer', () => {
             pullRequestWithComment.comment = commentFaker.fake();
 
             const inputEvent = 'webhook:comment:new';
-            const expectedEvent = 'server:comment:new';
+            const expectedEvent = SocketServerEvent.NEW_COMMENT;
 
             const client = socketIoClient.connect(`http://localhost:${socketPort}`, socketOptions);
             client.on('server:introduced', () => {
