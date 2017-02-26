@@ -5,6 +5,8 @@ import {EventPayloadHandler} from '../../lib/server/event_payload_handler';
 import {EventDispatcher} from '../../lib/events/event_dispatcher';
 import * as nock from 'nock';
 import {Config} from '../../lib/config';
+import {PullRequestWithComment} from "../../lib/model/pull_request_with_comment";
+import {WebhookEvent} from "../../lib/model/event/webhook_event";
 
 describe('EventPayloadHandler', () => {
     const basicAuth = {
@@ -325,6 +327,62 @@ describe('EventPayloadHandler', () => {
             const eventType = 'pullrequest:fulfilled';
             const emittedEventType = 'webhook:pullrequest:fulfilled';
             testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:comment:new on pullrequest:comment_created event payload', (done) => {
+            const commentPayload = {
+                actor: {
+                    "username": 'john.smith',
+                    "display_name": 'John Smith'
+                },
+                pullRequest: {
+                    "id": 1,
+                    "author": {
+                        "username": "anna.kowalsky",
+                        "display_name": "Anna Kowalsky"
+                    },
+                    "links": {
+                        "self": {
+                            "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
+                        }
+                    }
+                },
+                comment: {
+                    "id": 3,
+                    "content": {
+                        "raw": "abc",
+                        "html": "<b>abc</b>",
+                        "markup": "**abc**"
+                    },
+                    "links": {
+                        "self": {
+                            "href": "http://example.com/self"
+                        },
+                        "html": {
+                            "href": "http://example.com/html"
+                        }
+                    }
+                }
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(commentPayload.pullRequest));
+
+            const expectedEventType = WebhookEvent.PULLREQUEST_COMMENTED;
+            dispatcher.on(expectedEventType, (pullRequestWithComment: PullRequestWithComment) => {
+                expect(pullRequestWithComment.pullRequest.id).to.eq(1);
+                expect(pullRequestWithComment.pullRequest.author.username).to.eq('anna.kowalsky');
+                expect(pullRequestWithComment.actor.username).to.eq('john.smith');
+                expect(pullRequestWithComment.comment.id).to.eq(3);
+                expect(pullRequestWithComment.comment.links.html.href).to.eq('http://example.com/html');
+                done();
+            });
+
+            const payloadString = JSON.stringify(commentPayload);
+            const payloadEventType = 'pullrequest:comment_created';
+            EventPayloadHandler.handlePayload(payloadEventType, payloadString);
         });
     });
 });

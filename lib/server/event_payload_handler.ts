@@ -3,13 +3,15 @@ import {HandlerInterface} from "./webhook_handler/handler";
 import {AddPullRequestHandler} from "./webhook_handler/add_pull_request_handler";
 import {UpdatePullRequestHandler} from "./webhook_handler/update_pull_request_handler";
 import {ClosePullRequestHandler} from "./webhook_handler/close_pull_request_handler";
+import {HandleNewCommentHandler} from "./webhook_handler/handle_new_comment_handler";
 
 export class EventPayloadHandler {
     // @todo Allow to, somehow, inject handlers
     private static handlers: HandlerInterface[] = [
         new AddPullRequestHandler(),
         new UpdatePullRequestHandler(),
-        new ClosePullRequestHandler()
+        new ClosePullRequestHandler(),
+        new HandleNewCommentHandler()
     ];
 
     static handlePayload(type: string, bodyEncoded: string): q.Promise<any> {

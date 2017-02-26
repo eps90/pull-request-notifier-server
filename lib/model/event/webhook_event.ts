@@ -5,4 +5,5 @@ export class WebhookEvent {
     static PULLREQUEST_UNAPPROVED: string = 'webhook:pullrequest:unapproved';
     static PULLREQUEST_FULFILLED: string = 'webhook:pullrequest:fulfilled';
     static PULLREQUEST_REJECTED: string = 'webhook:pullrequest:rejected';
+    static PULLREQUEST_COMMENTED: string = 'webhook:comment:new';
 }
