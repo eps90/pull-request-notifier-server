@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import * as models from './../../lib/model';
+import {Comment, ICommentContent, ICommentLinks} from "../../lib/model/comment";
 
 abstract class AbstractFaker<T> {
     abstract getObject(): T;
@@ -190,5 +191,39 @@ export class PullRequestFaker extends AbstractFaker<models.PullRequest> {
     get links(): models.PullRequestLinks {
         const links = new PullRequestLinksFaker();
         return links.getObject();
+    }
+}
+
+export class CommentFaker extends AbstractFaker<Comment> {
+    getObject(): Comment {
+        const comment = new Comment();
+        comment.id = this.id;
+        comment.content = this.content;
+        comment.links = this.links;
+
+        return comment;
+    }
+
+    get id(): number {
+        return 4;
+    }
+
+    get content(): ICommentContent {
+        return {
+            raw: 'abc',
+            html: '<b>abc</b>',
+            markup: '**abc**'
+        };
+    }
+
+    get links(): ICommentLinks {
+        return {
+            self: {
+                href: 'http://example.com/self'
+            },
+            html: {
+                href: 'http://example.com/html'
+            }
+        };
     }
 }
