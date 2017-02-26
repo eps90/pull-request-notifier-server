@@ -7,6 +7,7 @@ import {EventDispatcher} from '../events/event_dispatcher';
 import logger from './../logger';
 import {Config} from '../config';
 import * as _ from 'lodash';
+import {PullRequestWithComment} from "../model/pull_request_with_comment";
 
 export class SocketServer {
     static io: SocketIO.Server;
@@ -74,6 +75,8 @@ export class SocketServer {
         dispatcher.on(WebhookEvent.PULLREQUEST_REJECTED, (body: PullRequestWithActor) => {
             SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_REJECTED, body);
         });
+
+        dispatcher.on(WebhookEvent.PULLREQUEST_COMMENTED, SocketServer.onWebhookPullReqeustCommented)
     }
 
     static stopSocketServer(): void {
@@ -123,5 +126,10 @@ export class SocketServer {
             logger.logSendingUpdateNotification(pullRequest, reviewerUsername);
             SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
         }
+    }
+
+    private static onWebhookPullReqeustCommented(pullRequestWithComment: PullRequestWithComment) {
+        const authorUsername = pullRequestWithComment.pullRequest.author.username;
+        SocketServer.io.to(authorUsername).emit(SocketServerEvent.NEW_COMMENT, pullRequestWithComment);
     }
 }

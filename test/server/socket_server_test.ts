@@ -5,13 +5,15 @@ import {PullRequestRepository} from '../../lib/repository';
 import {PullRequest, PullRequestEvent, PullRequestWithActor} from '../../lib/model';
 import {EventDispatcher} from '../../lib/events/event_dispatcher';
 import {Config} from '../../lib/config';
-import {PullRequestFaker, ReviewerFaker, ProjectFaker, UserFaker} from '../faker/model_faker';
+import {PullRequestFaker, ReviewerFaker, ProjectFaker, UserFaker, CommentFaker} from '../faker/model_faker';
+import {PullRequestWithComment} from "../../lib/model/pull_request_with_comment";
 
 describe('SocketServer', () => {
     const prFaker = new PullRequestFaker();
     const reviewerFaker = new ReviewerFaker();
     const projectFaker = new ProjectFaker();
     const userFaker = new UserFaker();
+    const commentFaker = new CommentFaker();
 
     const socketOptions = {
         'force new connection': true
@@ -282,6 +284,29 @@ describe('SocketServer', () => {
             });
 
             client.emit('client:introduce', reviewer.user.username);
+        });
+
+        it('should emit server:comment:new on webhook:comment:new to author', (done) => {
+            const pullRequestWithComment = new PullRequestWithComment();
+            pullRequestWithComment.pullRequest = prFaker.fake();
+            pullRequestWithComment.actor = userFaker.fake();
+            pullRequestWithComment.comment = commentFaker.fake();
+
+            const inputEvent = 'webhook:comment:new';
+            const expectedEvent = 'server:comment:new';
+
+            const client = socketIoClient.connect(`http://localhost:${socketPort}`, socketOptions);
+            client.on('server:introduced', () => {
+                client.on(expectedEvent, (commentedPullRequest: PullRequestWithComment) => {
+                    expect(commentedPullRequest).to.deep.equal(pullRequestWithComment);
+                    client.disconnect();
+                    done();
+                });
+
+                dispatcher.emit(inputEvent, pullRequestWithComment);
+            });
+
+            client.emit('client:introduce', pullRequestWithComment.pullRequest.author.username);
         });
     });
 });
