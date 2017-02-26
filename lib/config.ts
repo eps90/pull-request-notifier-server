@@ -1,9 +1,7 @@
-///<reference path="../typings/tsd.d.ts"/>
-
-import yaml = require('js-yaml');
-import fs = require('fs');
-import errors = require('./errors');
-import logger = require('./logger');
+import * as yaml from 'js-yaml';
+import * as fs from 'fs';
+import {ConfigError} from './errors';
+import logger from './logger';
 
 export interface ConfigInterface {
     baseUrl: string;
@@ -58,7 +56,7 @@ export class Config {
         }
 
         if (!fs.existsSync(this.configPath)) {
-            throw errors.ConfigError.throwFileNotFound(this.configPath);
+            throw ConfigError.throwFileNotFound(this.configPath);
         }
 
         logger.logLoadingConfigFile(this.configPath);
@@ -94,15 +92,15 @@ export class Config {
 
             var keyValue = configMapping[keyName];
             if (keyValue.required && !config.hasOwnProperty(keyName)) {
-                throw errors.ConfigError.throwConfigPropertyRequired(keyValue);
+                throw ConfigError.throwConfigPropertyRequired(keyValue);
             }
 
             if (keyValue.notEmpty && config.hasOwnProperty(keyName) && config[keyName] === null) {
-                throw errors.ConfigError.throwConfigPropertyValueRequired(keyValue);
+                throw ConfigError.throwConfigPropertyValueRequired(keyValue);
             }
 
             if (keyValue.hasOwnProperty('type') && config.hasOwnProperty(keyName) && typeof config[keyName] !== keyValue.type) {
-                throw errors.ConfigError.throwConfigPropertyHasWrongType(keyValue, keyValue.type, typeof config[keyName]);
+                throw ConfigError.throwConfigPropertyHasWrongType(keyValue, keyValue.type, typeof config[keyName]);
             }
         }
     }

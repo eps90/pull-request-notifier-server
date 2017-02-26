@@ -1,7 +1,5 @@
-///<reference path="../../typings/tsd.d.ts"/>
-
-import fs = require('fs');
-import jsYaml = require('js-yaml');
+import * as fs from 'fs';
+import * as jsYaml from 'js-yaml';
 /* tslint:disable */
 require('colors');
 /* tslint:enable */

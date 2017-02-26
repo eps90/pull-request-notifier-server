@@ -1,23 +1,28 @@
-///<reference path="../../typings/tsd.d.ts"/>
-
-import chai = require('chai');
-var expect = chai.expect;
-import socketIoClient = require('socket.io-client');
-import socketServer = require('./../../lib/server/socket_server');
-import repositories = require('./../../lib/repositories');
-import models = require('./../../lib/models');
-import eventDispatcher = require('./../../lib/events/event_dispatcher');
-import configModule = require('./../../lib/config');
-import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
+import {expect} from 'chai';
+import * as socketIoClient from 'socket.io-client';
+import * as socketServer from './../../lib/server/socket_server';
+import {PullRequestRepository} from '../../lib/repository';
+import {PullRequest, PullRequestEvent, PullRequestWithActor} from '../../lib/model';
+import {EventDispatcher} from '../../lib/events/event_dispatcher';
+import {Config} from '../../lib/config';
+import {PullRequestFaker, ReviewerFaker, ProjectFaker, UserFaker, CommentFaker} from '../faker/model_faker';
+import {PullRequestWithComment} from "../../lib/model/pull_request_with_comment";
+import {SocketServerEvent} from "../../lib/model/event/socket_server_event";
 
 describe('SocketServer', () => {
-    var options = {
+    const prFaker = new PullRequestFaker();
+    const reviewerFaker = new ReviewerFaker();
+    const projectFaker = new ProjectFaker();
+    const userFaker = new UserFaker();
+    const commentFaker = new CommentFaker();
+
+    const socketOptions = {
         'force new connection': true
     };
-    var socketPort = 4321;
+    const socketPort = 4321;
 
     before(() => {
-        var config = {
+        const config = {
             baseUrl: 'http://example.com',
             teamName: 'aaaa',
             user: 'my.user',
@@ -25,8 +30,8 @@ describe('SocketServer', () => {
             webhook_port: 1234,
             socket_port: socketPort
         };
-        configModule.Config.reset();
-        configModule.Config.setUp({config: config});
+        Config.reset();
+        Config.setUp({config: config});
 
         socketServer.SocketServer.startSocketServer();
     });
@@ -36,7 +41,7 @@ describe('SocketServer', () => {
     });
 
     it('should emit server:introduced on client:introduce event', (done) => {
-        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
+        const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
         client.on('server:introduced', () => {
             client.disconnect();
             done();
@@ -46,39 +51,27 @@ describe('SocketServer', () => {
     });
 
     it("should emit intro message with user's pull requests and assigned pull requests", (done) => {
-        var project = new models.Project();
-        project.fullName = 'team_name/repo_name';
+        const projectName = 'team_name/repo_name';
+        const project = projectFaker.fake({fullName: projectName});
 
-        var username = 'john.smith';
-        var user = new models.User();
-        user.username = username;
+        const username = 'john.smith';
+        const reviewer = reviewerFaker.fake({user: {username: username}});
 
-        var authoredPullRequest = new models.PullRequest();
-        authoredPullRequest.id = 1;
-        authoredPullRequest.title = 'Authored pull request';
-        authoredPullRequest.author = user;
-        authoredPullRequest.targetRepository = project;
+        const authoredPullRequest = prFaker.fake({targetRepository: project, author: {username: username}});
+        const assignedPullRequest = prFaker.fake({targetRepository: project, reviewers: [reviewer]});
 
-        var userAsReviewer = new models.Reviewer();
-        userAsReviewer.user = user;
-
-        var assignedPullRequest = new models.PullRequest();
-        assignedPullRequest.title = 'Assigned pull request';
-        assignedPullRequest.reviewers.push(userAsReviewer);
-        assignedPullRequest.targetRepository = project;
-
-        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+        PullRequestRepository.pullRequests['team_name/repo_name'] = [
             authoredPullRequest,
             assignedPullRequest
         ];
 
-        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
-        client.on('server:introduced', (pullRequests: models.PullRequestEvent) => {
+        const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
+        client.on('server:introduced', (pullRequests: PullRequestEvent) => {
             expect(pullRequests.sourceEvent).to.eq('client:introduce');
             expect(pullRequests.pullRequests.length).to.eq(2);
 
-            expect(pullRequests.pullRequests[0].title).to.eq('Authored pull request');
-            expect(pullRequests.pullRequests[1].title).to.eq('Assigned pull request');
+            expect(pullRequests.pullRequests[0].id).to.eq(authoredPullRequest.id);
+            expect(pullRequests.pullRequests[1].id).to.eq(assignedPullRequest.id);
 
             client.disconnect();
             done();
@@ -88,29 +81,19 @@ describe('SocketServer', () => {
     });
 
     it('should notify reviewers who haven\'t approved the pull request yet on client:remind', (done) => {
-        var username = 'john.smith';
+        const approvedReviewer = reviewerFaker.fake({approved: true});
+        const unapprovedReviewer = reviewerFaker.fake({approved: false});
 
-        var pullRequest = new models.PullRequest();
-        pullRequest.id = 1;
+        const pullRequest = prFaker.fake({reviewers: [approvedReviewer, unapprovedReviewer]});
 
-        var approvedReviewer = new models.Reviewer();
-        approvedReviewer.user.username = 'anna.kowalsky';
-        approvedReviewer.approved = true;
-
-        var unapprovedReviewer = new models.Reviewer();
-        unapprovedReviewer.user.username = username;
-        unapprovedReviewer.approved = false;
-
-        pullRequest.reviewers = [approvedReviewer, unapprovedReviewer];
-
-        repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+        PullRequestRepository.pullRequests['team_name/repo_name'] = [
             pullRequest
         ];
 
-        var client = socketIoClient.connect('http://localhost:' + socketPort, options);
+        const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
         client.on('server:introduced', () => {
-            client.on('server:remind', (pullRequestToRemind: models.PullRequest) => {
-                expect(pullRequestToRemind.id).to.eq(1);
+            client.on('server:remind', (pullRequestToRemind: PullRequest) => {
+                expect(pullRequestToRemind.id).to.eq(pullRequest.id);
                 client.disconnect();
                 done();
             });
@@ -118,70 +101,45 @@ describe('SocketServer', () => {
             client.emit('client:remind', pullRequest);
         });
 
-        client.emit('client:introduce', username);
+        client.emit('client:introduce', unapprovedReviewer.user.username);
     });
 
     describe('Emitting pull requests via sockets to author', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        const dispatcher = EventDispatcher.getInstance();
 
         function testEmittingEventViaSocket(inputEvent: string, done): void {
-            var authorUsername = 'john.smith';
-            var reviewerUsername = 'anna.kowalsky';
+            const username = 'john.smith';
 
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
+            const projectName = 'team_name/repo_name';
+            const project = projectFaker.fake({fullName: projectName});
 
-            var user = new models.User();
-            user.username = authorUsername;
+            const reviewer = reviewerFaker.fake({user: {username: username}});
 
-            var pullRequest = new models.PullRequest();
-            pullRequest.id = 1;
-            pullRequest.title = "Title of pull request";
-            pullRequest.author = user;
+            const authoredPullRequest = prFaker.fake({author: {username: username}, targetRepository: project});
+            const assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
-            var payload = new eventPayloadHandler.PullRequestWithActor();
-            payload.pullRequest = pullRequest;
-            payload.actor = user;
+            const payload = new PullRequestWithActor();
+            payload.pullRequest = authoredPullRequest;
+            payload.actor = userFaker.fake();
 
-            var anotherUser = new models.User();
-            anotherUser.username = reviewerUsername;
-
-            var authoredPullRequest = new models.PullRequest();
-            authoredPullRequest.id = 1;
-            authoredPullRequest.title = 'Authored pull request';
-            authoredPullRequest.author = user;
-            authoredPullRequest.targetRepository = project;
-
-            var userAsReviewer = new models.Reviewer();
-            userAsReviewer.user = user;
-
-            var assignedPullRequest = new models.PullRequest();
-            assignedPullRequest.id = 2;
-            assignedPullRequest.title = 'Assigned pull request';
-            assignedPullRequest.reviewers.push(userAsReviewer);
-            assignedPullRequest.targetRepository = project;
-
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
                 assignedPullRequest
             ];
 
-            var client = socketIoClient.connect('http://localhost:' + socketPort, options);
-            client.emit('client:introduce', authorUsername);
+            const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
+            client.emit('client:introduce', username);
 
-            var reviwererClient = socketIoClient.connect('http://localhost:' + socketPort, options);
-            reviwererClient.emit('client:introduce');
+            const reviewerClient = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
+            reviewerClient.emit('client:introduce');
 
             client.on('server:introduced', () => {
-                client.on('server:pullrequests:updated', (pullRequestEvent: models.PullRequestEvent) => {
+                client.on('server:pullrequests:updated', (pullRequestEvent: PullRequestEvent) => {
                     expect(pullRequestEvent.sourceEvent).to.eq(inputEvent);
-                    expect(pullRequestEvent.context.id).to.eq(1);
-                    expect(pullRequestEvent.context.title).to.eq('Title of pull request');
-                    expect(pullRequestEvent.actor.username).to.eq(user.username);
-
+                    expect(pullRequestEvent.context.id).to.eq(authoredPullRequest.id);
+                    expect(pullRequestEvent.context.title).to.eq(authoredPullRequest.title);
+                    expect(pullRequestEvent.actor.username).to.eq(payload.actor.username);
                     expect(pullRequestEvent.pullRequests.length).to.eq(2);
-
-                    expect(pullRequestEvent.pullRequests[0].title).to.eq('Authored pull request');
 
                     client.disconnect();
                     done();
@@ -192,98 +150,71 @@ describe('SocketServer', () => {
         }
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
-            var inputEvent = 'webhook:pullrequest:created';
+            const inputEvent = 'webhook:pullrequest:created';
             testEmittingEventViaSocket(inputEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:updated', (done) => {
-            var inputEvent = 'webhook:pullrequest:updated';
+            const inputEvent = 'webhook:pullrequest:updated';
             testEmittingEventViaSocket(inputEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:approved', (done) => {
-            var inputEvent = 'webhook:pullrequest:approved';
+            const inputEvent = 'webhook:pullrequest:approved';
             testEmittingEventViaSocket(inputEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:unapproved', (done) => {
-            var inputEvent = 'webhook:pullrequest:unapproved';
+            const inputEvent = 'webhook:pullrequest:unapproved';
             testEmittingEventViaSocket(inputEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:fulfilled', (done) => {
-            var inputEvent = 'webhook:pullrequest:fulfilled';
+            const inputEvent = 'webhook:pullrequest:fulfilled';
             testEmittingEventViaSocket(inputEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:rejected', (done) => {
-            var inputEvent = 'webhook:pullrequest:rejected';
+            const inputEvent = 'webhook:pullrequest:rejected';
             testEmittingEventViaSocket(inputEvent, done);
         });
     });
 
     describe('Emitting pull requests via sockets to reviewers', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        const dispatcher = EventDispatcher.getInstance();
 
-        function testEmittingEventViaSocket(inputEvent: string, done): void {
-            var reviewerUsername = 'anna.kowalsky';
+        function testEmittingEventViaSocket(inputEvent: string, expectedEvent: string, done): void {
+            const reviewerUsername = 'anna.kowalsky';
 
-            var project = new models.Project();
-            project.fullName = 'team_name/repo_name';
+            const projectName = 'team_name/repo_name';
+            const project = projectFaker.fake({fullName: projectName});
 
-            var user = new models.User();
-            user.username = 'john.smith';
+            const reviewer = reviewerFaker.fake({user: {username: reviewerUsername}});
 
-            var anotherUser = new models.User();
-            anotherUser.username = reviewerUsername;
+            const authoredPullRequest = prFaker.fake({author: {username: reviewerUsername}, targetRepository: project});
+            const assignedPullRequest = prFaker.fake({reviewers: [reviewer], targetRepository: project});
 
-            var userAsReviewer = new models.Reviewer();
-            userAsReviewer.user = user;
+            const payload = new PullRequestWithActor();
+            payload.pullRequest = assignedPullRequest;
+            payload.actor = userFaker.fake();
 
-            var reviewer = new models.Reviewer();
-            reviewer.user = anotherUser;
-
-            var payloadPr = new models.PullRequest();
-            payloadPr.id = 1;
-            payloadPr.title = 'Title of pull request';
-            payloadPr.author = user;
-            payloadPr.reviewers.push(reviewer);
-
-            var payload = new eventPayloadHandler.PullRequestWithActor();
-            payload.pullRequest = payloadPr;
-            payload.actor = user;
-
-            var authoredPullRequest = new models.PullRequest();
-            authoredPullRequest.id = 1;
-            authoredPullRequest.title = 'Authored pull request';
-            authoredPullRequest.author = user;
-            authoredPullRequest.targetRepository = project;
-
-            var assignedPullRequest = new models.PullRequest();
-            assignedPullRequest.id = 2;
-            assignedPullRequest.title = 'Assigned pull request';
-            assignedPullRequest.reviewers.push(userAsReviewer, reviewer);
-            assignedPullRequest.targetRepository = project;
-
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [
                 authoredPullRequest,
                 assignedPullRequest
             ];
 
-            var client = socketIoClient.connect('http://localhost:' + socketPort, options);
+            const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
 
             try {
                 client.emit('client:introduce', reviewerUsername);
 
                 client.on('server:introduced', () => {
-                    client.on('server:pullrequests:updated', (pullRequests: models.PullRequestEvent) => {
+                    client.on(expectedEvent, (pullRequests: PullRequestEvent) => {
                         expect(pullRequests.sourceEvent).to.eq(inputEvent);
-                        expect(pullRequests.context.id).to.eq(1);
-                        expect(pullRequests.context.title).to.eq('Title of pull request');
-                        expect(pullRequests.actor.username).to.eq(user.username);
+                        expect(pullRequests.context.id).to.eq(assignedPullRequest.id);
+                        expect(pullRequests.actor.username).to.eq(payload.actor.username);
 
-                        expect(pullRequests.pullRequests.length).to.eq(1);
-                        expect(pullRequests.pullRequests[0].title).to.eq('Assigned pull request');
+                        expect(pullRequests.pullRequests.length).to.eq(2);
 
                         client.disconnect();
                         done();
@@ -294,37 +225,89 @@ describe('SocketServer', () => {
             } catch (e) {
                 done(e);
             }
-
         }
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:created', (done) => {
-            var inputEvent = 'webhook:pullrequest:created';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:created';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:updated', (done) => {
-            var inputEvent = 'webhook:pullrequest:updated';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:updated';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:approved', (done) => {
-            var inputEvent = 'webhook:pullrequest:approved';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:approved';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:unapproved', (done) => {
-            var inputEvent = 'webhook:pullrequest:unapproved';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:unapproved';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:fulfilled', (done) => {
-            var inputEvent = 'webhook:pullrequest:fulfilled';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:fulfilled';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
         });
 
         it('should emit server:pullrequests:updated on webhook:pullrequest:rejected', (done) => {
-            var inputEvent = 'webhook:pullrequest:rejected';
-            testEmittingEventViaSocket(inputEvent, done);
+            const inputEvent = 'webhook:pullrequest:rejected';
+            const expectedEvent = 'server:pullrequests:updated';
+            testEmittingEventViaSocket(inputEvent, expectedEvent, done);
+        });
+
+        it('should emit server:pullrequest:updated on webhook:pullrequest:updated', (done) => {
+            const inputEvent = 'webhook:pullrequest:updated';
+            const expectedEvent = 'server:pullrequest:updated';
+
+            const reviewer = reviewerFaker.fake({approved: true});
+            const pullRequest = prFaker.fake({reviewers: [reviewer]});
+            const payload = new PullRequestWithActor();
+            payload.pullRequest = pullRequest;
+            payload.actor = userFaker.fake();
+
+            const client = socketIoClient.connect('http://localhost:' + socketPort, socketOptions);
+            client.on('server:introduced', () => {
+                client.on(expectedEvent, (updatedPullRequest: PullRequest) => {
+                    expect(updatedPullRequest.id).to.eq(pullRequest.id);
+                    client.disconnect();
+                    done();
+                });
+
+                dispatcher.emit(inputEvent, payload);
+            });
+
+            client.emit('client:introduce', reviewer.user.username);
+        });
+
+        it('should emit server:comment:new on webhook:comment:new to author', (done) => {
+            const pullRequestWithComment = new PullRequestWithComment();
+            pullRequestWithComment.pullRequest = prFaker.fake();
+            pullRequestWithComment.actor = userFaker.fake();
+            pullRequestWithComment.comment = commentFaker.fake();
+
+            const inputEvent = 'webhook:comment:new';
+            const expectedEvent = SocketServerEvent.NEW_COMMENT;
+
+            const client = socketIoClient.connect(`http://localhost:${socketPort}`, socketOptions);
+            client.on('server:introduced', () => {
+                client.on(expectedEvent, (commentedPullRequest: PullRequestWithComment) => {
+                    expect(commentedPullRequest).to.deep.equal(pullRequestWithComment);
+                    client.disconnect();
+                    done();
+                });
+
+                dispatcher.emit(inputEvent, pullRequestWithComment);
+            });
+
+            client.emit('client:introduce', pullRequestWithComment.pullRequest.author.username);
         });
     });
 });

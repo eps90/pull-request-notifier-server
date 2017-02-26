@@ -1,18 +1,16 @@
-///<reference path="../../typings/tsd.d.ts"/>
-
-import http = require('http');
-import logger = require('./../logger');
-import eventPayloadHandler = require('./event_payload_handler');
-import configModule = require('./../config');
+import logger from './../logger';
+import * as http from 'http';
+import {EventPayloadHandler} from './event_payload_handler';
+import {Config} from '../config';
 
 export class WebhookListener {
     static createServer(): http.Server {
         logger.logHttpServerStart();
-        var server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+        const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
             logger.logIncomingHttpRequest();
 
             if (req.method === 'POST') {
-                var reqBody  = '';
+                let reqBody = '';
                 req.on('data', (chunk) => {
                     reqBody += chunk;
                 });
@@ -21,9 +19,9 @@ export class WebhookListener {
                     logger.logRequestDecoded(reqBody);
 
                     if (req.headers.hasOwnProperty('x-event-key')) {
-                        var eventType = req.headers['x-event-key'];
+                        const eventType = req.headers['x-event-key'];
                         logger.logRequestWithPayload(eventType);
-                        eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
+                        EventPayloadHandler.handlePayload(eventType, reqBody).then(() => {
                             res.writeHead(200, 'OK');
                             res.end();
                         });
@@ -40,8 +38,8 @@ export class WebhookListener {
             }
         });
 
-        var config = configModule.Config.getConfig();
-        var webhookPort = config.webhook_port;
+        const config = Config.getConfig();
+        const webhookPort = config.webhook_port;
         server.listen(webhookPort);
         logger.logHttpServerStartListening(webhookPort.toString());
 

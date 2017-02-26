@@ -1,25 +1,21 @@
-///<reference path="../../typings/tsd.d.ts"/>
-///<reference path="../../custom_typings/nock.d.ts"/>
-
-
-import chai = require('chai');
-var expect = chai.expect;
-
-import models = require('./../../lib/models');
-import repositories = require('./../../lib/repositories');
-import eventPayloadHandler = require('./../../lib/server/event_payload_handler');
-import eventDispatcher = require('./../../lib/events/event_dispatcher');
-import nock = require('nock');
-import configModule = require('./../../lib/config');
+import {expect} from 'chai';
+import {PullRequest, Project, PullRequestState, PullRequestWithActor} from '../../lib/model';
+import {PullRequestRepository} from '../../lib/repository';
+import {EventPayloadHandler} from '../../lib/server/event_payload_handler';
+import {EventDispatcher} from '../../lib/events/event_dispatcher';
+import * as nock from 'nock';
+import {Config} from '../../lib/config';
+import {PullRequestWithComment} from "../../lib/model/pull_request_with_comment";
+import {WebhookEvent} from "../../lib/model/event/webhook_event";
 
 describe('EventPayloadHandler', () => {
-    var basicAuth = {
+    const basicAuth = {
         user: 'my.user',
         pass: 'topsecret'
     };
 
     beforeEach(() => {
-        var appConfig = {
+        const appConfig = {
             baseUrl: 'http://example.com',
             teamName: 'bitbucket',
             user: 'my.user',
@@ -28,37 +24,37 @@ describe('EventPayloadHandler', () => {
             socket_port: 4321
         };
 
-        configModule.Config.setUp({config: appConfig});
+        Config.setUp({config: appConfig});
     });
 
     afterEach(() => {
-        configModule.Config.reset();
+        Config.reset();
     });
 
     describe('PullRequestHandler', () => {
         beforeEach(() => {
-            repositories.PullRequestRepository.pullRequests = {};
+            PullRequestRepository.pullRequests = {};
         });
 
         it('should create add new pull request to repository on pullrequest:created', (done) => {
-            var eventType = 'pullrequest:created';
-            var prEncoded = {
-                "id" :  1 ,
-                "title" :  "Title of pull request" ,
-                "description" :  "Description of pull request" ,
-                "state" :  "OPEN" ,
-                "author" : {
+            const eventType = 'pullrequest:created';
+            const prEncoded = {
+                "id": 1,
+                "title": "Title of pull request",
+                "description": "Description of pull request",
+                "state": "OPEN",
+                "author": {
                     "username": "emmap1",
                     "display_name": "Emma"
                 },
-                "destination" : {
-                    "branch" : {  "name" :  "master" },
-                    "repository" : {
+                "destination": {
+                    "branch": {"name": "master"},
+                    "repository": {
                         "full_name": "team_name/repo_name",
                         "name": "repo_name"
                     }
                 },
-                "participants" : [
+                "participants": [
                     // @todo
                 ],
                 "links": {
@@ -67,11 +63,11 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
-            var actorEncoded = {
+            const actorEncoded = {
                 username: 'john.smith',
                 display_name: 'John Smith'
             };
-            var payload = {
+            const payload = {
                 pullrequest: prEncoded,
                 actor: actorEncoded
             };
@@ -81,9 +77,9 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            var payloadString = JSON.stringify(payload);
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
-                var pullRequests: Array<models.PullRequest> = repositories.PullRequestRepository.findAll();
+            const payloadString = JSON.stringify(payload);
+            EventPayloadHandler.handlePayload(eventType, payloadString).then(() => {
+                const pullRequests = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(1);
                 expect(pullRequests[0].author.username).to.eq('emmap1');
                 expect(pullRequests[0].author.displayName).to.eq('Emma');
@@ -94,23 +90,23 @@ describe('EventPayloadHandler', () => {
         });
 
         function createUpdateLikePayload(eventKey: string, done): void {
-            var prEncoded = {
-                "id" :  1 ,
-                "title" :  "Title of pull request" ,
-                "description" :  "Description of pull request" ,
-                "state" :  "OPEN" ,
-                "author" : {
+            const prEncoded = {
+                "id": 1,
+                "title": "Title of pull request",
+                "description": "Description of pull request",
+                "state": "OPEN",
+                "author": {
                     "username": "emmap1",
                     "display_name": "Emma"
                 },
-                "destination" : {
-                    "branch" : {  "name" :  "master" },
-                    "repository" : {
+                "destination": {
+                    "branch": {"name": "master"},
+                    "repository": {
                         "full_name": "team_name/repo_name",
                         "name": "repo_name"
                     }
                 },
-                "participants" : [
+                "participants": [
                     // @todo
                 ],
                 "links": {
@@ -119,12 +115,12 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
-            var actorEncoded = {
+            const actorEncoded = {
                 username: 'john.smith',
                 display_name: 'John Smith'
             };
 
-            var payload = {
+            const payload = {
                 pullrequest: prEncoded,
                 actor: actorEncoded
             };
@@ -134,60 +130,60 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            var payloadString = JSON.stringify(payload);
+            const payloadString = JSON.stringify(payload);
 
-            var sampleProject = new models.Project();
+            const sampleProject = new Project();
             sampleProject.fullName = 'team_name/repo_name';
 
-            var samplePr = new models.PullRequest();
+            const samplePr = new PullRequest();
             samplePr.id = 1;
             samplePr.title = 'This is sample title';
-            samplePr.state = models.PullRequestState.Declined;
+            samplePr.state = PullRequestState.Declined;
             samplePr.targetRepository = sampleProject;
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
-                var pullRequests = repositories.PullRequestRepository.findAll();
+            EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                const pullRequests = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(1);
                 expect(pullRequests[0].title).to.eq('Title of pull request');
-                expect(pullRequests[0].state).to.eq(models.PullRequestState.Open);
+                expect(pullRequests[0].state).to.eq(PullRequestState.Open);
                 done();
             });
         }
 
         it('should update a pull request on pullrequest:updated', (done) => {
-            var eventType = 'pullrequest:updated';
+            const eventType = 'pullrequest:updated';
             createUpdateLikePayload(eventType, done);
         });
 
         it('should update a pull request on pullrequest:approved', (done) => {
-            var eventType = 'pullrequest:approved';
+            const eventType = 'pullrequest:approved';
             createUpdateLikePayload(eventType, done);
         });
 
         it('should update a pull request on pullrequest:unapproved', (done) => {
-            var eventType = 'pullrequest:unapproved';
+            const eventType = 'pullrequest:unapproved';
             createUpdateLikePayload(eventType, done);
         });
 
         function createCloseLikePayload(eventKey: string, done): void {
-            var prEncoded = {
-                "id" :  1 ,
-                "title" :  "Title of pull request" ,
-                "description" :  "Description of pull request" ,
-                "state" :  "MERGED" ,
-                "author" : {
+            const prEncoded = {
+                "id": 1,
+                "title": "Title of pull request",
+                "description": "Description of pull request",
+                "state": "MERGED",
+                "author": {
                     "username": "emmap1",
                     "display_name": "Emma"
                 },
-                "destination" : {
-                    "branch" : {  "name" :  "master" },
-                    "repository" : {
+                "destination": {
+                    "branch": {"name": "master"},
+                    "repository": {
                         "full_name": "team_name/repo_name",
                         "name": "repo_name"
                     }
                 },
-                "participants" : [
+                "participants": [
                     // @todo
                 ],
                 "links": {
@@ -196,11 +192,11 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
-            var actorEncoded = {
+            const actorEncoded = {
                 "username": 'john.smith',
                 "display_name": "John Smith"
             };
-            var payload = {
+            const payload = {
                 pullrequest: prEncoded,
                 actor: actorEncoded
             };
@@ -210,60 +206,60 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            var payloadString = JSON.stringify(payload);
+            const payloadString = JSON.stringify(payload);
 
-            var sampleProject = new models.Project();
+            const sampleProject = new Project();
             sampleProject.fullName = 'team_name/repo_name';
 
-            var samplePr = new models.PullRequest();
+            const samplePr = new PullRequest();
             samplePr.id = 1;
             samplePr.targetRepository = sampleProject;
-            repositories.PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
+            PullRequestRepository.pullRequests['team_name/repo_name'] = [samplePr];
 
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
-                var pullRequests = repositories.PullRequestRepository.findAll();
+            EventPayloadHandler.handlePayload(eventKey, payloadString).then(() => {
+                const pullRequests = PullRequestRepository.findAll();
                 expect(pullRequests.length).to.eq(0);
                 done();
             });
         }
 
         it('should remove a pull request on pullrequest:fulfilled', (done) => {
-            var eventType = 'pullrequest:fulfilled';
+            const eventType = 'pullrequest:fulfilled';
             createCloseLikePayload(eventType, done);
         });
 
         it('should remove a pull request on pullrequest:rejected', (done) => {
-            var eventType = 'pullrequest:rejected';
+            const eventType = 'pullrequest:rejected';
             createCloseLikePayload(eventType, done);
         });
     });
 
     describe('Emitting events', () => {
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        const dispatcher = EventDispatcher.getInstance();
 
         beforeEach(() => {
             dispatcher.removeAllListeners();
         });
 
         function testEmittingEvents(inputEventType, expectedEventType, done): void {
-            var eventType = inputEventType;
-            var prEncoded = {
-                "id" :  1 ,
-                "title" :  "Title of pull request" ,
-                "description" :  "Description of pull request" ,
-                "state" :  "OPEN" ,
-                "author" : {
+            const eventType = inputEventType;
+            const prEncoded = {
+                "id": 1,
+                "title": "Title of pull request",
+                "description": "Description of pull request",
+                "state": "OPEN",
+                "author": {
                     "username": "emmap1",
                     "display_name": "Emma"
                 },
-                "destination" : {
-                    "branch" : {  "name" :  "master" },
-                    "repository" : {
+                "destination": {
+                    "branch": {"name": "master"},
+                    "repository": {
                         "full_name": "team_name/repo_name",
                         "name": "repo_name"
                     }
                 },
-                "participants" : [
+                "participants": [
                     // @todo
                 ],
                 "links": {
@@ -272,12 +268,12 @@ describe('EventPayloadHandler', () => {
                     }
                 }
             };
-            var actorEncoded = {
+            const actorEncoded = {
                 username: 'john.smith',
                 display_name: 'John Smith'
             };
 
-            var payload = {
+            const payload = {
                 pullrequest: prEncoded,
                 actor: actorEncoded
             };
@@ -287,50 +283,106 @@ describe('EventPayloadHandler', () => {
                 .basicAuth(basicAuth)
                 .reply(200, JSON.stringify(prEncoded));
 
-            dispatcher.once(expectedEventType, (pullRequestPayload: eventPayloadHandler.PullRequestWithActor) => {
+            dispatcher.once(expectedEventType, (pullRequestPayload: PullRequestWithActor) => {
                 expect(pullRequestPayload.pullRequest.id).to.eq(payload.pullrequest.id);
                 expect(pullRequestPayload.actor.username).to.eq('john.smith');
                 done();
             });
 
-            var payloadString = JSON.stringify(payload);
-            eventPayloadHandler.EventPayloadHandler.handlePayload(eventType, payloadString);
+            const payloadString = JSON.stringify(payload);
+            EventPayloadHandler.handlePayload(eventType, payloadString);
         }
 
         it('should emit webhook:pullrequest:created on pullrequest:created event payload', (done) => {
-            var eventType = 'pullrequest:created';
-            var emittedEventType = 'webhook:pullrequest:created';
+            const eventType = 'pullrequest:created';
+            const emittedEventType = 'webhook:pullrequest:created';
             testEmittingEvents(eventType, emittedEventType, done);
         });
 
         it('should emit webhook:pullrequest:updated on pullrequest:updated event payload', (done) => {
-            var eventType = 'pullrequest:updated';
-            var emittedEventType = 'webhook:pullrequest:updated';
+            const eventType = 'pullrequest:updated';
+            const emittedEventType = 'webhook:pullrequest:updated';
             testEmittingEvents(eventType, emittedEventType, done);
         });
 
         it('should emit webhook:pullrequest:approved on pullrequest:approved event payload', (done) => {
-            var eventType = 'pullrequest:approved';
-            var emittedEventType = 'webhook:pullrequest:approved';
+            const eventType = 'pullrequest:approved';
+            const emittedEventType = 'webhook:pullrequest:approved';
             testEmittingEvents(eventType, emittedEventType, done);
         });
 
         it('should emit webhook:pullrequest:unapproved on pullrequest:unapproved event payload', (done) => {
-            var eventType = 'pullrequest:unapproved';
-            var emittedEventType = 'webhook:pullrequest:unapproved';
+            const eventType = 'pullrequest:unapproved';
+            const emittedEventType = 'webhook:pullrequest:unapproved';
             testEmittingEvents(eventType, emittedEventType, done);
         });
 
         it('should emit webhook:pullrequest:rejected on pullrequest:rejected event payload', (done) => {
-            var eventType = 'pullrequest:rejected';
-            var emittedEventType = 'webhook:pullrequest:rejected';
+            const eventType = 'pullrequest:rejected';
+            const emittedEventType = 'webhook:pullrequest:rejected';
             testEmittingEvents(eventType, emittedEventType, done);
         });
 
         it('should emit webhook:pullrequest:fulfilled on pullrequest:fulfilled event payload', (done) => {
-            var eventType = 'pullrequest:fulfilled';
-            var emittedEventType = 'webhook:pullrequest:fulfilled';
+            const eventType = 'pullrequest:fulfilled';
+            const emittedEventType = 'webhook:pullrequest:fulfilled';
             testEmittingEvents(eventType, emittedEventType, done);
+        });
+
+        it('should emit webhook:comment:new on pullrequest:comment_created event payload', (done) => {
+            const commentPayload = {
+                actor: {
+                    "username": 'john.smith',
+                    "display_name": 'John Smith'
+                },
+                pullRequest: {
+                    "id": 1,
+                    "author": {
+                        "username": "anna.kowalsky",
+                        "display_name": "Anna Kowalsky"
+                    },
+                    "links": {
+                        "self": {
+                            "href": "http://example.com/repositories/bitbucket/bitbucket/pullrequests/1"
+                        }
+                    }
+                },
+                comment: {
+                    "id": 3,
+                    "content": {
+                        "raw": "abc",
+                        "html": "<b>abc</b>",
+                        "markup": "**abc**"
+                    },
+                    "links": {
+                        "self": {
+                            "href": "http://example.com/self"
+                        },
+                        "html": {
+                            "href": "http://example.com/html"
+                        }
+                    }
+                }
+            };
+
+            nock('http://example.com')
+                .get('/repositories/bitbucket/bitbucket/pullrequests/1')
+                .basicAuth(basicAuth)
+                .reply(200, JSON.stringify(commentPayload.pullRequest));
+
+            const expectedEventType = WebhookEvent.PULLREQUEST_COMMENTED;
+            dispatcher.once(expectedEventType, (pullRequestWithComment: PullRequestWithComment) => {
+                expect(pullRequestWithComment.pullRequest.id).to.eq(1);
+                expect(pullRequestWithComment.pullRequest.author.username).to.eq('anna.kowalsky');
+                expect(pullRequestWithComment.actor.username).to.eq('john.smith');
+                expect(pullRequestWithComment.comment.id).to.eq(3);
+                expect(pullRequestWithComment.comment.links.html.href).to.eq('http://example.com/html');
+                done();
+            });
+
+            const payloadString = JSON.stringify(commentPayload);
+            const payloadEventType = 'pullrequest:comment_created';
+            EventPayloadHandler.handlePayload(payloadEventType, payloadString);
         });
     });
 });

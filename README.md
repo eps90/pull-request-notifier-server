@@ -76,8 +76,8 @@ ShipIt will create a `current` and `releases` directories, like **Capistrano**.
 
 ## Things to be done
 
-1. `config/config.yml` is currently ignored by git, so application should initialize it. Ideally, it shoud be initialized in composer way - read and map environment variables and assign proper values to destintation config. For dev environment it should prompt for required config based on `config.yml.dist`.
-2. Little refactor :) Some things have been already marked as _@todo_ in code so keep an eye on it.
+* Little refactor :) Some things have been already marked as _@todo_ in code so keep an eye on it.
+* Migrate from Grunt to Gulp
 
 ## Additional featutes (TBD)
 

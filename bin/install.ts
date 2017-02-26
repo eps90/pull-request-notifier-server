@@ -1,9 +1,7 @@
-///<reference path="../typings/tsd.d.ts"/>
+import {Installer} from '../lib/installer/installer';
+import * as colors from 'colors';
 
-import installer = require('./../lib/installer/installer');
-var colors = require('colors');
-
-var installScript = new installer.Installer(true);
+var installScript = new Installer(true);
 try {
     installScript.install();
 } catch (e) {

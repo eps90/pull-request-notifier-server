@@ -1,108 +1,135 @@
-///<reference path="../../typings/tsd.d.ts"/>
-
-import Server = require('socket.io');
-import repositories = require('./../repositories');
-import models = require('./../models');
-import eventDispatcher = require('./../events/event_dispatcher');
-import logger = require('./../logger');
-import configModule = require('./../config');
-import _ = require('lodash');
+import * as Server from 'socket.io';
+import {PullRequestRepository} from '../repository';
+import {
+    SocketClientEvent, PullRequest, PullRequestEvent, SocketServerEvent, Reviewer, WebhookEvent, PullRequestWithActor
+} from '../model';
+import {EventDispatcher} from '../events/event_dispatcher';
+import logger from './../logger';
+import {Config} from '../config';
+import * as _ from 'lodash';
+import {PullRequestWithComment} from "../model/pull_request_with_comment";
 
 export class SocketServer {
     static io: SocketIO.Server;
     static startSocketServer(): void {
-        var config = configModule.Config.getConfig();
-        var socketPort = config.socket_port;
+        const config = Config.getConfig();
+        const socketPort = config.socket_port;
 
         logger.logSocketServerStart(socketPort.toString());
         this.io = Server(socketPort);
-        var dispatcher = eventDispatcher.EventDispatcher.getInstance();
+        const dispatcher = EventDispatcher.getInstance();
 
         this.io.on('connection', (socket) => {
             logger.logClientConnected();
 
-            socket.on(models.SocketClientEvent.INTRODUCE, (username: string) => {
+            socket.on(SocketClientEvent.INTRODUCE, (username: string) => {
                 logger.logClientIntroduced(username);
                 socket.join(username);
 
-                var userPullRequests = new models.PullRequestEvent();
-                userPullRequests.sourceEvent = models.SocketClientEvent.INTRODUCE;
-                userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(username);
+                const userPullRequests = new PullRequestEvent();
+                userPullRequests.sourceEvent = SocketClientEvent.INTRODUCE;
+                userPullRequests.pullRequests = PullRequestRepository.findByUser(username);
 
-                logger.logEmittingEventToUser(models.SocketServerEvent.INTRODUCED, username);
-                this.io.to(username).emit(models.SocketServerEvent.INTRODUCED, userPullRequests);
+                logger.logEmittingEventToUser(SocketServerEvent.INTRODUCED, username);
+                this.io.to(username).emit(SocketServerEvent.INTRODUCED, userPullRequests);
             });
 
-            socket.on(models.SocketClientEvent.REMIND, (pullRequest: models.PullRequest) => {
+            socket.on(SocketClientEvent.REMIND, (pullRequest: PullRequest) => {
                 logger.logReminderReceived();
-                var reviewersToRemind: string[] = _.map(
-                    _.filter(pullRequest.reviewers, (reviewer: models.Reviewer) => {
+                const reviewersToRemind: string[] = _.map(
+                    _.filter(pullRequest.reviewers, (reviewer: Reviewer) => {
                         return !reviewer.approved;
                     }),
-                    (reviewer: models.Reviewer) => {
+                    (reviewer: Reviewer) => {
                         return reviewer.user.username;
                     }
                 );
 
-                for (var reviewerIdx = 0, reviewersLen = reviewersToRemind.length; reviewerIdx < reviewersLen; reviewerIdx++) {
-                    var reviewerUsername = reviewersToRemind[reviewerIdx];
+                let reviewerIdx = 0, reviewersLen = reviewersToRemind.length;
+                for (; reviewerIdx < reviewersLen; reviewerIdx++) {
+                    const reviewerUsername = reviewersToRemind[reviewerIdx];
                     logger.logSendingReminderToUser(reviewerUsername);
-                    this.io.to(reviewerUsername).emit(models.SocketServerEvent.REMIND, pullRequest);
+                    this.io.to(reviewerUsername).emit(SocketServerEvent.REMIND, pullRequest);
                 }
             });
         });
 
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_CREATED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_CREATED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_CREATED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_CREATED, body);
         });
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_UPDATED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_UPDATED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UPDATED, body);
         });
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_APPROVED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_APPROVED, body.pullRequest, body.actor);
+
+        dispatcher.on(WebhookEvent.PULLREQUEST_UPDATED, SocketServer.onWebhookPullRequestUpdated);
+
+        dispatcher.on(WebhookEvent.PULLREQUEST_APPROVED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_APPROVED, body);
         });
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_UNAPPROVED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_UNAPPROVED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_UNAPPROVED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_UNAPPROVED, body);
         });
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_FULFILLED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_FULFILLED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_FULFILLED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_FULFILLED, body);
         });
-        dispatcher.on(models.WebhookEvent.PULLREQUEST_REJECTED, (body: {pullRequest: models.PullRequest, actor: models.User}) => {
-            SocketServer.onWebhookEvent(models.WebhookEvent.PULLREQUEST_REJECTED, body.pullRequest, body.actor);
+        dispatcher.on(WebhookEvent.PULLREQUEST_REJECTED, (body: PullRequestWithActor) => {
+            SocketServer.onWebhookEvent(WebhookEvent.PULLREQUEST_REJECTED, body);
         });
+
+        dispatcher.on(WebhookEvent.PULLREQUEST_COMMENTED, SocketServer.onWebhookPullReqeustCommented)
     }
 
     static stopSocketServer(): void {
         this.io.close();
     }
 
-    private static onWebhookEvent(eventName: string, pullRequest: models.PullRequest, actor: models.User): void {
+    private static onWebhookEvent(eventName: string, pullRequestWithActor: PullRequestWithActor): void {
         logger.logWebhookEventReceived(eventName);
-        var author = pullRequest.author.username;
+        const pullRequest = pullRequestWithActor.pullRequest;
+        const actor = pullRequestWithActor.actor;
+        const author = pullRequest.author.username;
 
-        var userPullRequests = new models.PullRequestEvent();
+        const userPullRequests = new PullRequestEvent();
         userPullRequests.actor = actor;
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
         // @todo Bring back authored and assigned pull requests
-        userPullRequests.pullRequests = repositories.PullRequestRepository.findByUser(author);
+        userPullRequests.pullRequests = PullRequestRepository.findByUser(author);
 
-        logger.logEmittingEventToUser(models.SocketServerEvent.PULLREQUESTS_UPDATED, author);
-        SocketServer.io.to(author).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
+        logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, author);
+        SocketServer.io.to(author).emit(SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
-        var reviewers: Array<models.Reviewer> = pullRequest.reviewers || [];
+        const reviewers: Reviewer[] = pullRequest.reviewers || [];
 
-        for (var reviewerIdx = 0, reviewersLength = reviewers.length; reviewerIdx < reviewersLength; reviewerIdx++) {
-            var reviewerUsername = reviewers[reviewerIdx].user.username;
-            var reviewerPr = new models.PullRequestEvent();
+        let reviewerIdx = 0, reviewersLength = reviewers.length;
+        for (; reviewerIdx < reviewersLength; reviewerIdx++) {
+            const reviewerUsername = reviewers[reviewerIdx].user.username;
+            const reviewerPr = new PullRequestEvent();
             reviewerPr.sourceEvent = eventName;
             reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
             // @todo Bring back authored and assigned pull requests
-            reviewerPr.pullRequests = repositories.PullRequestRepository.findByUser(reviewerUsername);
+            reviewerPr.pullRequests = PullRequestRepository.findByUser(reviewerUsername);
 
-            logger.logEmittingEventToUser(models.SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUsername);
-            SocketServer.io.to(reviewerUsername).emit(models.SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
+            logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUsername);
+            SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
         }
+    }
+
+    private static onWebhookPullRequestUpdated(pullRequestWithActor: PullRequestWithActor) {
+        const pullRequest = pullRequestWithActor.pullRequest;
+        logger.logSinglePullRequestUpdated(pullRequest);
+
+        const reviewers = pullRequest.reviewers || [];
+        for (const reviewer of reviewers) {
+            const reviewerUsername = reviewer.user.username;
+            logger.logSendingUpdateNotification(pullRequest, reviewerUsername);
+            SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
+        }
+    }
+
+    private static onWebhookPullReqeustCommented(pullRequestWithComment: PullRequestWithComment) {
+        const authorUsername = pullRequestWithComment.pullRequest.author.username;
+        SocketServer.io.to(authorUsername).emit(SocketServerEvent.NEW_COMMENT, pullRequestWithComment);
     }
 }

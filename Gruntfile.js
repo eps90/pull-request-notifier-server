@@ -11,38 +11,46 @@ module.exports = function(grunt) {
     grunt.initConfig({
         typescript: {
             build: {
-                src: ['lib/**/*.ts'],
+                src: ["typings/index.d.ts", 'lib/**/*.ts'],
                 dest: 'build',
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node"
                 }
             },
             test: {
-                src: ['test/**/*.ts'],
+                src: ["typings/index.d.ts", "custom_typings/*.d.ts", 'test/**/*.ts'],
                 dest: 'build',
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node",
+                    sourceMap: true,
+                    files: [
+                        "typings/index.d.ts"
+                    ]
                 }
             },
             dist: {
-                src: ['index.ts'],
+                src: ["typings/index.d.ts", 'index.ts'],
                 dest: 'dist',
                 options: {
                     module: "commonjs",
                     target: "es5",
-                    basepath: "."
+                    basepath: ".",
+                    moduleResolution: "node"
                 }
             },
             bin: {
-                src: ['bin/install.ts'],
+                src: ["typings/index.d.ts", 'bin/install.ts'],
                 dest: 'dist',
                 options: {
                     module: "commonjs",
-                    target: "es5"
+                    target: "es5",
+                    moduleResolution: "node"
                 }
             }
         },

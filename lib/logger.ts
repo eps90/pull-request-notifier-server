@@ -1,11 +1,11 @@
-///<reference path="../typings/tsd.d.ts"/>
-
 import winston = require('winston');
+import {TransportOptions} from "winston";
+import {PullRequest} from "./model/pull_request";
 /* tslint:disable */
 require('winston-loggly');
 /* tslint:enable */
 
-class Logger {
+export default class Logger {
     private static logger: winston.LoggerInstance;
 
     static getLogger(): winston.LoggerInstance {
@@ -123,7 +123,7 @@ class Logger {
     }
 
     static logRequestWithNoEvent(request: string): void {
-        var requestMessage: any;
+        let requestMessage: any;
         try {
             requestMessage = JSON.parse(request);
         } catch (e) {
@@ -137,17 +137,25 @@ class Logger {
         this.getLogger().warn('Unsupported HTTP request method', {method: method});
     }
 
+    static logSinglePullRequestUpdated(pullRequest: PullRequest) {
+        this.getLogger().info(`Pull request ${pullRequest.title} updated`, {pullRequest: pullRequest});
+    }
+
+    static logSendingUpdateNotification(pullRequest: PullRequest, receipient: string) {
+        this.getLogger().info(`Sending update notification for ${pullRequest.title} to ${receipient}`);
+    }
+
     private static initLogger(): void {
         // unfortunately, these things cannot be in config because it will cause circular reference errors
-        var tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
-        var subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
-        var logglyToken = process.env[tokenEnvKey] || 'token';
-        var logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
+        const tokenEnvKey = 'BBNOTIFIER_LOGGLY_TOKEN';
+        const subdomainEnvKey = 'BBNOTIFIER_LOGGLY_SUBDOMAIN';
+        const logglyToken = process.env[tokenEnvKey] || 'token';
+        const logglySubdomain = process.env[subdomainEnvKey] || 'subdomain';
 
-        var logger: winston.LoggerInstance = new (winston.Logger)({
+        const logger: winston.LoggerInstance = new (winston.Logger)({
             transports: [
                 new (winston.transports.Console)(),
-                new (winston.transports.Loggly)({
+                new (winston.transports.Loggly)(<TransportOptions>{
                     token: logglyToken,
                     subdomain: logglySubdomain,
                     tags: ["nodejs", "Bitbucket-Notifier"],
@@ -162,5 +170,3 @@ class Logger {
         this.logger = logger;
     }
 }
-
-export = Logger;
