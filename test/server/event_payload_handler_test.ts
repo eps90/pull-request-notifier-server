@@ -371,7 +371,7 @@ describe('EventPayloadHandler', () => {
                 .reply(200, JSON.stringify(commentPayload.pullRequest));
 
             const expectedEventType = WebhookEvent.PULLREQUEST_COMMENTED;
-            dispatcher.on(expectedEventType, (pullRequestWithComment: PullRequestWithComment) => {
+            dispatcher.once(expectedEventType, (pullRequestWithComment: PullRequestWithComment) => {
                 expect(pullRequestWithComment.pullRequest.id).to.eq(1);
                 expect(pullRequestWithComment.pullRequest.author.username).to.eq('anna.kowalsky');
                 expect(pullRequestWithComment.actor.username).to.eq('john.smith');
