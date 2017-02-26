@@ -3,4 +3,5 @@ export class SocketServerEvent {
     static PULLREQUEST_UPDATED: string = 'server:pullrequest:updated';
     static INTRODUCED: string = 'server:introduced';
     static REMIND: string = 'server:remind';
+    static NEW_COMMENT: string = 'server:comment:new';
 }
