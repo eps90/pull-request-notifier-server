@@ -17,7 +17,7 @@ export class HandleNewCommentHandler implements HandlerInterface {
         pullRequestWithComment.actor = UserFactory.create(bodyDecoded.actor);
         pullRequestWithComment.comment = CommentFactory.create(bodyDecoded.comment);
 
-        const pullRequestLink = bodyDecoded.pullRequest.links.self.href;
+        const pullRequestLink = bodyDecoded.pullrequest.links.self.href;
         return PullRequestRepository.fetchOne(pullRequestLink)
             .then((pullRequest: PullRequest) => {
                 pullRequestWithComment.pullRequest = pullRequest;

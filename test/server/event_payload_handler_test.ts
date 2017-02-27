@@ -335,7 +335,7 @@ describe('EventPayloadHandler', () => {
                     "username": 'john.smith',
                     "display_name": 'John Smith'
                 },
-                pullRequest: {
+                pullrequest: {
                     "id": 1,
                     "author": {
                         "username": "anna.kowalsky",
@@ -368,7 +368,7 @@ describe('EventPayloadHandler', () => {
             nock('http://example.com')
                 .get('/repositories/bitbucket/bitbucket/pullrequests/1')
                 .basicAuth(basicAuth)
-                .reply(200, JSON.stringify(commentPayload.pullRequest));
+                .reply(200, JSON.stringify(commentPayload.pullrequest));
 
             const expectedEventType = WebhookEvent.PULLREQUEST_COMMENTED;
             dispatcher.once(expectedEventType, (pullRequestWithComment: PullRequestWithComment) => {
