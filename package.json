@@ -1,6 +1,6 @@
 {
   "name": "bitbucket-notifier",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Bitbucket Notifier",
   "main": "index.js",
   "scripts": {
