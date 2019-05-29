@@ -41,15 +41,15 @@ export class SocketServer {
                         return !reviewer.approved;
                     }),
                     (reviewer: Reviewer) => {
-                        return reviewer.user.username;
+                        return reviewer.user.uuid;
                     }
                 );
 
                 let reviewerIdx = 0, reviewersLen = reviewersToRemind.length;
                 for (; reviewerIdx < reviewersLen; reviewerIdx++) {
-                    const reviewerUsername = reviewersToRemind[reviewerIdx];
-                    logger.logSendingReminderToUser(reviewerUsername);
-                    this.io.to(reviewerUsername).emit(SocketServerEvent.REMIND, pullRequest);
+                    const reviewerUuid = reviewersToRemind[reviewerIdx];
+                    logger.logSendingReminderToUser(reviewerUuid);
+                    this.io.to(reviewerUuid).emit(SocketServerEvent.REMIND, pullRequest);
                 }
             });
         });
@@ -103,16 +103,16 @@ export class SocketServer {
 
         let reviewerIdx = 0, reviewersLength = reviewers.length;
         for (; reviewerIdx < reviewersLength; reviewerIdx++) {
-            const reviewerUsername = reviewers[reviewerIdx].user.username;
+            const reviewerUserUuid = reviewers[reviewerIdx].user.uuid;
             const reviewerPr = new PullRequestEvent();
             reviewerPr.sourceEvent = eventName;
             reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
             // @todo Bring back authored and assigned pull requests
-            reviewerPr.pullRequests = PullRequestRepository.findByUser(reviewerUsername);
+            reviewerPr.pullRequests = PullRequestRepository.findByUser(reviewerUserUuid);
 
-            logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUsername);
-            SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
+            logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUserUuid);
+            SocketServer.io.to(reviewerUserUuid).emit(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);
         }
     }
 
@@ -122,14 +122,14 @@ export class SocketServer {
 
         const reviewers = pullRequest.reviewers || [];
         for (const reviewer of reviewers) {
-            const reviewerUsername = reviewer.user.username;
-            logger.logSendingUpdateNotification(pullRequest, reviewerUsername);
-            SocketServer.io.to(reviewerUsername).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
+            const reviewerUserUuid = reviewer.user.uuid;
+            logger.logSendingUpdateNotification(pullRequest, reviewerUserUuid);
+            SocketServer.io.to(reviewerUserUuid).emit(SocketServerEvent.PULLREQUEST_UPDATED, pullRequest);
         }
     }
 
     private static onWebhookPullReqeustCommented(pullRequestWithComment: PullRequestWithComment) {
-        const authorUsername = pullRequestWithComment.pullRequest.author.username;
-        SocketServer.io.to(authorUsername).emit(SocketServerEvent.NEW_COMMENT, pullRequestWithComment);
+        const authorUserUuid = pullRequestWithComment.pullRequest.author.uuid;
+        SocketServer.io.to(authorUserUuid).emit(SocketServerEvent.NEW_COMMENT, pullRequestWithComment);
     }
 }

@@ -113,7 +113,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('deploy:install', function () {
-        grunt.shipit.local('npm install', {cwd: grunt.shipit.config.workspace}, this.async());
+        grunt.shipit.local('yarn install', {cwd: grunt.shipit.config.workspace}, this.async());
     });
 
     grunt.registerTask('deploy:build', function () {
@@ -121,7 +121,7 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('deploy:config', function () {
-        grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && node bin/install.js', this.async());
+        grunt.shipit.remote('cd ' + grunt.shipit.currentPath +' && source ~/.profile && node bin/install.js', this.async());
     });
 
     grunt.registerTask('supervisor:stop', function () {
