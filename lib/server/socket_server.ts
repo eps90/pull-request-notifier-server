@@ -22,16 +22,16 @@ export class SocketServer {
         this.io.on('connection', (socket) => {
             logger.logClientConnected();
 
-            socket.on(SocketClientEvent.INTRODUCE, (username: string) => {
-                logger.logClientIntroduced(username);
-                socket.join(username);
+            socket.on(SocketClientEvent.INTRODUCE, (userUuid: string) => {
+                logger.logClientIntroduced(userUuid);
+                socket.join(userUuid);
 
                 const userPullRequests = new PullRequestEvent();
                 userPullRequests.sourceEvent = SocketClientEvent.INTRODUCE;
-                userPullRequests.pullRequests = PullRequestRepository.findByUser(username);
+                userPullRequests.pullRequests = PullRequestRepository.findByUserUuid(userUuid);
 
-                logger.logEmittingEventToUser(SocketServerEvent.INTRODUCED, username);
-                this.io.to(username).emit(SocketServerEvent.INTRODUCED, userPullRequests);
+                logger.logEmittingEventToUser(SocketServerEvent.INTRODUCED, userUuid);
+                this.io.to(userUuid).emit(SocketServerEvent.INTRODUCED, userPullRequests);
             });
 
             socket.on(SocketClientEvent.REMIND, (pullRequest: PullRequest) => {
@@ -87,17 +87,17 @@ export class SocketServer {
         logger.logWebhookEventReceived(eventName);
         const pullRequest = pullRequestWithActor.pullRequest;
         const actor = pullRequestWithActor.actor;
-        const author = pullRequest.author.username;
+        const authorUuid = pullRequest.author.uuid;
 
         const userPullRequests = new PullRequestEvent();
         userPullRequests.actor = actor;
         userPullRequests.sourceEvent = eventName;
         userPullRequests.context = pullRequest;
         // @todo Bring back authored and assigned pull requests
-        userPullRequests.pullRequests = PullRequestRepository.findByUser(author);
+        userPullRequests.pullRequests = PullRequestRepository.findByUserUuid(authorUuid);
 
-        logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, author);
-        SocketServer.io.to(author).emit(SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
+        logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, authorUuid);
+        SocketServer.io.to(authorUuid).emit(SocketServerEvent.PULLREQUESTS_UPDATED, userPullRequests);
 
         const reviewers: Reviewer[] = pullRequest.reviewers || [];
 
@@ -109,7 +109,7 @@ export class SocketServer {
             reviewerPr.actor = actor;
             reviewerPr.context = pullRequest;
             // @todo Bring back authored and assigned pull requests
-            reviewerPr.pullRequests = PullRequestRepository.findByUser(reviewerUserUuid);
+            reviewerPr.pullRequests = PullRequestRepository.findByUserUuid(reviewerUserUuid);
 
             logger.logEmittingEventToUser(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerUserUuid);
             SocketServer.io.to(reviewerUserUuid).emit(SocketServerEvent.PULLREQUESTS_UPDATED, reviewerPr);

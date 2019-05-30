@@ -64,7 +64,7 @@ export class PullRequestRepository extends AbstractRepository {
         return foundPullRequests;
     }
 
-    static findByUser(userUuid: string): PullRequest[] {
+    static findByUserUuid(userUuid: string): PullRequest[] {
         const result = this.findByAuthor(userUuid).concat(this.findByReviewer(userUuid));
         return _.uniq(result, (element: PullRequest) => {
             return element.targetRepository.fullName + '#' + element.id;
